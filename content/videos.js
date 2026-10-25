@@ -16,7 +16,7 @@
 GAME_CONTENT.videos = {
   "s1-beringia": {
     title: "Crossing Beringia",
-    cueTimes: [0, 5.26, 10.41, 16.51, 20.62], // narration starts 0.5 s after each cue
+    cueTimes: [0, 5.53, 10.70, 16.72, 21.32], // narration starts 0.5 s after each cue
     audio: "assets/audio/s1-beringia.m4a",
     cues: [
       "Ice Age: glaciers held so much water that the sea dropped hundreds of feet.",
@@ -42,7 +42,7 @@ GAME_CONTENT.videos = {
   },
   "s1-clovis-points": {
     title: "Clovis Points: Ice Age Ingenuity",
-    cueTimes: [0, 5.70, 10.15, 16.08, 21.13], // narration starts 0.5 s after each cue
+    cueTimes: [0, 6.09, 11.13, 17.15, 22.29], // narration starts 0.5 s after each cue
     cues: [
       "**Clovis points** are named for **Clovis, New Mexico**, where they were found in the **1930s**.",
       "They date to about **13,000 years ago**, near the end of the Ice Age.",
@@ -68,7 +68,7 @@ GAME_CONTENT.videos = {
   },
   "s1-early-maize": {
     title: "Early Maize: The Gift of Farming",
-    cueTimes: [0, 5.51, 12.85, 18.19], // narration starts 0.5 s after each cue
+    cueTimes: [0, 5.37, 12.26, 17.91], // narration starts 0.5 s after each cue
     audio: "assets/audio/s1-early-maize.m4a",
     cues: [
       "As the Ice Age ended, many giant animals died out, and people began to **farm**.",
@@ -92,7 +92,7 @@ GAME_CONTENT.videos = {
   },
   "s5-jamestown-settlers": {
     title: "The First Settlers of Jamestown, 1607",
-    cueTimes: [0, 6.58, 12.80, 17.38, 21.80], // narration starts 0.5 s after each cue
+    cueTimes: [0, 7.10, 13.18, 18.25, 23.32], // narration starts 0.5 s after each cue
     cues: [
       "**May 1607:** about 104 English men and boys reach Virginia on three ships.",
       "The **Susan Constant, Godspeed, and Discovery** were sent by the **Virginia Company of London**.",
@@ -111,7 +111,7 @@ GAME_CONTENT.videos = {
   },
   "s5-virginia-struggles": {
     title: "Early Virginia: Struggles and Recovery",
-    cueTimes: [0, 5.89, 9.89, 17.92, 24.55], // narration starts 0.5 s after each cue
+    cueTimes: [0, 5.89, 10.35, 18.66, 25.33], // narration starts 0.5 s after each cue
     cues: [
       "Hard early years: **swampy ground, bad water, disease**, and conflict with the **Powhatan**.",
       "**John Smith's rule:** \"He that will not work shall not eat.\"",
@@ -138,16 +138,18 @@ GAME_CONTENT.videos = {
   },
   "s5-pilgrim-voyage": {
     title: "The Mayflower Voyage, 1620",
-    cueTimes: [0, 7.53, 14.31, 21.21], // narration starts 0.5 s after each cue
+    cueTimes: [0, 7.33, 14.81, 22.12, 28.35], // narration starts 0.5 s after each cue
     cues: [
       "**Sept 6, 1620:** the **Mayflower** leaves **Plymouth, England**, with about **102 passengers**.",
       "**66 days** of autumn Atlantic storms; a cracked main beam is braced with a great **iron screw**.",
+      "**Below deck:** families like the **Brewsters** and **Hopkinses** kept up daily **prayer and Bible reading** through the long, cramped crossing.",
       "**Nov 9, 1620:** land sighted at **Cape Cod**, far north of their Virginia grant.",
       "**Nov 11:** anchored in today's **Provincetown Harbor**, **41 men sign the Mayflower Compact**, and the first men go ashore."
     ],
     facts: [
       "About **102 passengers** sailed on the **Mayflower**.",
       "The crossing took **66 days at sea**.",
+      "The **Pilgrims (Separatists)** crossed to **worship freely**; **prayer and Scripture** sustained them on the voyage.",
       "They reached **Cape Cod** in **November 1620**.",
       "The **Mayflower Compact** was an agreement to make **\"just and equal laws\"** for the general good, an early example of **self-government by consent**."
     ],
@@ -162,7 +164,7 @@ GAME_CONTENT.videos = {
   },
   "s5-new-england": {
     title: "Plymouth and a New England Beginning",
-    cueTimes: [0, 10.64], // narration starts 0.5 s after each cue
+    cueTimes: [0, 11.18], // narration starts 0.5 s after each cue
     cues: [
       "**Plymouth Colony:** about **half the settlers died** the first winter; **Squanto** and **Massasoit's Wampanoag** helped the survivors, and the **1621 harvest feast** followed.",
       "The hilltop **fort doubled as the meetinghouse**; from **1630**, **Puritans** built **Massachusetts Bay**, with **town meetings** and **schools**."

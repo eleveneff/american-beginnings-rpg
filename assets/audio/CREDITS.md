@@ -1,8 +1,17 @@
 # Narration and ambience credits
 
-**Narration** for every lesson video and the two narrated fact tours: synthesized offline with
-[Piper TTS](https://github.com/rhasspy/piper), voice `en_US-lessac-high` (length scale 1.08). Every script is read
-only from that video's captions and Key Facts. Mixed at about -16 LUFS; ambience sits about 17 dB lower. There is no music.
+**Narration** for every lesson video and the two narrated fact tours is synthesized offline with
+[Piper TTS](https://github.com/rhasspy/piper). Two voices are used, each with a mild accent that suits its period:
+
+| Clips | Piper voice | Settings | Voice training data |
+|---|---|---|---|
+| Mayflower voyage, New England, Jamestown settlers, Virginia struggles (English colonists) | `en_GB-cori-high` (British English) | length scale 0.79, noise 0.6–0.667, noise width 0.8 | LibriVox recordings, public domain |
+| Clovis points, Beringia tour, early maize tour (ancient peoples) | `en_US-ryan-high` (American English) | length scale 0.85, noise 0.667, noise width 0.8 | [RyanSpeech](https://www.kaggle.com/datasets/roholazandie/ryanspeech), CC BY-NC-SA 4.0 (used non-commercially) |
+
+The length scales differ because the two voices speak at different natural rates. Both are set about 8–10% faster than
+the first narration (`en_US-lessac-high`, length scale 1.08). Every script is read only from that video's captions and Key
+Facts. The ancient-peoples clips deliberately use a neutral American narrator and no imitation of any Native accent.
+Mixed at about -16 LUFS; ambience sits about 17 dB lower. There is no music.
 
 **Ambience** (all public domain or CC0, from Wikimedia Commons):
 

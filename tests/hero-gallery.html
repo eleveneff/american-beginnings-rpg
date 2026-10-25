@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Hero gallery</title>
+<style>body{margin:0;background:linear-gradient(#9fd8ff,#e8f6ff);font-family:sans-serif}.row{display:flex;flex-wrap:wrap;gap:8px;padding:8px}.c{width:300px;text-align:center;background:rgba(255,255,255,.5);border-radius:12px}.c svg{width:300px;height:520px}</style></head>
+<body><div class="row" id="row"></div>
+<script src="../hero.js"></script>
+<script>
+var sets = (new URLSearchParams(location.search).get("set") || "none").split(",");
+var PRESETS = {
+  none: {},
+  some: { cloak: { art: "fur-cloak", color: "#8a5a32" }, hand: { art: "spear", color: "#6d6d78" }, neck: { art: "shell-necklace", color: "#f3e6c8" } },
+  full: { head: { art: "tricorn", color: "#1d1d2b" }, cloak: { art: "hooded-cloak", color: "#b3262b" }, neck: { art: "collar", color: "#ffffff" }, back: { art: "satchel", color: "#8d6e4a" },
+    belt: { art: "compass", color: "#d4a017" }, hand: { art: "candle", color: "#ffe08a" }, offhand: { art: "lantern", color: "#ffb703" }, feet: { art: "buckle-shoes", color: "#1d1d1d" }, body: { art: "waistcoat", color: "#7a1f2b" } },
+  s1: { head: { art: "feather-band", color: "#d9472b" }, cloak: { art: "fur-cloak", color: "#8a5a32" }, hand: { art: "spear", color: "#6d6d78" }, back: { art: "basket", color: "#c79a4a" }, neck: { art: "shell-necklace", color: "#f3e6c8" }, feet: { art: "moccasins", color: "#c9a06a" } },
+  s3: { head: { art: "nav-cap", color: "#1e3a6e" }, belt: { art: "compass", color: "#d4a017" }, offhand: { art: "astrolabe", color: "#c9a227" }, back: { art: "map-tube", color: "#7a4a24" }, hand: { art: "sounding-lead", color: "#6d6d78" } },
+  m1: { head: { art: "copper-plume", color: "#c87533" }, cloak: { art: "feather-mantle", color: "#5a4a3a" }, neck: { art: "gorget", color: "#efe6d2" }, hand: { art: "bow", color: "#7a4a24" }, feet: { art: "moccasins", color: "#c9a06a" } },
+  m3: { head: { art: "beaver-hat", color: "#3a2a1e" }, cloak: { art: "blanket-coat", color: "#2b4a8a" }, neck: { art: "bead-necklace", color: "#2e6fd1" }, belt: { art: "wampum-purse", color: "#5a3ea8" }, feet: { art: "clogs", color: "#d9b27a" } },
+  m2: { head: { art: "wool-cap", color: "#b3261e" }, cloak: { art: "wool-cape", color: "#1e3a6e" }, belt: { art: "pouch", color: "#8d6e4a" }, offhand: { art: "quadrant", color: "#c9a227" }, hand: { art: "axe", color: "#5b5b5b" } },
+  m5: { cloak: { art: "hooded-cloak", color: "#b3261e" }, body: { art: "waistcoat", color: "#b8862b" }, offhand: { art: "hornbook", color: "#a0522d" }, feet: { art: "buckle-shoes", color: "#2b2b2b" }, neck: { art: "turquoise", color: "#2ec4b6" } },
+  s5: { head: { art: "capotain", color: "#2b2b2b" }, neck: { art: "collar", color: "#ffffff" }, hand: { art: "hoe", color: "#5b5b5b" }, offhand: { art: "charter", color: "#e9d9a6" }, body: { art: "jerkin", color: "#7a4a24" }, feet: { art: "latchet-shoes", color: "#3b2414" } }
+};
+var row = document.getElementById("row");
+sets.forEach(function (k) { ["girl", "boy"].forEach(function (g) {
+  var d = document.createElement("div"); d.className = "c"; d.innerHTML = HeroArt.render({ gender: g, tunic: k === "none" ? "#a68a64" : "#2b5fae", equip: PRESETS[k] || {} }) + "<b>" + g + " · " + k + "</b>"; row.appendChild(d); }); });
+</script></body></html>

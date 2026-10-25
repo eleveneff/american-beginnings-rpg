@@ -21,6 +21,10 @@
    - Lesson video: path to an .mp4 in /videos, or null for a labeled
      placeholder (videoIdea describes the clip to generate later).
    ===================================================================== */
+/* v2: content/v2-*.js files call GAME_CONTENT.extend(id, {...}) to add lesson
+   paragraphs (addText by topic), new lessons, questions, activities, and to
+   replace the gear list (each gear has art + slot so it is drawn on the hero).
+   Activity types: sequence, sort, map, scenario, dialogue (see content/v2-s1.js). */
 window.GAME_CONTENT = {
   title: "American Beginnings",
   subtitle: "A Quest Through Unit 1: First Americans to the English Colonies",
@@ -28,6 +32,8 @@ window.GAME_CONTENT = {
   boyNames: ["Nathaniel", "Josiah", "Isaac", "Benjamin", "Drake"],
   passPercent: 80,
   correctPerGear: 5,
+  trialSize: 24,            /* v2: questions per trial (missed/unseen served first) */
+  stars: { perQuestion: 2, badge: 30, crown: 50, actPerfect: 20, actGood: 14, actDone: 8, practice: 2, practicePerDay: 3 },
   sections: [],
   final: {
     title: "The Grand Trial: End-of-Unit Quiz",
@@ -40,3 +46,14 @@ window.GAME_CONTENT = {
     ]
   }
 };
+GAME_CONTENT.extend = function (id, x) {
+  var s = null; GAME_CONTENT.sections.forEach(function (z) { if (z.id === id) s = z; });
+  if (!s) throw new Error("extend: no section " + id);
+  if (x.addText) Object.keys(x.addText).forEach(function (t) { s.lessons.forEach(function (l) { if (l.topic === t) l.text = l.text.concat(x.addText[t]); }); });
+  if (x.replaceText) x.replaceText.forEach(function (r) { s.lessons.forEach(function (l) { l.text = l.text.map(function (p) { return p.split(r[0]).join(r[1]); }); }); });
+  if (x.lessons) s.lessons = s.lessons.concat(x.lessons);
+  if (x.questions) s.questions = s.questions.concat(x.questions);
+  if (x.gear) s.gear = x.gear;
+  s.activities = (s.activities || []).concat(x.activities || []);
+};
+

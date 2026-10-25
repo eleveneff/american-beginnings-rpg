@@ -1,4 +1,20 @@
-Headless Chromium smoke test (puppeteer-core). It plays Section 1 with 2 misses, then checks review, gear, badge, unlock, the parent report, persistence after reload, the under-80% retake path in Section 2, and the Grand Trial.
+Headless Chromium smoke test (puppeteer-core, v2). It checks:
+- migration of a synthetic v1 save: gear names become fitted items, retro stars are credited, and there is no double credit
+- the star rules for activities: 20 for a first perfect play, 2 per practice replay, a cap of 3 practice bonuses per day, and 14 with 2 mistakes
+- a real pointer drag-and-drop
+- Section 1 with 2 misses: 44 question stars, 4 gear items, the badge plus 30 stars, and the review queue
+- the market: a locked tab, the shopkeeper fact, too few stars (no charge), buy and confirm, the item worn, and no double buying
+- the Character screen equip and unequip
+- the Parent Report
+- tablet layout
+- persistence after reload
+- the under-80% retake path in Section 2
+- every one of the 19 activities solved
+- all 5 markets
+- the Grand Trial and its 50-star Crown
+- no page errors
+
+Commands:
 
     python3 -m http.server 8765 &          # from the repo root
     npm i puppeteer-core@22

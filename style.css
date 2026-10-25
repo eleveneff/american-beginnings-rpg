@@ -166,3 +166,15 @@ pre.report{white-space:pre-wrap;background:#fffdf5;border:2px solid #b08a50;bord
 .mk-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:.2rem;margin-top:auto}
 .btn.poor{background:#9a9a9a;color:#fff;text-shadow:0 1px 0 #000;cursor:not-allowed}
 .owned-tag{font-weight:bold;color:#2f9e44;align-self:center}
+
+/* v2: keyed video slots */
+.vslot{margin:.6rem 0 1rem}
+.vslot .video-wrap{margin:0 0 .5rem}
+.video-ph.vph2{margin:0 0 .5rem;border:3px solid #5b3a1a;background:linear-gradient(160deg,#2b2f3a,#11141b);color:#f3e2b5;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;padding:1rem}
+.video-ph.vph2 .vph-ic{font-size:2.4rem;opacity:.85}
+.video-ph.vph2 b{font-family:Georgia,serif;font-size:1.15rem}
+.video-ph.vph2 .vph-soon{font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.video-ph[hidden]{display:none}
+.video-facts{background:#fff8e6;border:2px solid #d9b36a;border-radius:10px;padding:.55rem .8rem;font-size:.92rem}
+.video-facts ul{margin:.3rem 0 0 1.1rem;padding:0}
+.video-facts li{margin:.15rem 0}

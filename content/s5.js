@@ -18,6 +18,8 @@ GAME_CONTENT.sections.push({
         "England's victory over the **Spanish Armada** in **1588** had also made England stronger at sea and ready to compete for colonies."
       ] },
     { topic: "jamestown", title: "Scroll 2: Jamestown, 1607", video: null,
+      videoKey: "s5-jamestown-settlers", videoTitle: "The First Settlers of Jamestown, 1607",
+      videoFacts: ["May 1607: about 104 English men and boys land on Jamestown Island in **Virginia** aboard the **Susan Constant, Godspeed, and Discovery**.", "They were sent by the **Virginia Company of London**, a joint-stock company, and they build a **triangular wooden fort** within weeks.", "Jamestown becomes the **first permanent English settlement** in North America.", "**Captain John Smith** takes charge with the rule \"He that will not work shall not eat.\"", "Their neighbors are the **Powhatan Confederacy**, about 30 Algonquian-speaking groups led by **Powhatan (Wahunsenacah)**, who trade corn with them."],
       videoIdea: "Low-poly N64-style: three English ships on the James River; colonists build a triangular log fort.",
       text: [
         "In **1607**, about 100 colonists founded **Jamestown** on the James River in Virginia. It became the **first permanent English settlement in North America**.",
@@ -27,6 +29,8 @@ GAME_CONTENT.sections.push({
         "The winter of **1609–1610** was called the **\"Starving Time.\"** Only about 60 of some 500 colonists survived."
       ] },
     { topic: "tobacco", title: "Scroll 3: Pocahontas, Tobacco, and Self-Government", video: null,
+      videoKey: "s5-virginia-struggles", videoTitle: "Early Virginia: Struggles and Recovery",
+      videoFacts: ["Swampy land, bad water, disease, and hunger kill many colonists.", "In the **Starving Time (1609–1610)**, only about 60 of some 500 colonists survive.", "In June 1610, supply ships under **Lord De La Warr** arrive just as the survivors are leaving.", "**John Rolfe's tobacco** (about 1612) becomes Virginia's **cash crop**, and the **headright system** brings more settlers.", "In **1619**, the **House of Burgesses**, the first elected assembly in English America, meets. That same year, the first recorded Africans arrive, brought against their will.", "Conflict with the Powhatan grows; after the **1622** attack, Virginia becomes a **royal colony (1624)**."],
       videoIdea: "Low-poly N64-style: green tobacco fields and a wooden church where elected burgesses meet.",
       text: [
         "**Pocahontas**, Powhatan's daughter, helped the colonists with food and messages. In **1614** she married colonist **John Rolfe**, which brought several years of peace.",
@@ -37,6 +41,8 @@ GAME_CONTENT.sections.push({
         "Also in 1619, the first recorded **Africans** arrived in Virginia, brought against their will. Over time, slavery grew in the colonies."
       ] },
     { topic: "pilgrims", title: "Scroll 4: The Pilgrims and the Mayflower Compact", video: null,
+      videoKey: "s5-pilgrim-voyage", videoTitle: "The Mayflower Voyage, 1620",
+      videoFacts: ["The **Pilgrims** were Separatists seeking freedom to worship. They first lived in **Leiden, the Netherlands**.", "The **Speedwell** leaked and turned back. In **September 1620**, the **Mayflower** sailed alone from **Plymouth, England**, carrying **102 passengers**.", "During the **66-day** stormy crossing, a main beam cracked and was repaired with a great iron screw. A baby, **Oceanus Hopkins**, was born at sea.", "In **November 1620**, storms brought them to **Cape Cod**, outside their Virginia charter."],
       videoIdea: "Low-poly N64-style: the Mayflower crossing stormy seas, then passengers signing a paper in the ship's cabin by candlelight.",
       text: [
         "The **Pilgrims** were **Separatists**: they wanted to separate from the Church of England and worship in their own way. They first moved to the Netherlands, then decided to start a colony in America.",
@@ -45,6 +51,8 @@ GAME_CONTENT.sections.push({
         "They founded **Plymouth Colony**. About half of them died during the first harsh winter."
       ] },
     { topic: "plymouth", title: "Scroll 5: Squanto, Massasoit, and the Harvest Feast", video: null,
+      videoKey: "s5-new-england", videoTitle: "The Mayflower Compact and a New England Beginning",
+      videoFacts: ["Before landing, **41 men sign the Mayflower Compact**, promising \"just and equal laws\" for the general good, an early example of self-government.", "About half the settlers die during the first hard winter at **Plymouth**.", "In 1621, **Samoset** and **Squanto (Tisquantum)** help them; Squanto teaches them to plant corn with fish as fertilizer.", "**Massasoit** and the **Wampanoag** make a peace treaty of mutual defense that lasts more than 50 years.", "In autumn 1621, the Pilgrims and about 90 Wampanoag share a **three-day harvest feast**.", "Under **Governor William Bradford**, Plymouth grows, and more New England towns, churches, and town meetings follow."],
       videoIdea: "Low-poly N64-style: Squanto shows Pilgrims how to plant corn with a fish in each mound; later a joyful harvest feast.",
       text: [
         "In spring 1621, an Abenaki man named **Samoset** walked into Plymouth and greeted the settlers in English. He introduced them to **Squanto (Tisquantum)**, a Patuxet man who had learned English after being kidnapped and taken to Europe years earlier.",

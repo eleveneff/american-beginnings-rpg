@@ -49,13 +49,15 @@ Progress is saved in the browser's localStorage under the key `americanBeginning
 |---|---|---|---|
 | 1. First Peoples of the Americas | 27 → 38 | 7 (2 with video) | 3 |
 | 2. Native Nations of North America | 18 → 28 | 6 | 3 |
-| 3. The Age of Exploration (incl. Columbian Exchange) | 20 → 34 | 6 | 3 |
+| 3. The Age of Exploration (incl. Columbian Exchange) | 20 → 35 | 6 | 3 |
 | 4. Spain, France, and the Netherlands | 19 → 32 | 6 | 3 |
-| 5. Jamestown and Plymouth | 19 → 30 | 6 | 3 |
-| 6. The Thirteen Colonies Grow | 26 → 39 | 7 | 4 |
-| **Total** | **129 → 201** | 38 | 19 |
+| 5. Jamestown and Plymouth | 19 → 36 | 7 (4 video slots) | 3 |
+| 6. The Thirteen Colonies Grow | 26 → 41 | 7 | 4 |
+| **Total** | **129 → 210** | 39 | 19 |
 
 The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effects, and multiple perspectives. Quotes are real and short (for example, the Mayflower Compact, Columbus's log, and Bradford). The unit stops before the French and Indian War.
+
+The history is written **truth first**: accurate facts and real quotes come first. It highlights the founding ideals of self-government and the rule of law: the House of Burgesses (1619), the Mayflower Compact (1620), town meetings, the Fundamental Orders (1639), and the Body of Liberties (1641). It also shows the courage, perseverance, faith, and ingenuity of explorers and settlers. Native and African perspectives and hardships are told plainly, and there is no modern political overlay. Most of this is in `content/v2b-ideals.js`, including Section 5's new Scroll 7, "Seeds of Self-Government."
 
 **Answer checking for typed answers:**
 - Capital letters, punctuation, accents, and a leading "the/a/an" are ignored.
@@ -64,7 +66,7 @@ The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effe
 - Multiple-choice answers are shuffled every time.
 
 ## Editing or adding content
-Content lives in `content/`: one file per section, plus `v2-s*.js` extensions (more lessons, questions, and activities) and `market.js` (markets, shopkeepers, and items). All of these are plain JavaScript objects. The header comment in `content/00-header.js` explains the format. To add a video, drop an `.mp4` in `videos/` and set `video: "videos/name.mp4"` on a lesson. Each placeholder's `videoIdea` text describes the clip to make.
+Content lives in `content/`: one file per section, plus `v2-s*.js` extensions (more lessons, questions, and activities) and `market.js` (markets, shopkeepers, and items). All of these are plain JavaScript objects. The header comment in `content/00-header.js` explains the format. **Section 5 video slots:** put a file at `assets/video/<key>.mp4` and the game picks it up automatically, with no code change. Until then, a placeholder card shows. Each slot always shows a caption with the facts the video teaches. The keys are `s5-jamestown-settlers` (Scroll 2), `s5-virginia-struggles` (Scroll 3), `s5-pilgrim-voyage` (Scroll 4), and `s5-new-england` (Scroll 5); see `assets/video/README.md`. To give any other lesson a slot, set `videoKey`, `videoTitle`, and `videoFacts` on it. Section 1's two videos are fixed files (`video: "videos/name.mp4"`). Each placeholder's `videoIdea` text describes the clip to make.
 
 ## Tech
 Plain static HTML/CSS/JS with no build step. The 3D low-poly background uses Three.js from a CDN; if it can't load, a gradient sky is shown and the game still works. The hero (`hero.js`) is a layered SVG figure: girl or boy, with every item drawn at full scale and fitted to its body slot (head, cloak, neck, body, back, belt, both hands, feet). `tests/hero-gallery.html` previews gear sets. Version marker: bottom-right corner (`v2.0`). Test: `tests/smoke-test.js`.

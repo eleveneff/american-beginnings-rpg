@@ -9,6 +9,7 @@ Headless Chromium smoke test (puppeteer-core, v2). It checks:
 - tablet layout
 - persistence after reload
 - the under-80% retake path in Section 2
+- the 4 Section 5 video slots: each shows its facts caption, and a placeholder or the real video, depending on whether `assets/video/<key>.mp4` exists
 - every one of the 19 activities solved
 - all 5 markets
 - the Grand Trial and its 50-star Crown

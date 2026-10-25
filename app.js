@@ -172,7 +172,15 @@
   function modal(html) { document.getElementById("modal-box").innerHTML = html; document.getElementById("modal").classList.remove("hidden"); }
   function closeModal() { document.getElementById("modal").classList.add("hidden"); document.getElementById("modal-box").innerHTML = ""; }
   var toastT; function toast(msg) { var t = document.getElementById("toast"); t.innerHTML = msg; t.classList.remove("hidden"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.add("hidden"); }, 3200); }
-  function show(html) { $screen.innerHTML = html; window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function show(html) { $screen.innerHTML = html; wireVideos($screen); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function wireVideos(root) {
+    Array.prototype.forEach.call(root.querySelectorAll(".vslot video[data-src]"), function (v) {
+      var slot = v.closest(".vslot");
+      v.addEventListener("loadedmetadata", function () { slot.querySelector(".video-wrap").hidden = false; var ph = slot.querySelector(".video-ph"); if (ph) ph.hidden = true; slot.classList.add("has-video"); });
+      v.addEventListener("error", function () { slot.classList.add("no-video"); });
+      v.src = v.getAttribute("data-src");
+    });
+  }
   function on(id, fn) { var el = document.getElementById(id); if (el) el.onclick = fn; }
 
   /* ---------------- world map ---------------- */
@@ -262,7 +270,16 @@
     $all(".act-card", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act")); }; });
     renderHero();
   }
+  /* v2: keyed video slots. A file at assets/video/<videoKey>.mp4 is picked up
+     automatically; until it exists a placeholder card shows with the caption. */
   function videoBlock(l) {
+    if (l.videoKey) {
+      var src = "assets/video/" + l.videoKey + ".mp4";
+      var facts = (l.videoFacts || []).map(function (f) { return "<li>" + md(f) + "</li>"; }).join("");
+      return '<div class="vslot" data-vkey="' + esc(l.videoKey) + '"><div class="video-wrap" hidden><video controls playsinline preload="metadata" data-src="' + esc(src) + '"></video></div>' +
+        '<div class="video-ph vph2"><div class="vph-ic">🎞️</div><b>' + esc(l.videoTitle || "Lesson video") + '</b><span class="vph-soon">Video coming soon</span></div>' +
+        (facts ? '<div class="video-facts"><b>🎬 ' + esc(l.videoTitle || "In this video") + ':</b> what this video teaches<ul>' + facts + "</ul></div>" : "") + "</div>";
+    }
     if (l.video) return '<div class="video-wrap"><video controls playsinline preload="metadata" ' + (l.poster ? 'poster="' + esc(l.poster) + '"' : "") + ' src="' + esc(l.video) + '"></video></div>' + (l.videoCaption ? '<div class="video-cap">🎬 ' + esc(l.videoCaption) + "</div>" : "");
     return '<div class="video-ph"><b>🎬 Video coming soon</b>' + esc(l.videoIdea || "A short animated clip for this lesson will appear here.") + "</div>";
   }
@@ -898,6 +915,6 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home };
+  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson };
   home();
 })();

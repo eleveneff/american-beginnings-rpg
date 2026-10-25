@@ -9,7 +9,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 (async () => {
   const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const p = await b.newPage(); await p.setViewport({ width: 1280, height: 860 });
-  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) errs.push(m.text()); });
+  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text()) && !/assets\/video\//.test((m.location() || {}).url || '')) errs.push(m.text()); });
   const url = BASE + (BASE.includes('?') ? '&' : '?') + 'cb=' + Date.now();
   const go = async () => { await p.goto(url, { waitUntil: 'domcontentloaded' }); await sleep(1500); };
   const click = async sel => { await p.waitForSelector(sel, { timeout: 8000 }); await p.$eval(sel, e => e.click ? e.click() : e.dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sleep(50); };
@@ -230,6 +230,18 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   assert(solvedN === 19, 'all 19 activities completed');
   for (const m of ['m2', 'm3', 'm4', 'm5']) { await click('#btn-market'); await click('.mk-tab[data-mid="' + m + '"]'); await sleep(150); await p.screenshot({ path: SHOTS + 'mk-' + m + '.png', fullPage: true }); }
   assert(!(await p.$eval('.mk-tab[data-mid="m5"]', e => e.classList.contains('locked'))), 'all markets open when all lands mastered');
+
+  /* Section 5 keyed video slots: a real file plays, a missing one shows the placeholder */
+  const keys = ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england'];
+  const s5idx = await p.evaluate(() => { const o = {}; window.GAME_CONTENT.sections.find(x => x.id === 's5').lessons.forEach((l, i) => { if (l.videoKey) o[l.videoKey] = i; }); return o; });
+  assert(keys.every(k => k in s5idx), 'all 4 Section 5 video slots exist');
+  for (const k of keys) {
+    const exists = await p.evaluate(async k => (await fetch('assets/video/' + k + '.mp4', { method: 'HEAD', cache: 'no-store' })).ok, k);
+    await p.evaluate(i => ABRPG.lesson('s5', i), s5idx[k]); await sleep(900);
+    const r = await p.evaluate(() => { const s = document.querySelector('.vslot'); return { key: s && s.dataset.vkey, facts: s ? s.querySelectorAll('.video-facts li').length : 0, video: s && !s.querySelector('.video-wrap').hidden, ph: s && !!s.querySelector('.video-ph') && !s.querySelector('.video-ph').hidden }; });
+    assert(r.key === k && r.facts >= 4 && (exists ? r.video && !r.ph : r.ph && !r.video), 'video slot ' + k + (exists ? ' plays file' : ' shows placeholder') + ' (' + r.facts + ' facts)');
+    await p.screenshot({ path: SHOTS + 'v-' + k + '.png', fullPage: true });
+  }
 
   /* final */
   await click('#btn-home'); await click('.node[data-sid="final"]'); await click('#b-go');

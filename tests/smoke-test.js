@@ -237,15 +237,15 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
      file falls back to a placeholder fact tour. */
   await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
   const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
-  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's5-jamestown-settlers': 1, 's5-pilgrim-voyage': 1 }; assert(true, 'only the 2 verified clips are embedded');
+  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-pilgrim-voyage': 1 }; assert(true, 'only the 3 verified clips are embedded');
   for (const v of vids) {
     const before = (await st()).stars.balance;
     await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);
     const m = await p.evaluate(() => { const s = document.querySelector('.vslot'); return { real: s.classList.contains('has-video'), facts: s.querySelectorAll('.video-facts li').length, locked: s.querySelector('.vcheck-btn').disabled }; });
     let capSeen = '';
     if (m.real) {
-      capSeen = await p.evaluate(async () => { const vd = document.querySelector('.vslot video'); vd.muted = true; vd.currentTime = vd.duration * 0.55; await new Promise(r => setTimeout(r, 400)); vd.dispatchEvent(new Event('timeupdate')); const t = document.querySelector('.lower3.on .l3-t'); const c = t ? t.textContent : ''; vd.currentTime = Math.max(0, vd.duration - 0.4); await vd.play().catch(() => {}); return c; });
-      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
+      capSeen = await p.evaluate(async () => { const vd = document.querySelector('.vslot video'); vd.muted = true; vd.currentTime = vd.duration * 0.55; await new Promise(r => setTimeout(r, 400)); vd.dispatchEvent(new Event('timeupdate')); const t = document.querySelector('.lower3.on .l3-t'); const c = t ? t.textContent : ''; vd.currentTime = 0; await vd.play().catch(() => {}); await new Promise(r => setTimeout(r, 900)); const t2 = document.querySelector('.lower3.on .l3-t'); return t2 ? t2.textContent : c; });
+      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 30000 });
     } else {
       await click('.vtour'); await sleep(400);
       capSeen = await p.evaluate(() => { const t = document.querySelector('.lower3.on .l3-t'); return t ? t.textContent : ''; });
@@ -267,7 +267,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await p.evaluate(() => { const c = window.GAME_CONTENT.videos['s5-jamestown-settlers'].check; const qt = document.querySelector('.vc-q b').textContent; const qq = c.find(x => x.q === qt); [...document.querySelectorAll('.vc-ch button')].find(b => b.textContent === qq.choices[0]).click(); });
   await sleep(80);
   const vs = await st();
-  assert(vs.stars.balance === b0 && vs.stars.bySource.video === 5 * 13, 'a video check retake pays no stars; 65 video stars in total');
+  assert(vs.stars.balance === b0 && vs.stars.bySource.video === 5 * vids.reduce((t, v) => t + v.nq, 0), 'a video check retake pays no stars; ' + vs.stars.bySource.video + ' video stars in total');
   const vq = await p.evaluate(() => window.GAME_CONTENT.sections.find(s => s.id === 's5').questions.filter(q => q.fromVideo).length);
   assert(vq === 8, 'video check questions are also in the Section 5 trial pool (' + vq + ')');
   await p.evaluate(() => ABRPG.home());

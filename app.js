@@ -196,8 +196,20 @@
       vid.addEventListener("loadedmetadata", function () { vid.hidden = false; ph.hidden = true; slot.classList.add("has-video"); });
       vid.addEventListener("error", function () { slot.classList.add("no-video"); });
       vid.addEventListener("play", started);
-      vid.addEventListener("timeupdate", function () { var d = vid.duration || 1; cue(Math.min(n - 1, Math.floor(vid.currentTime / (d / n)))); });
-      vid.addEventListener("ended", ended);
+      /* Captions run on play time, at least videoTourSeconds each, so they stay readable. A short clip
+         replays until every caption has been shown, and only then does the check open. */
+      var played = 0, lastT = 0;
+      function per() { return Math.max((vid.duration || 1) / n, C.videoTourSeconds || 4); }
+      vid.addEventListener("seeked", function () { lastT = vid.currentTime; });
+      vid.addEventListener("timeupdate", function () {
+        var dt = vid.currentTime - lastT; lastT = vid.currentTime;
+        if (dt > 0 && dt < 1) played += dt;
+        cue(Math.min(n - 1, Math.floor(played / per()))); prog.style.width = Math.min(100, played / (per() * n) * 100) + "%";
+      });
+      vid.addEventListener("ended", function () {
+        if (played + 0.3 < per() * n) { vid.currentTime = 0; lastT = 0; vid.play().catch(function () {}); return; }
+        prog.style.width = "0"; ended();
+      });
       vid.src = vid.getAttribute("data-src");
       var tb = slot.querySelector(".vtour");
       tb.onclick = function () {

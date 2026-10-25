@@ -1,11 +1,11 @@
 Drop lesson videos here as `<key>.mp4`. The game picks them up automatically, and shows a placeholder until a file exists.
 
-Section 1 keys (placeholders until verified files arrive):
+Section 1 keys (Clovis points is embedded and verified; the other two are placeholders):
 - `s1-beringia.mp4`: Scroll 1, the land bridge
 - `s1-clovis-points.mp4`: Scroll 3, Clovis point technology
 - `s1-early-maize.mp4`: Scroll 4, farming and early maize
 
-Section 5 keys (Jamestown and Pilgrim voyage are embedded and verified; the other two are placeholders):
+Section 5 keys (Jamestown and Pilgrim voyage are embedded; the voyage clip is provisional until a Cape Cod arrival version arrives; the other two are placeholders):
 - `s5-jamestown-settlers.mp4`: Scroll 2, the first settlers of Jamestown in 1607
 - `s5-virginia-struggles.mp4`: Scroll 3, early Virginia's struggles and recovery
 - `s5-pilgrim-voyage.mp4`: Scroll 4, the Mayflower voyage in 1620

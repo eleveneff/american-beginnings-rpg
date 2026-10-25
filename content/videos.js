@@ -36,23 +36,28 @@ GAME_CONTENT.videos = {
     ]
   },
   "s1-clovis-points": {
-    title: "Making a Clovis Point",
+    title: "Clovis Points: Ice Age Ingenuity",
     cues: [
-      "About **13,000 years ago**, skilled toolmakers shaped stone spear points.",
-      "They struck the stone with harder stones, then pressed off tiny flakes with **bone or antler**.",
-      "A groove at the base, the **flute**, helped attach the point to a spear shaft.",
-      "Named for **Clovis, New Mexico**, where they were found in the 1930s.",
-      "Why it matters: **ingenuity** let Paleo-Indians hunt mammoths across the continent."
+      "**Clovis points** are named for **Clovis, New Mexico**, where they were found in the **1930s**.",
+      "They date to about **13,000 years ago**, near the end of the Ice Age.",
+      "Leaf-shaped, chipped from stone such as **chert**, with sharp edges and no notches.",
+      "A groove at the base, the **flute**, let the point be tied to a **spear shaft**.",
+      "Why it matters: with this **ingenuity**, hunters took **mammoths and bison**."
     ],
     facts: [
-      "**Clovis points** are fluted stone spear points about **13,000 years old**.",
-      "They are named after **Clovis, New Mexico**, and have been found across much of North America.",
-      "Making one took real skill: shaping with hammerstones, then fine **pressure flaking** with antler or bone."
+      "**Clovis points** are named for **Clovis, New Mexico**, where they were found in the **1930s**.",
+      "They date to about **13,000 years ago**.",
+      "They are **leaf-shaped** and were **chipped from stone like chert**.",
+      "A groove at the base, the **flute**, let them be **tied to a spear shaft**.",
+      "Hunters used them on large Ice Age animals such as **mammoths and bison**."
     ],
     check: [
-      { q: "What was a Clovis point used for?",
-        choices: ["Tipping a spear for hunting big game", "Grinding corn into flour", "Writing on clay tablets", "Measuring the stars"],
-        explain: "The fluted base was lashed to a wooden spear shaft." }
+      { q: "What was the groove (flute) at the base of a Clovis point for?",
+        choices: ["Tying the point to a spear shaft", "Holding a feather for decoration", "Pouring water", "Marking who owned it"],
+        explain: "The flute helped hunters lash the stone point firmly to a wooden shaft." },
+      { q: "Which animals did Clovis hunters use these points on?",
+        choices: ["Large Ice Age animals such as mammoths and bison", "Horses and cattle brought by the Spanish", "Whales from canoes", "Chickens and pigs"],
+        explain: "Clovis points have been found with mammoth and bison bones." }
     ]
   },
   "s1-early-maize": {
@@ -114,6 +119,8 @@ GAME_CONTENT.videos = {
     ]
   },
   "s5-pilgrim-voyage": {
+    /* PROVISIONAL: the clip will be replaced by a version showing the arrival at Cape Cod.
+       Review these captions when the new file arrives. */
     title: "The Mayflower Voyage, 1620",
     cues: [
       "The **Pilgrims** were Separatists seeking **freedom to worship** as they believed.",

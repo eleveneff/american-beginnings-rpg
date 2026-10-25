@@ -7,7 +7,7 @@ A low-poly, Zelda-style learning RPG for a 7th grader. It follows McGraw Hill *U
 ## How it plays
 1. **World map.** Six lands unlock in order, then the **Grand Trial** (end-of-unit quiz).
 2. **Choose a hero** for each land: girl or boy, then a period name (or type your own). The hero lives in that era.
-3. **Scene and lesson scrolls.** Each land opens with a short story scene, then lesson scrolls. Seven scrolls have a **lesson video player** (3 in Section 1, 4 in Section 5). While a clip plays, 4–5 timed **fact captions** appear in a lower third (names, dates, places, cause and effect, why it matters). A **🔑 Key Facts** card sits below the clip. When the clip ends, a 1–2 question **"🎬 What did you see?"** check opens. If a clip file is missing, a **"▶ Play the fact tour"** placeholder runs the same captions, about 4 s each, and then the check. Two verified clips are embedded: Jamestown 1607 and the Mayflower voyage. The other five slots are placeholders until verified files arrive: Section 1's Beringia, Clovis points, and early maize, plus Section 5's Virginia struggles and New England. The earlier Section 1 clips were removed after failing accuracy review. Other scrolls show a "video idea" card.
+3. **Scene and lesson scrolls.** Each land opens with a short story scene, then lesson scrolls. Seven scrolls have a **lesson video player** (3 in Section 1, 4 in Section 5). While a clip plays, 4–5 timed **fact captions** appear in a lower third (names, dates, places, cause and effect, why it matters). A **🔑 Key Facts** card sits below the clip. When the clip ends, a 1–2 question **"🎬 What did you see?"** check opens. If a clip file is missing, a **"▶ Play the fact tour"** placeholder runs the same captions, about 4 s each, and then the check. Three verified clips are embedded: Clovis points, Jamestown 1607, and the Mayflower voyage. The Mayflower clip is provisional and will be replaced by a Cape Cod arrival version. The other four slots are placeholders until verified files arrive: Beringia and early maize in Section 1, Virginia struggles and New England in Section 5. Captions are timed to play time, at least 4 s each, and a short clip replays until all of its captions have shown. The earlier Section 1 clips were removed after failing accuracy review. Other scrolls show a "video idea" card.
 4. **History Activities (v2).** Every land has 3–4 hands-on activities (19 in all): put steps in order (knap a Clovis point, plant a Three Sisters garden, dip candles, run Franklin's press), drag-and-drop sorts and maps (culture regions, the three empires' claims, the 13 colonies, the Columbian Exchange), choose-your-path scenarios (sail a caravel, survive Jamestown, draft the Mayflower Compact clause by clause), and conversations with historical figures (a Maya scribe, a Haudenosaunee clan mother, Pigafetta, Champlain, Tisquantum, Ben Franklin). Cards can be dragged, or tapped and then tapped onto a bin.
 5. **Trial.** 24 of the land's questions come in random order (questions never answered right and earlier misses come first), exam-style: multiple choice, vocabulary, fill in the blank, and short answer. Every answer shows a short explanation.
 6. **Gear.** Every **5 correct answers** in a land earns new gear that appears on the hero (cloak, spear, basket, necklace, hats, and more). Mastering a land earns a **badge**, and the hero's tunic changes color.
@@ -49,15 +49,15 @@ Progress is saved in the browser's localStorage under the key `americanBeginning
 ## Content
 | Section | Questions (v1 → v2) | Lessons | Activities |
 |---|---|---|---|
-| 1. First Peoples of the Americas | 27 → 43 | 7 (3 video players) | 3 |
+| 1. First Peoples of the Americas | 27 → 44 | 7 (3 video players) | 3 |
 | 2. Native Nations of North America | 18 → 28 | 6 | 3 |
 | 3. The Age of Exploration (incl. Columbian Exchange) | 20 → 35 | 6 | 3 |
 | 4. Spain, France, and the Netherlands | 19 → 32 | 6 | 3 |
 | 5. Jamestown and Plymouth | 19 → 44 | 7 (4 video players) | 3 |
 | 6. The Thirteen Colonies Grow | 26 → 41 | 7 | 4 |
-| **Total** | **129 → 223** | 39 | 19 |
+| **Total** | **129 → 224** | 39 | 19 |
 
-Counts include the 13 video-check questions (5 in Section 1, 8 in Section 5). The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effects, and multiple perspectives. Quotes are real and short (for example, the Mayflower Compact, Columbus's log, and Bradford). The unit stops before the French and Indian War.
+Counts include the 14 video-check questions (6 in Section 1, 8 in Section 5). The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effects, and multiple perspectives. Quotes are real and short (for example, the Mayflower Compact, Columbus's log, and Bradford). The unit stops before the French and Indian War.
 
 The history is written **truth first**: accurate facts and real quotes come first. It highlights the founding ideals of self-government and the rule of law: the House of Burgesses (1619), the Mayflower Compact (1620), town meetings, the Fundamental Orders (1639), and the Body of Liberties (1641). It also shows the courage, perseverance, faith, and ingenuity of explorers and settlers. Native and African perspectives and hardships are told plainly, and there is no modern political overlay. Most of this is in `content/v2b-ideals.js`, including Section 5's new Scroll 7, "Seeds of Self-Government."
 

@@ -70,7 +70,7 @@
   /* ---------------- save data ---------------- */
   function blankSave() {
     return { version: 2, created: now(), lastPlayed: now(), players: {}, sections: {}, final: { attempts: 0, bestPct: 0, passed: false, passedAt: null, history: [] }, gear: [], badges: [], totalCorrect: 0, totalAnswered: 0, run: null,
-      stars: { balance: 0, earned: 0, spent: 0, bySource: {} }, starLog: [], qStar: {}, acts: {}, owned: [], equip: {}, purchases: [] };
+      stars: { balance: 0, earned: 0, spent: 0, bySource: {} }, starLog: [], qStar: {}, acts: {}, owned: [], equip: {}, purchases: [], videos: {}, vidQ: {} };
   }
   var S;
   function load() {
@@ -113,7 +113,7 @@
   function allDone() { return C.sections.every(function (s) { return S.sections[s.id] && S.sections[s.id].completed; }); }
 
   /* ---------------- stars economy ---------------- */
-  var SRC_LABEL = { question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress" };
+  var SRC_LABEL = { question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)" };
   function addStars(n, src, note) {
     n = Math.max(0, Math.floor(n || 0)); if (!n) return 0;
     S.stars.balance += n; S.stars.earned += n; S.stars.bySource[src] = (S.stars.bySource[src] || 0) + n;
@@ -172,14 +172,76 @@
   function modal(html) { document.getElementById("modal-box").innerHTML = html; document.getElementById("modal").classList.remove("hidden"); }
   function closeModal() { document.getElementById("modal").classList.add("hidden"); document.getElementById("modal-box").innerHTML = ""; }
   var toastT; function toast(msg) { var t = document.getElementById("toast"); t.innerHTML = msg; t.classList.remove("hidden"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.add("hidden"); }, 3200); }
-  function show(html) { $screen.innerHTML = html; wireVideos($screen); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  var vidTimers = [];
+  function show(html) { vidTimers.forEach(clearInterval); vidTimers = []; $screen.innerHTML = html; wireVideos($screen); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function vrec(key) { return S.videos[key] || (S.videos[key] = { views: 0, captions: 0, ended: 0, checked: 0, best: 0, right: 0, wrong: 0, stars: 0, firstAt: now(), lastAt: null }); }
   function wireVideos(root) {
-    Array.prototype.forEach.call(root.querySelectorAll(".vslot video[data-src]"), function (v) {
-      var slot = v.closest(".vslot");
-      v.addEventListener("loadedmetadata", function () { slot.querySelector(".video-wrap").hidden = false; var ph = slot.querySelector(".video-ph"); if (ph) ph.hidden = true; slot.classList.add("has-video"); });
-      v.addEventListener("error", function () { slot.classList.add("no-video"); });
-      v.src = v.getAttribute("data-src");
+    $all(".vslot", root).forEach(function (slot) {
+      var key = slot.getAttribute("data-vkey"), v = C.videos[key], cues = v.cues || [], n = cues.length;
+      var vid = slot.querySelector("video"), ph = slot.querySelector(".video-ph"), l3 = slot.querySelector(".lower3"), prog = slot.querySelector(".vprog i");
+      var cbtn = slot.querySelector(".vcheck-btn"), shown = -1, counted = false, maxCue = -1;
+      if (!vrec(key).ended) cbtn.disabled = true;
+      function cue(i) {
+        if (i === shown) return; shown = i;
+        if (i < 0 || i >= n) { l3.classList.remove("on"); return; }
+        maxCue = Math.max(maxCue, i);
+        l3.querySelector(".l3-n").textContent = (i + 1) + "/" + n; l3.querySelector(".l3-t").innerHTML = md(cues[i]);
+        l3.classList.remove("on"); void l3.offsetWidth; l3.classList.add("on");
+      }
+      function started() { if (!counted) { counted = true; var r = vrec(key); r.views++; r.lastAt = now(); save(); } }
+      function ended() {
+        var r = vrec(key); r.ended++; r.captions = Math.max(r.captions, maxCue + 1); r.lastAt = now(); save();
+        cue(-1); cbtn.disabled = false; slot.querySelector(".vcheck-hint").textContent = "Answer to earn stars!"; openCheck(slot, key);
+      }
+      vid.addEventListener("loadedmetadata", function () { vid.hidden = false; ph.hidden = true; slot.classList.add("has-video"); });
+      vid.addEventListener("error", function () { slot.classList.add("no-video"); });
+      vid.addEventListener("play", started);
+      vid.addEventListener("timeupdate", function () { var d = vid.duration || 1; cue(Math.min(n - 1, Math.floor(vid.currentTime / (d / n)))); });
+      vid.addEventListener("ended", ended);
+      vid.src = vid.getAttribute("data-src");
+      var tb = slot.querySelector(".vtour");
+      tb.onclick = function () {
+        started(); tb.hidden = true; var i = 0, per = (C.videoTourSeconds || 4) * 1000, t0 = Date.now(); cue(0);
+        var T = setInterval(function () {
+          var f = (Date.now() - t0) / (per * n); prog.style.width = Math.min(100, f * 100) + "%";
+          var k = Math.floor(f * n); if (k !== i && k < n) { i = k; cue(k); }
+          if (f >= 1) { clearInterval(T); prog.style.width = "0"; tb.hidden = false; tb.textContent = "🔁 Replay the fact tour"; ended(); }
+        }, 100);
+        vidTimers.push(T);
+      };
+      cbtn.onclick = function () { openCheck(slot, key); };
     });
+  }
+  function openCheck(slot, key) {
+    var v = C.videos[key], box = slot.querySelector(".vcheck"), qs = v.check, i = 0, right = 0, got = 0;
+    box.hidden = false;
+    function ask() {
+      if (i >= qs.length) {
+        var r = vrec(key); r.checked++; r.best = Math.max(r.best, right); r.lastAt = now(); save(); renderHero();
+        slot.querySelector(".vcheck-hint").textContent = "✅ Check done " + r.best + "/" + qs.length;
+        box.innerHTML = '<div class="vc-done"><b>' + (right === qs.length ? "🌟 Sharp eyes!" : "Good effort!") + "</b> You got " + right + " of " + qs.length + " right" +
+          (got ? ' · <span class="star-pop">+' + got + " ⭐</span>" : " · no new stars (stars are paid once per question)") + '. <button class="btn small alt vc-again">🔁 Try the check again</button></div>';
+        box.querySelector(".vc-again").onclick = function () { openCheck(slot, key); };
+        return;
+      }
+      var c = qs[i], ch = shuffle(c.choices);
+      box.innerHTML = '<div class="vc-q"><span class="vc-tag">🎬 What did you see? ' + (i + 1) + "/" + qs.length + "</span><p><b>" + md(c.q) + '</b></p><div class="vc-ch">' +
+        ch.map(function (x, k) { return '<button class="btn alt small" data-k="' + k + '">' + md(x) + "</button>"; }).join("") + '</div><div class="vc-fb"></div></div>';
+      $all(".vc-ch button", box).forEach(function (b) {
+        b.onclick = function () {
+          var pick = ch[+b.getAttribute("data-k")], ok = pick === c.choices[0], r = vrec(key), n = 0;
+          $all(".vc-ch button", box).forEach(function (x) { x.disabled = true; if (ch[+x.getAttribute("data-k")] === c.choices[0]) x.classList.add("right"); });
+          if (!ok) b.classList.add("wrong");
+          recordTopic(v.section, c, ok);
+          if (ok) { right++; r.right++; if (!S.vidQ[c.id]) { S.vidQ[c.id] = 1; n = addStars(C.stars.videoCheck, "video", c.id); got += n; r.stars += n; } } else r.wrong++;
+          save(); renderHUD();
+          box.querySelector(".vc-fb").innerHTML = (ok ? "✅ Correct!" + (n ? ' <span class="star-pop">+' + n + " ⭐</span>" : "") : "❌ The answer is: <b>" + md(c.choices[0]) + "</b>") + " " + md(c.explain || "") +
+            ' <button class="btn small vc-next">' + (i < qs.length - 1 ? "Next ▶" : "Finish") + "</button>";
+          box.querySelector(".vc-next").onclick = function () { i++; ask(); };
+        };
+      });
+    }
+    ask();
   }
   function on(id, fn) { var el = document.getElementById(id); if (el) el.onclick = fn; }
 
@@ -270,15 +332,26 @@
     $all(".act-card", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act")); }; });
     renderHero();
   }
-  /* v2: keyed video slots. A file at assets/video/<videoKey>.mp4 is picked up
-     automatically; until it exists a placeholder card shows with the caption. */
+  /* v2 video player component. Every lesson video is an entry in
+     GAME_CONTENT.videos (content/videos.js). It shows timed fact captions in
+     a lower third and a Key Facts card, then a "What did you see?" check that
+     pays stars and feeds topic and mastery stats. Without a src, the file
+     assets/video/<key>.mp4 is used if it exists. Otherwise a placeholder runs
+     the same captions as a timed fact tour. */
   function videoBlock(l) {
-    if (l.videoKey) {
-      var src = "assets/video/" + l.videoKey + ".mp4";
-      var facts = (l.videoFacts || []).map(function (f) { return "<li>" + md(f) + "</li>"; }).join("");
-      return '<div class="vslot" data-vkey="' + esc(l.videoKey) + '"><div class="video-wrap" hidden><video controls playsinline preload="metadata" data-src="' + esc(src) + '"></video></div>' +
-        '<div class="video-ph vph2"><div class="vph-ic">🎞️</div><b>' + esc(l.videoTitle || "Lesson video") + '</b><span class="vph-soon">Video coming soon</span></div>' +
-        (facts ? '<div class="video-facts"><b>🎬 ' + esc(l.videoTitle || "In this video") + ':</b> what this video teaches<ul>' + facts + "</ul></div>" : "") + "</div>";
+    var v = l.videoKey && C.videos && C.videos[l.videoKey];
+    if (v) {
+      var key = l.videoKey, src = v.src || "assets/video/" + key + ".mp4", rec = S.videos[key] || {};
+      var facts = (v.facts || []).map(function (f) { return "<li>" + md(f) + "</li>"; }).join("");
+      var left = v.check.filter(function (c) { return !S.vidQ[c.id]; }).length;
+      return '<div class="vslot" data-vkey="' + esc(key) + '">' +
+        '<div class="vstage"><video controls playsinline preload="metadata" hidden data-src="' + esc(src) + '"' + (v.poster ? ' poster="' + esc(v.poster) + '"' : "") + "></video>" +
+        '<div class="video-ph vph2"><div class="vph-ic">🎞️</div><b>' + esc(v.title) + '</b><span class="vph-soon">Video coming soon</span><button class="btn small gold vtour">▶ Play the fact tour</button></div>' +
+        '<div class="lower3" aria-live="polite"><span class="l3-n"></span><span class="l3-t"></span></div><div class="vprog"><i></i></div></div>' +
+        '<div class="video-facts"><b>🔑 Key Facts: ' + esc(v.title) + "</b><ul>" + facts + "</ul></div>" +
+        '<div class="vcheck-bar"><button class="btn small vcheck-btn">🎬 What did you see? ' + (left ? "(+" + left * C.stars.videoCheck + " ⭐)" : "(review)") + "</button>" +
+        '<span class="vcheck-hint">' + (rec.checked ? "✅ Check done " + rec.best + "/" + v.check.length : "Watch to the end to unlock the check.") + "</span></div>" +
+        '<div class="vcheck" hidden></div></div>';
     }
     if (l.video) return '<div class="video-wrap"><video controls playsinline preload="metadata" ' + (l.poster ? 'poster="' + esc(l.poster) + '"' : "") + ' src="' + esc(l.video) + '"></video></div>' + (l.videoCaption ? '<div class="video-cap">🎬 ' + esc(l.videoCaption) + "</div>" : "");
     return '<div class="video-ph"><b>🎬 Video coming soon</b>' + esc(l.videoIdea || "A short animated clip for this lesson will appear here.") + "</div>";
@@ -870,6 +943,10 @@
     L.push("HISTORY ACTIVITIES (" + Object.keys(S.acts).length + " of " + allActs().length + " tried; 3 stars = no mistakes):");
     allActs().forEach(function (x) { var r = S.acts[x.a.id]; if (r && r.plays) L.push(" - [" + x.s.title + "] " + x.a.title + ": played " + r.plays + "x, best " + r.best + "/3, last " + r.history[r.history.length - 1].mistakes + " mistakes, stars " + r.earned); });
     L.push("");
+    var vk = Object.keys(C.videos || {});
+    L.push("LESSON VIDEOS (" + vk.filter(function (k) { return S.videos[k] && S.videos[k].views; }).length + " of " + vk.length + " watched):");
+    vk.forEach(function (k) { var r = S.videos[k]; if (r && (r.views || r.checked)) L.push(" - " + C.videos[k].title + ": watched " + r.views + "x, finished " + r.ended + "x, check best " + r.best + "/" + C.videos[k].check.length + " (" + r.right + " right, " + r.wrong + " missed), stars " + r.stars); });
+    L.push("");
     L.push("MARKETPLACE PURCHASES: " + (S.purchases.length ? "" : "none yet"));
     S.purchases.forEach(function (x) { var m = marketById(x.market); L.push(" - " + x.name + " (" + x.price + " stars) at " + (m ? m.name : x.market) + ", " + fmtDate(x.at)); });
     L.push("");
@@ -891,6 +968,7 @@
       "<h3>⭐ Stars</h3><p>Balance <b>" + S.stars.balance + "</b> · earned " + S.stars.earned + " · spent " + S.stars.spent + "</p>" +
       '<table class="rep"><tr><th>Earned from</th><th>Stars</th></tr>' + Object.keys(S.stars.bySource).map(function (k) { return "<tr><td>" + esc(SRC_LABEL[k] || k) + "</td><td>" + S.stars.bySource[k] + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🎮 Activities</h3>" + '<table class="rep"><tr><th>Activity</th><th>Plays</th><th>Best</th><th>Stars</th></tr>' + allActs().map(function (x) { var r = S.acts[x.a.id] || {}; return "<tr><td>" + x.a.icon + " " + esc(x.a.title) + "</td><td>" + (r.plays || 0) + "</td><td>" + (r.best ? "⭐".repeat(r.best) : "—") + "</td><td>" + (r.earned || 0) + "</td></tr>"; }).join("") + "</table>" +
+      "<h3>🎬 Lesson Videos</h3>" + '<table class="rep"><tr><th>Video</th><th>Watched</th><th>Check best</th><th>Stars</th></tr>' + Object.keys(C.videos || {}).map(function (k) { var r = S.videos[k] || {}; return "<tr><td>" + esc(C.videos[k].title) + "</td><td>" + (r.views || 0) + "</td><td>" + (r.checked ? r.best + "/" + C.videos[k].check.length : "–") + "</td><td>" + (r.stars || 0) + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🏪 Purchases</h3>" + (S.purchases.length ? "<ul>" + S.purchases.map(function (x) { return "<li>" + esc(x.name) + " · ⭐ " + x.price + " · " + fmtDate(x.at) + "</li>"; }).join("") + "</ul>" : "<p>None yet.</p>") +
       "<h3>Weak areas</h3>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + x.s.icon + " " + esc(topicTitle(x.s, x.topic)) + ": " + x.p + "% (missed " + x.wrong + "×)</li>"; }).join("") + "</ul>" : "<p>None flagged yet.</p>") +
       '<h3>Full text report</h3><pre class="report" id="rep-text">' + esc(reportText()) + "</pre>" +

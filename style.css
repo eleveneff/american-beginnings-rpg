@@ -178,3 +178,28 @@ pre.report{white-space:pre-wrap;background:#fffdf5;border:2px solid #b08a50;bord
 .video-facts{background:#fff8e6;border:2px solid #d9b36a;border-radius:10px;padding:.55rem .8rem;font-size:.92rem}
 .video-facts ul{margin:.3rem 0 0 1.1rem;padding:0}
 .video-facts li{margin:.15rem 0}
+
+/* v2 video player component */
+.vstage{position:relative;border-radius:12px;overflow:hidden;background:#000;border:4px solid #000;margin:0 0 .5rem}
+.vstage video{display:block;width:100%;height:auto}
+.vstage .video-ph.vph2{margin:0;border:0;border-radius:0}
+.vtour{margin-top:.6rem}
+.lower3{position:absolute;left:4%;right:4%;bottom:56px;display:flex;gap:.6rem;align-items:flex-start;background:rgba(14,18,28,.86);color:#fff;border-left:5px solid #f2c14e;border-radius:6px;padding:.5rem .8rem;font-size:1.02rem;line-height:1.35;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.lower3.on{opacity:1;transform:none}
+.lower3 b{color:#ffd76a}
+.l3-n{flex:0 0 auto;font-size:.75rem;font-weight:700;background:#f2c14e;color:#2a1a0c;border-radius:4px;padding:.1rem .35rem;margin-top:.15rem}
+.no-video .lower3{bottom:16px}
+.vprog{position:absolute;left:0;right:0;bottom:0;height:5px;background:transparent}
+.vprog i{display:block;height:100%;width:0;background:#f2c14e;transition:width .1s linear}
+.vcheck-bar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:.5rem 0}
+.vcheck-btn:disabled{opacity:.5;cursor:not-allowed}
+.vcheck-hint{font-size:.85rem;opacity:.8}
+.vcheck{background:#eef6ff;border:3px solid #2f6fb5;border-radius:12px;padding:.7rem .9rem;margin:.4rem 0 1rem}
+.vc-tag{font-size:.8rem;font-weight:700;color:#2f6fb5;text-transform:uppercase;letter-spacing:.04em}
+.vc-ch{display:flex;flex-direction:column;gap:.4rem}
+.vc-ch .btn{text-align:left}
+.vc-ch .btn.right{background:#2f9e44;color:#fff}
+.vc-ch .btn.wrong{background:#c0392b;color:#fff}
+.vc-fb{margin-top:.5rem}
+@media (max-width:820px){.lower3{font-size:.9rem;bottom:48px}}
+.vstage video[hidden]{display:none}

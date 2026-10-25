@@ -7,7 +7,7 @@ A low-poly, Zelda-style learning RPG for a 7th grader. It follows McGraw Hill *U
 ## How it plays
 1. **World map.** Six lands unlock in order, then the **Grand Trial** (end-of-unit quiz).
 2. **Choose a hero** for each land: girl or boy, then a period name (or type your own). The hero lives in that era.
-3. **Scene and lesson scrolls.** Each land opens with a short story scene, then lesson scrolls. Each scroll has a video slot: Section 1 has two real generated clips, and the other scrolls show a labeled "Video coming soon" placeholder.
+3. **Scene and lesson scrolls.** Each land opens with a short story scene, then lesson scrolls. Seven scrolls have a **lesson video player** (3 in Section 1, 4 in Section 5). While a clip plays, 4–5 timed **fact captions** appear in a lower third (names, dates, places, cause and effect, why it matters). A **🔑 Key Facts** card sits below the clip. When the clip ends, a 1–2 question **"🎬 What did you see?"** check opens. If a clip file is missing, a **"▶ Play the fact tour"** placeholder runs the same captions, about 4 s each, and then the check. Two verified clips are embedded: Jamestown 1607 and the Mayflower voyage. The other five slots are placeholders until verified files arrive: Section 1's Beringia, Clovis points, and early maize, plus Section 5's Virginia struggles and New England. The earlier Section 1 clips were removed after failing accuracy review. Other scrolls show a "video idea" card.
 4. **History Activities (v2).** Every land has 3–4 hands-on activities (19 in all): put steps in order (knap a Clovis point, plant a Three Sisters garden, dip candles, run Franklin's press), drag-and-drop sorts and maps (culture regions, the three empires' claims, the 13 colonies, the Columbian Exchange), choose-your-path scenarios (sail a caravel, survive Jamestown, draft the Mayflower Compact clause by clause), and conversations with historical figures (a Maya scribe, a Haudenosaunee clan mother, Pigafetta, Champlain, Tisquantum, Ben Franklin). Cards can be dragged, or tapped and then tapped onto a bin.
 5. **Trial.** 24 of the land's questions come in random order (questions never answered right and earlier misses come first), exam-style: multiple choice, vocabulary, fill in the blank, and short answer. Every answer shows a short explanation.
 6. **Gear.** Every **5 correct answers** in a land earns new gear that appears on the hero (cloak, spear, basket, necklace, hats, and more). Mastering a land earns a **badge**, and the hero's tunic changes color.
@@ -18,6 +18,7 @@ A low-poly, Zelda-style learning RPG for a 7th grader. It follows McGraw Hill *U
 **Earning stars**
 - Each question answered correctly for the first time: **+2** (repeats earn nothing, so farming doesn't work).
 - Activities, first play: **+20** with no mistakes, **+14** with 1–2 mistakes, **+8** otherwise. A replay that beats the best score earns the difference. Other replays earn a **+2** practice bonus, at most 3 times per activity per day.
+- Video check question answered right for the first time: **+5** (a retake earns nothing). The check questions are also in that land's trial pool, so they count toward mastery.
 - Badge for mastering a land: **+30**. The Grand Trial Crown: **+50**.
 
 **Spending stars.** Tap **🏪 Market**. There is one market for each era, and each opens when its land does:
@@ -38,6 +39,7 @@ Tap **📋 Parent** (top right) to see:
 - gear and badges earned, with timestamps
 - stars: balance, earned, and spent, by source
 - every activity: plays, best rating, and stars earned
+- lesson videos: views, finishes, best check score, and stars
 - marketplace purchases
 
 **Copy report to clipboard** gives you plain text to paste into a message. **Reset all progress** asks you to confirm twice.
@@ -47,15 +49,15 @@ Progress is saved in the browser's localStorage under the key `americanBeginning
 ## Content
 | Section | Questions (v1 → v2) | Lessons | Activities |
 |---|---|---|---|
-| 1. First Peoples of the Americas | 27 → 38 | 7 (2 with video) | 3 |
+| 1. First Peoples of the Americas | 27 → 43 | 7 (3 video players) | 3 |
 | 2. Native Nations of North America | 18 → 28 | 6 | 3 |
 | 3. The Age of Exploration (incl. Columbian Exchange) | 20 → 35 | 6 | 3 |
 | 4. Spain, France, and the Netherlands | 19 → 32 | 6 | 3 |
-| 5. Jamestown and Plymouth | 19 → 36 | 7 (4 video slots) | 3 |
+| 5. Jamestown and Plymouth | 19 → 44 | 7 (4 video players) | 3 |
 | 6. The Thirteen Colonies Grow | 26 → 41 | 7 | 4 |
-| **Total** | **129 → 210** | 39 | 19 |
+| **Total** | **129 → 223** | 39 | 19 |
 
-The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effects, and multiple perspectives. Quotes are real and short (for example, the Mayflower Compact, Columbus's log, and Bradford). The unit stops before the French and Indian War.
+Counts include the 13 video-check questions (5 in Section 1, 8 in Section 5). The v2 additions (`content/v2-s*.js`) add people, dates, places, causes and effects, and multiple perspectives. Quotes are real and short (for example, the Mayflower Compact, Columbus's log, and Bradford). The unit stops before the French and Indian War.
 
 The history is written **truth first**: accurate facts and real quotes come first. It highlights the founding ideals of self-government and the rule of law: the House of Burgesses (1619), the Mayflower Compact (1620), town meetings, the Fundamental Orders (1639), and the Body of Liberties (1641). It also shows the courage, perseverance, faith, and ingenuity of explorers and settlers. Native and African perspectives and hardships are told plainly, and there is no modern political overlay. Most of this is in `content/v2b-ideals.js`, including Section 5's new Scroll 7, "Seeds of Self-Government."
 
@@ -66,7 +68,7 @@ The history is written **truth first**: accurate facts and real quotes come firs
 - Multiple-choice answers are shuffled every time.
 
 ## Editing or adding content
-Content lives in `content/`: one file per section, plus `v2-s*.js` extensions (more lessons, questions, and activities) and `market.js` (markets, shopkeepers, and items). All of these are plain JavaScript objects. The header comment in `content/00-header.js` explains the format. **Section 5 video slots:** put a file at `assets/video/<key>.mp4` and the game picks it up automatically, with no code change. Until then, a placeholder card shows. Each slot always shows a caption with the facts the video teaches. The keys are `s5-jamestown-settlers` (Scroll 2), `s5-virginia-struggles` (Scroll 3), `s5-pilgrim-voyage` (Scroll 4), and `s5-new-england` (Scroll 5); see `assets/video/README.md`. To give any other lesson a slot, set `videoKey`, `videoTitle`, and `videoFacts` on it. Section 1's two videos are fixed files (`video: "videos/name.mp4"`). Each placeholder's `videoIdea` text describes the clip to make.
+Content lives in `content/`: one file per section, plus `v2-s*.js` extensions (more lessons, questions, and activities) and `market.js` (markets, shopkeepers, and items). All of these are plain JavaScript objects. The header comment in `content/00-header.js` explains the format. **Lesson videos:** every clip is an entry in `content/videos.js`, with a title, `cues` (3–5 timed lower-third captions), `facts` (the Key Facts card), and `check` (1–2 questions, correct answer first). `videoAttach` (or `videoKey` on a lesson) ties each entry to its scroll. A new video only needs a new entry there, and it gets captions, facts, the check, stars, and report tracking automatically. To embed a clip, put the file at `assets/video/<key>.mp4`; the game picks it up with no code change. The keys are `s1-beringia`, `s1-clovis-points`, `s1-early-maize`, `s5-jamestown-settlers`, `s5-virginia-struggles`, `s5-pilgrim-voyage`, and `s5-new-england`; see `assets/video/README.md`. Each placeholder's `videoIdea` text describes the clip to make.
 
 ## Tech
 Plain static HTML/CSS/JS with no build step. The 3D low-poly background uses Three.js from a CDN; if it can't load, a gradient sky is shown and the game still works. The hero (`hero.js`) is a layered SVG figure: girl or boy, with every item drawn at full scale and fitted to its body slot (head, cloak, neck, body, back, belt, both hands, feet). `tests/hero-gallery.html` previews gear sets. Version marker: bottom-right corner (`v2.0`). Test: `tests/smoke-test.js`.

@@ -33,7 +33,8 @@ window.GAME_CONTENT = {
   passPercent: 80,
   correctPerGear: 5,
   trialSize: 24,            /* v2: questions per trial (missed/unseen served first) */
-  stars: { perQuestion: 2, badge: 30, crown: 50, actPerfect: 20, actGood: 14, actDone: 8, practice: 2, practicePerDay: 3 },
+  stars: { perQuestion: 2, badge: 30, crown: 50, actPerfect: 20, actGood: 14, actDone: 8, practice: 2, practicePerDay: 3, videoCheck: 5 },
+  videoTourSeconds: 4,       /* placeholder fact tour: seconds per caption */
   sections: [],
   final: {
     title: "The Grand Trial: End-of-Unit Quiz",

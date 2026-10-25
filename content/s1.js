@@ -9,7 +9,7 @@ GAME_CONTENT.sections.push({
     "You are {name}, the youngest member of a small band of hunters and gatherers. Your family has followed the herds for many seasons across this land that links two great continents. Tonight the elders gather by the fire. \"Watch, listen, and learn,\" your grandmother says. \"The land will test what you know.\""
   ],
   lessons: [
-    { topic: "beringia", title: "Scroll 1: The Land Bridge", video: "videos/beringia.mp4", poster: "videos/beringia.jpg",
+    { topic: "beringia", title: "Scroll 1: The Land Bridge",
       videoCaption: "Ice Age hunters cross Beringia as mammoths graze near the glaciers.",
       text: [
         "During the last **Ice Age**, huge sheets of ice called **glaciers** covered much of the northern world. They held so much of Earth's water that sea levels dropped by hundreds of feet.",
@@ -25,14 +25,14 @@ GAME_CONTENT.sections.push({
         "We learn about them from **archaeologists**, scientists who study the past by examining **artifacts**: objects people made, such as tools, pottery, and beads.",
         "At **Monte Verde in Chile**, archaeologists found a camp more than 14,000 years old. It shows that people had reached far into South America very early."
       ] },
-    { topic: "clovis", title: "Scroll 3: Clovis Points — Ice Age Science", video: "videos/clovis-maize.mp4", poster: "videos/clovis-maize.jpg",
+    { topic: "clovis", title: "Scroll 3: Clovis Points — Ice Age Science",
       videoCaption: "A toolmaker shapes a stone point, then early farmers tend fields of maize, beans, and squash.",
       text: [
         "Around 13,000 years ago, skilled toolmakers chipped stone into sharp, leaf-shaped spear points with a groove (a \"flute\") at the base. The groove helped attach the point to a wooden spear shaft.",
         "These are called **Clovis points**, named after **Clovis, New Mexico**, where they were first found in the 1930s. Clovis points have since been found across much of North America.",
         "Making one took real skill: crafters struck the stone with harder stones and pressed off tiny flakes with bone or antler tools. It was science and art at the same time!"
       ] },
-    { topic: "agriculture", title: "Scroll 4: The Gift of Farming", video: "videos/clovis-maize.mp4", poster: "videos/clovis-maize.jpg",
+    { topic: "agriculture", title: "Scroll 4: The Gift of Farming",
       videoCaption: "(Same clip as Scroll 3: watch for the maize fields at the end.)",
       text: [
         "As the Ice Age ended, the climate warmed and many giant animals died out. People began to plant seeds and raise crops. This is called **agriculture** (farming).",

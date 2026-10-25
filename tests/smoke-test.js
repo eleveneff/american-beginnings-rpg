@@ -65,7 +65,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
         const done = await p.$$eval('.seq-done li', l => l.length);
         if (done >= a.steps.length) { await sleep(300); continue; }
         const want = a.steps[done].t;
-        await p.evaluate((want, wrong) => { const cs = [...document.querySelectorAll('.seq-card')]; const c = wrong ? cs.find(x => x.textContent !== want) : cs.find(x => x.textContent === want); c.click(); }, want, miss > 0);
+        const hit = await p.evaluate((want, wrong) => { const cs = [...document.querySelectorAll('.seq-card')]; const c = wrong ? cs.find(x => x.textContent !== want) : cs.find(x => x.textContent === want); if (!c) return cs.map(x => x.textContent).join(' | '); c.click(); return ''; }, want, miss > 0);
+        if (hit) { console.log('  seq retry, want "' + want + '" cards: ' + hit); await sleep(300); continue; }
         if (miss > 0) miss--; await sleep(30); continue;
       }
       if (info.drag) {
@@ -231,26 +232,53 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   for (const m of ['m2', 'm3', 'm4', 'm5']) { await click('#btn-market'); await click('.mk-tab[data-mid="' + m + '"]'); await sleep(150); await p.screenshot({ path: SHOTS + 'mk-' + m + '.png', fullPage: true }); }
   assert(!(await p.$eval('.mk-tab[data-mid="m5"]', e => e.classList.contains('locked'))), 'all markets open when all lands mastered');
 
-  /* Section 5 keyed video slots: a real file plays, a missing one shows the placeholder */
-  const keys = ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england'];
-  const s5idx = await p.evaluate(() => { const o = {}; window.GAME_CONTENT.sections.find(x => x.id === 's5').lessons.forEach((l, i) => { if (l.videoKey) o[l.videoKey] = i; }); return o; });
-  assert(keys.every(k => k in s5idx), 'all 4 Section 5 video slots exist');
-  for (const k of keys) {
-    const exists = await p.evaluate(async k => (await fetch('assets/video/' + k + '.mp4', { method: 'HEAD', cache: 'no-store' })).ok, k);
-    await p.evaluate(i => ABRPG.lesson('s5', i), s5idx[k]); await sleep(900);
-    const r = await p.evaluate(() => { const s = document.querySelector('.vslot'); return { key: s && s.dataset.vkey, facts: s ? s.querySelectorAll('.video-facts li').length : 0, video: s && !s.querySelector('.video-wrap').hidden, ph: s && !!s.querySelector('.video-ph') && !s.querySelector('.video-ph').hidden }; });
-    assert(r.key === k && r.facts >= 4 && (exists ? r.video && !r.ph : r.ph && !r.video), 'video slot ' + k + (exists ? ' plays file' : ' shows placeholder') + ' (' + r.facts + ' facts)');
-    await p.screenshot({ path: SHOTS + 'v-' + k + '.png', fullPage: true });
+  /* video player component: every video slot shows timed lower-third captions, a Key Facts card,
+     and a "What did you see?" check that pays stars once per question. A real file plays, and a missing
+     file falls back to a placeholder fact tour. */
+  await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
+  const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
+  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's5-jamestown-settlers': 1, 's5-pilgrim-voyage': 1 }; assert(true, 'only the 2 verified clips are embedded');
+  for (const v of vids) {
+    const before = (await st()).stars.balance;
+    await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);
+    const m = await p.evaluate(() => { const s = document.querySelector('.vslot'); return { real: s.classList.contains('has-video'), facts: s.querySelectorAll('.video-facts li').length, locked: s.querySelector('.vcheck-btn').disabled }; });
+    let capSeen = '';
+    if (m.real) {
+      capSeen = await p.evaluate(async () => { const vd = document.querySelector('.vslot video'); vd.muted = true; vd.currentTime = vd.duration * 0.55; await new Promise(r => setTimeout(r, 400)); vd.dispatchEvent(new Event('timeupdate')); const t = document.querySelector('.lower3.on .l3-t'); const c = t ? t.textContent : ''; vd.currentTime = Math.max(0, vd.duration - 0.4); await vd.play().catch(() => {}); return c; });
+      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
+    } else {
+      await click('.vtour'); await sleep(400);
+      capSeen = await p.evaluate(() => { const t = document.querySelector('.lower3.on .l3-t'); return t ? t.textContent : ''; });
+      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
+    }
+    if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });
+    for (let q = 0; q < v.nq; q++) {
+      await p.evaluate(key => { const c = window.GAME_CONTENT.videos[key].check; const qt = document.querySelector('.vc-q b').textContent; const qq = c.find(x => x.q.replace(/\*/g, '') === qt) || c[0]; [...document.querySelectorAll('.vc-ch button')].find(b => b.textContent === qq.choices[0].replace(/\*/g, '')).click(); }, v.key);
+      await sleep(80); await click('.vc-next');
+    }
+    if (v.key === 's1-beringia') await p.screenshot({ path: SHOTS + 'v-check-done.png', fullPage: true });
+    const after = await st();
+    assert(m.real === !!realWant[v.key] && m.locked && m.facts >= 3 && capSeen.length > 10 && after.stars.balance - before === 5 * v.nq && after.videos[v.key].best === v.nq,
+      'video ' + v.key + (m.real ? ' (real file)' : ' (placeholder tour)') + ': caption "' + capSeen.slice(0, 40) + '...", ' + m.facts + ' facts, check +' + (after.stars.balance - before) + '⭐');
   }
+  /* retaking a check pays nothing */
+  const b0 = (await st()).stars.balance;
+  await p.evaluate(() => ABRPG.lesson('s5', 1)); await sleep(800); await click('.vcheck-btn');
+  await p.evaluate(() => { const c = window.GAME_CONTENT.videos['s5-jamestown-settlers'].check; const qt = document.querySelector('.vc-q b').textContent; const qq = c.find(x => x.q === qt); [...document.querySelectorAll('.vc-ch button')].find(b => b.textContent === qq.choices[0]).click(); });
+  await sleep(80);
+  const vs = await st();
+  assert(vs.stars.balance === b0 && vs.stars.bySource.video === 5 * 13, 'a video check retake pays no stars; 65 video stars in total');
+  const vq = await p.evaluate(() => window.GAME_CONTENT.sections.find(s => s.id === 's5').questions.filter(q => q.fromVideo).length);
+  assert(vq === 8, 'video check questions are also in the Section 5 trial pool (' + vq + ')');
+  await p.evaluate(() => ABRPG.home());
 
   /* final */
   await click('#btn-home'); await click('.node[data-sid="final"]'); await click('#b-go');
   for (let i = 0; i < 24; i++) await answer(true);
   await p.screenshot({ path: SHOTS + '11-final.png' });
   s = await st(); assert(s.final.passed && s.stars.bySource.crown === 50, 'final passed, crown bonus 50');
-  const vid = await p.evaluate(async () => (await fetch('videos/beringia.mp4', { method: 'HEAD' })).status);
-  console.log('video status', vid);
   assert(errs.length === 0, 'no page errors ' + JSON.stringify(errs));
+  await click('#btn-report'); await sleep(600); const rp = await p.evaluate(() => document.body.innerText + (document.querySelector('#rep-text') || {}).textContent); assert(/lesson videos/i.test(rp), 'Parent Report lists lesson videos');
   console.log('ALL PASSED');
   await b.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

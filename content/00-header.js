@@ -30,7 +30,9 @@ window.GAME_CONTENT = {
   subtitle: "A Quest Through Unit 1: First Americans to the English Colonies",
   girlNames: ["Eleanor", "Abigail", "Hope", "Mercy", "Prudence", "Aurora"],
   boyNames: ["Nathaniel", "Josiah", "Isaac", "Benjamin", "Drake"],
-  passPercent: 80,
+  passPercent: 95,          /* mastery mark for every section trial and the Grand Trial; the number of
+                               right answers needed is ceil(passPercent% of the questions), e.g. 23 of 24 */
+  legacyPassPercent: 80,    /* lands mastered before v2.0 used this mark; those passes are kept */
   correctPerGear: 5,
   trialSize: 24,            /* v2: questions per trial (missed/unseen served first) */
   stars: { perQuestion: 2, badge: 30, crown: 50, actPerfect: 20, actGood: 14, actDone: 8, practice: 2, practicePerDay: 3, videoCheck: 5 },

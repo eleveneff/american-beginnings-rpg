@@ -31,6 +31,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   assert(s.equip.cloak === 'fur-cloak' && s.equip.head === 'feather-band', 'migrated gear is worn');
   assert(s.stars.balance === 60 + 60 && s.stars.bySource.carried === 120, 'retro stars = totalCorrect + 30/badge (120)');
   assert(s.badges.length === 2 && s.migratedFrom === 1, 'badges kept, migratedFrom set');
+  assert(s.sections.s2.completed && s.sections.s2.passMark === 80 && s.sections.s1.passMark === 80 && !s.sections.s3.passMark, 'lands passed at the old 80% mark keep their pass (s2 at 85%), tagged passMark 80');
+  assert(await p.evaluate(() => GAME_CONTENT.passPercent === 95 && [24, 20, 10, 40, 23].map(ABRPG.passNeed).join() === '23,19,10,38,22'), 'pass mark 95% computed from the percentage: 24->23, 20->19, 10->10, 40->38, 23->22');
   await p.screenshot({ path: SHOTS + 'm-migrated-map.png' });
   await go(); s = await st();
   assert(s.stars.balance === 120, 'no double retro stars after second load');
@@ -128,9 +130,9 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     if (await p.$('#modal:not(.hidden) #b-ok')) { gearN++; if (gearN === 1) await p.screenshot({ path: SHOTS + '5-gear.png' }); await click('#b-ok'); }
   }
   const balT = (await st()).stars.balance;
-  let missLeft = 2;
+  let missLeft = 1;   /* 23 of 24 = 95.8%: exactly the pass mark (95% -> 23 of 24) */
   for (let i = 0; i < 24; i++) await answer(!(missLeft > 0 && i % 5 === 2 && missLeft--));
-  s = await st(); assert(s.stars.balance - balT === 44, '22 first-time correct answers = 44 stars');
+  s = await st(); assert(s.stars.balance - balT === 46, '23 first-time correct answers = 46 stars');
   await p.screenshot({ path: SHOTS + '6-results.png' });
   await click('#b-rev');
   while (await p.$('#b-ready')) { await click('#b-ready'); await answer(true); await sleep(60); }
@@ -208,14 +210,15 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await go(); s = await st();
   assert(s.sections.s1.completed && s.owned.includes(cheap.key) && s.purchases.length === 1 && Object.keys(s.acts).length === 6, 'progress, purchases, activities persist after reload');
 
-  /* under-80% path in s2: miss 6 of 24 (75%) -> must retake */
+  /* under-95% path in s2: miss 2 of 24 (22/24 = 91.7%, a pass under the old 80% mark) -> must review, then retake */
   await click('.node[data-sid="s2"]'); if (await p.$('#pn button')) { await click('#pn button'); await click('#b-go'); }
   if (await p.$('#b-resume')) await click('#b-resume');
   await click('#b-t'); if (await p.$('#b-trial')) await click('#b-trial');
-  for (let i = 0; i < 24; i++) await answer(i >= 6);
+  for (let i = 0; i < 24; i++) await answer(i >= 2);
+  assert(/95% \(23 of 24/.test(await p.$eval('#screen', e => e.textContent)), 'results screen says 95% (23 of 24)');
   await click('#b-rev');
   while (await p.$('#b-ready')) { await click('#b-ready'); await answer(true); await sleep(50); }
-  assert(!!(await p.$('#b-again')) && !(await st()).sections.s2.completed, 'under 80% -> review then retake, s2 stays locked-in');
+  assert(!!(await p.$('#b-again')) && !(await st()).sections.s2.completed, '22/24 (91.7%) is under 95% -> review then retake, s2 not mastered');
   await click('#b-map');
 
   /* every activity in every section solves */
@@ -244,11 +247,25 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     const m = await p.evaluate(() => { const s = document.querySelector('.vslot'); return { real: s.classList.contains('has-video'), facts: s.querySelectorAll('.video-facts li').length, locked: s.querySelector('.vcheck-btn').disabled }; });
     let capSeen = '';
     if (m.real) {
-      capSeen = await p.evaluate(async () => { const vd = document.querySelector('.vslot video'); vd.muted = true; vd.currentTime = vd.duration * 0.55; await new Promise(r => setTimeout(r, 400)); vd.dispatchEvent(new Event('timeupdate')); const t = document.querySelector('.lower3.on .l3-t'); const c = t ? t.textContent : ''; vd.currentTime = 0; await vd.play().catch(() => {}); await new Promise(r => setTimeout(r, 900)); const t2 = document.querySelector('.lower3.on .l3-t'); return t2 ? t2.textContent : c; });
-      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 30000 });
+      /* narrated clip: the "Play with sound" button starts it unmuted from the click, the audio really
+         decodes, every caption is on screen at its cueTimes, then jump near the end to open the check */
+      assert(await p.$eval('.vslot .vplay', e => !e.hidden), 'video ' + v.key + ': "Play with sound" button shown');
+      await p.click('.vslot .vplay'); await sleep(1800); // a real mouse click, so Chrome allows sound
+      const snd = await p.evaluate(key => { const vd = document.querySelector('.vslot video'); return { playing: !vd.paused, muted: vd.muted, bytes: vd.webkitAudioDecodedByteCount || 0, dur: vd.duration, sound: !document.querySelector('.vslot .vsound').hidden }; }, v.key);
+      const sync = await p.evaluate(async key => { const V = window.GAME_CONTENT.videos[key], vd = document.querySelector('.vslot video'), bad = []; vd.pause();
+        for (let k = 0; k < V.cueTimes.length; k++) { vd.currentTime = V.cueTimes[k] + 0.6; await new Promise(r => vd.addEventListener('seeked', r, { once: true })); vd.dispatchEvent(new Event('timeupdate')); const t = document.querySelector('.lower3.on .l3-t'); const want = V.cues[k].replace(/\*/g, ''); if (!t || t.textContent !== want) bad.push(k); }
+        const t = document.querySelector('.lower3.on .l3-t'); const c = t ? t.textContent : '';
+        vd.currentTime = vd.duration - 1.2; await new Promise(r => vd.addEventListener('seeked', r, { once: true })); await vd.play().catch(() => {}); return { bad, c, last: V.cueTimes[V.cueTimes.length - 1] }; }, v.key);
+      capSeen = sync.c;
+      assert(snd.playing && !snd.muted && snd.bytes > 0 && !snd.sound && sync.bad.length === 0 && snd.dur > sync.last + 3,
+        'video ' + v.key + ': plays unmuted with sound (' + snd.bytes + ' audio bytes decoded), ' + snd.dur.toFixed(1) + ' s, captions in sync at every cueTime' + (sync.bad.length ? ' BAD ' + sync.bad : ''));
+      await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     } else {
-      await click('.vtour'); await sleep(400);
-      capSeen = await p.evaluate(() => { const t = document.querySelector('.lower3.on .l3-t'); return t ? t.textContent : ''; });
+      await p.click('.vtour'); await sleep(1500);
+      const tour = await p.evaluate(async key => { const V = window.GAME_CONTENT.videos[key], au = document.querySelector('.vslot audio'); const t = document.querySelector('.lower3.on .l3-t'); const r = { c: t ? t.textContent : '', audio: !!V.audio, playing: !!au && !au.paused && au.currentTime > 0.3, muted: !!au && au.muted };
+        if (au) { au.currentTime = Math.max(0, au.duration - 0.8); } return r; }, v.key);
+      capSeen = tour.c;
+      if (tour.audio) assert(tour.playing && !tour.muted, 'video ' + v.key + ': narrated fact tour plays its narration track');
       await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     }
     if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage' || v.key === 's5-jamestown-settlers') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });

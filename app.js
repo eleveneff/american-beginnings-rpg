@@ -15,6 +15,10 @@
   function now() { return new Date().toISOString(); }
   function fmtDate(iso) { if (!iso) return "—"; try { return new Date(iso).toLocaleString(); } catch (e) { return iso; } }
   function pct(r, t) { return t ? Math.round((r / t) * 100) : 0; }
+  /* Pass mark: right answers needed out of n, computed from the percentage (95% of 24 -> 23). Counting
+     answers avoids rounding: 22/24 = 91.7% never rounds up to a pass. */
+  function passNeed(n) { return Math.ceil((n * C.passPercent) / 100 - 1e-9); }
+  function passes(right, n) { return n > 0 && right >= passNeed(n); }
   function sectionById(id) { for (var i = 0; i < C.sections.length; i++) if (C.sections[i].id === id) return C.sections[i]; return null; }
   function qById(id) { for (var i = 0; i < C.sections.length; i++) { var qs = C.sections[i].questions; for (var j = 0; j < qs.length; j++) if (qs[j].id === id) return { q: qs[j], s: C.sections[i] }; } return null; }
   function lessonFor(s, topic) { for (var i = 0; i < s.lessons.length; i++) if (s.lessons[i].topic === topic) return s.lessons[i]; return s.lessons[0]; }
@@ -97,6 +101,9 @@
       var retro = (d.totalCorrect || 0) + 30 * d.badges.filter(function (x) { return x.section !== "final"; }).length + (d.final.passed ? 50 : 0);
       if (retro > 0) { d.stars.balance += retro; d.stars.earned += retro; d.stars.bySource.carried = (d.stars.bySource.carried || 0) + retro; d.starLog.push({ at: now(), n: retro, src: "carried", note: "Stars for progress made before v2" }); d.migratedFrom = 1; d.migratedAt = now(); }
     }
+    /* Lands (and a crown) won under the old 80% mark keep their pass; the report notes the mark used. */
+    Object.keys(d.sections || {}).forEach(function (id) { var x = d.sections[id]; if (x && x.completed && !x.passMark) x.passMark = C.legacyPassPercent || 80; });
+    if (d.final.passed && !d.final.passMark) d.final.passMark = C.legacyPassPercent || 80;
     if (d.stars.balance < 0) d.stars.balance = 0;
     d.version = Math.max(2, d.version); return d;
   }
@@ -193,7 +200,15 @@
         var r = vrec(key); r.ended++; r.captions = Math.max(r.captions, maxCue + 1); r.lastAt = now(); save();
         cue(-1); cbtn.disabled = false; slot.querySelector(".vcheck-hint").textContent = "Answer to earn stars!"; openCheck(slot, key);
       }
-      vid.addEventListener("loadedmetadata", function () { vid.hidden = false; ph.hidden = true; slot.classList.add("has-video"); });
+      var vplay = slot.querySelector(".vplay"), vsound = slot.querySelector(".vsound");
+      vid.addEventListener("loadedmetadata", function () { vid.hidden = false; ph.hidden = true; slot.classList.add("has-video"); if (vid.paused) vplay.hidden = false; });
+      /* Sound on: playback starts from the child's click, unmuted, so the narration plays. If the
+         video is ever playing muted, a "Tap for sound" button appears. */
+      function soundUi() { vsound.hidden = vid.paused || !(vid.muted || vid.volume === 0); }
+      vplay.onclick = function () { vid.muted = false; if (vid.volume === 0) vid.volume = 1; if (vid.ended) vid.currentTime = 0; vplay.hidden = true; vid.play().catch(function () { vplay.hidden = false; }); };
+      vsound.onclick = function () { vid.muted = false; if (vid.volume === 0) vid.volume = 1; soundUi(); };
+      vid.addEventListener("play", function () { vplay.hidden = true; soundUi(); });
+      vid.addEventListener("pause", soundUi); vid.addEventListener("volumechange", soundUi);
       vid.addEventListener("error", function () { slot.classList.add("no-video"); });
       vid.addEventListener("play", started);
       /* Captions run on play time, at least videoTourSeconds each, so they stay readable. A short clip
@@ -209,19 +224,37 @@
       });
       vid.addEventListener("ended", function () {
         if (!v.cueTimes && played + 0.3 < per() * n) { vid.currentTime = 0; lastT = 0; vid.play().catch(function () {}); return; }
-        prog.style.width = "0"; ended();
+        prog.style.width = "0"; vplay.textContent = "🔁 Watch again with sound 🔊"; vplay.hidden = false; soundUi(); ended();
       });
       vid.src = vid.getAttribute("data-src");
       var tb = slot.querySelector(".vtour");
+      var au = slot.querySelector("audio");
+      if (au) au.src = au.getAttribute("data-src");
+      function tourDone() { prog.style.width = "0"; tb.hidden = false; tb.textContent = "🔁 Replay the " + (au ? "narrated " : "") + "fact tour"; ended(); }
+      /* Narrated tour: the voiceover is the clock, and each caption shows while its sentence is spoken. */
+      function audioTour() {
+        var ci = -1; au.currentTime = 0; au.muted = false; cue(0);
+        var T = setInterval(function () {
+          var t = au.currentTime, k = 0; v.cueTimes.forEach(function (s, j) { if (t >= s) k = j; }); if (k !== ci) { ci = k; cue(k); }
+          prog.style.width = Math.min(100, t / (au.duration || 1) * 100) + "%";
+          if (au.ended) { clearInterval(T); tourDone(); }
+        }, 100);
+        vidTimers.push(T);
+        return au.play().catch(function () { clearInterval(T); timerTour(); });
+      }
       tb.onclick = function () {
-        started(); tb.hidden = true; var i = 0, per = (C.videoTourSeconds || 4) * 1000, t0 = Date.now(); cue(0);
+        started(); tb.hidden = true;
+        if (au && v.cueTimes && !au.error && au.readyState > 0) audioTour(); else timerTour();
+      };
+      function timerTour() {
+        var i = 0, per = (C.videoTourSeconds || 4) * 1000, t0 = Date.now(); cue(0);
         var T = setInterval(function () {
           var f = (Date.now() - t0) / (per * n); prog.style.width = Math.min(100, f * 100) + "%";
           var k = Math.floor(f * n); if (k !== i && k < n) { i = k; cue(k); }
-          if (f >= 1) { clearInterval(T); prog.style.width = "0"; tb.hidden = false; tb.textContent = "🔁 Replay the fact tour"; ended(); }
+          if (f >= 1) { clearInterval(T); tourDone(); }
         }, 100);
         vidTimers.push(T);
-      };
+      }
       cbtn.onclick = function () { openCheck(slot, key); };
     });
   }
@@ -359,7 +392,9 @@
       var left = v.check.filter(function (c) { return !S.vidQ[c.id]; }).length;
       return '<div class="vslot" data-vkey="' + esc(key) + '">' +
         '<div class="vstage"><video controls playsinline preload="metadata" hidden data-src="' + esc(src) + '"' + (v.poster ? ' poster="' + esc(v.poster) + '"' : "") + "></video>" +
-        '<div class="video-ph vph2"><div class="vph-ic">🎞️</div><b>' + esc(v.title) + '</b><span class="vph-soon">Video coming soon</span><button class="btn small gold vtour">▶ Play the fact tour</button></div>' +
+        '<button class="vplay" hidden aria-label="Play the video with sound">▶ Play with sound 🔊</button><button class="vsound" hidden>🔇 Tap for sound</button>' +
+        (v.audio ? '<audio preload="metadata" data-src="' + esc(v.audio) + '"></audio>' : "") +
+        '<div class="video-ph vph2"><div class="vph-ic">🎞️</div><b>' + esc(v.title) + '</b><span class="vph-soon">' + (v.audio ? "Narrated fact tour · turn your sound on 🔊" : "Video coming soon") + '</span><button class="btn small gold vtour">▶ Play the ' + (v.audio ? "narrated " : "") + 'fact tour</button></div>' +
         '<div class="lower3" aria-live="polite"><span class="l3-n"></span><span class="l3-t"></span></div><div class="vprog"><i></i></div></div>' +
         '<div class="video-facts"><b>🔑 Key Facts: ' + esc(v.title) + "</b><ul>" + facts + "</ul></div>" +
         '<div class="vcheck-bar"><button class="btn small vcheck-btn">🎬 What did you see? ' + (left ? "(+" + left * C.stars.videoCheck + " ⭐)" : "(review)") + "</button>" +
@@ -486,11 +521,11 @@
     st.history.push({ at: now(), right: r.right, total: r.order.length, pct: p });
     st.bestPct = Math.max(st.bestPct, p); st.lastPct = p;
     r.firstPct = p; save();
-    var pass = p >= C.passPercent;
-    var h = '<div class="panel"><h2>⚔️ Trial complete!</h2><p>First-try score: <b>' + r.right + " / " + r.order.length + " (" + p + "%)</b>. You need " + C.passPercent + "% to master this land.</p>";
+    var pass = passes(r.right, r.order.length), need = passNeed(r.order.length);
+    var h = '<div class="panel"><h2>⚔️ Trial complete!</h2><p>First-try score: <b>' + r.right + " / " + r.order.length + " (" + p + "%)</b>. You need " + C.passPercent + "% (" + need + " of " + r.order.length + " right on the first try) to master this land.</p>";
     if (r.queue.length) {
       h += "<p>You missed <b>" + r.queue.length + "</b> question" + (r.queue.length > 1 ? "s" : "") + ". Next comes <b>Review</b>: for each one you will re-read the right scroll, then answer again until every miss is cleared.</p>";
-      h += pass ? "<p>🌟 Your score is high enough! Clear the review to master the land.</p>" : "<p>Your score is under " + C.passPercent + "%. Clear the review for practice, then you'll take the Trial again.</p>";
+      h += pass ? "<p>🌟 Your score is high enough! Clear the review to master the land.</p>" : "<p>Your score is under " + C.passPercent + "% (" + need + " of " + r.order.length + "). Clear the review for practice, then you'll take the Trial again.</p>";
       h += '<button class="btn" id="b-rev">📜 Start Review</button>';
       r.phase = "review"; save();
     } else {
@@ -519,9 +554,9 @@
   }
   function finishCheck() {
     var r = S.run, s = sectionById(r.sid), st = sec(r.sid);
-    if (r.firstPct >= C.passPercent) {
+    if (passes(r.right, r.order.length)) {
       var first = !st.completed;
-      st.completed = true; if (!st.completedAt) st.completedAt = now();
+      st.completed = true; if (first) st.passMark = C.passPercent; if (!st.completedAt) st.completedAt = now();
       if (first) { S.badges.push({ name: s.badge.name, icon: s.badge.icon, tunic: s.badge.tunic, section: s.id, at: now() }); addStars(C.stars.badge, "badge", s.id); }
       S.run = null; save(); renderHero();
       var idx = C.sections.indexOf(s), nxt = C.sections[idx + 1];
@@ -531,7 +566,7 @@
       on("b-map", home); on("b-nx", function () { enterSection(nxt.id); });
     } else {
       S.run = { sid: r.sid, phase: "lessons" }; save(); renderHero();
-      show('<div class="panel"><h2>Review cleared! 💪</h2><p>Great work fixing every miss. Your first-try score was <b>' + r.firstPct + "%</b>, and mastery needs <b>" + C.passPercent + "%</b>. Re-read the scrolls if you like, then take the Trial again. Your gear stays with you!</p>" +
+      show('<div class="panel"><h2>Review cleared! 💪</h2><p>Great work fixing every miss. Your first-try score was <b>' + r.firstPct + "%</b>, and mastery needs <b>" + C.passPercent + "%</b> (" + passNeed(r.order.length) + " of " + r.order.length + " right on the first try). Re-read the scrolls if you like, then take the Trial again. Your gear stays with you!</p>" +
         '<button class="btn" id="b-again">⚔️ Retake the Trial</button><button class="btn alt" id="b-l">📜 Re-read scrolls</button><button class="btn gold" id="b-map">🗺️ Map</button></div>');
       on("b-again", function () { startTrial(r.sid); }); on("b-l", function () { lesson(r.sid, 0, false); }); on("b-map", home);
     }
@@ -542,7 +577,7 @@
     setWorld({ sky: "#ffd27a", sky2: "#9fd8ff", ground: "#8bd16a", ground2: "#3f8a4a", accent: "#d4a017", snow: false, water: true });
     var p = currentPlayer(), h = '<div class="scene"><div class="who">' + C.final.icon + " " + esc(C.final.title) + "</div>";
     C.final.scene.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
-    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * C.sections.length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better to win the <b>" + esc(C.final.badge.name) + "</b>.</p><button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
+    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * C.sections.length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better (" + passNeed(C.final.questionsPerSection * C.sections.length) + " right) to win the <b>" + esc(C.final.badge.name) + "</b>.</p><button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
     show(h); on("b-go", startFinal); on("b-map", home); renderHero();
   }
   function startFinal() {
@@ -562,13 +597,13 @@
     });
   }
   function finalResults() {
-    var r = S.run, p = pct(r.right, r.order.length), pass = p >= C.passPercent, first = pass && !S.final.passed;
+    var r = S.run, p = pct(r.right, r.order.length), pass = passes(r.right, r.order.length), first = pass && !S.final.passed;
     S.final.history.push({ at: now(), right: r.right, total: r.order.length, pct: p });
     S.final.bestPct = Math.max(S.final.bestPct, p);
-    if (pass) { S.final.passed = true; if (!S.final.passedAt) S.final.passedAt = now(); }
+    if (pass) { if (!S.final.passed) S.final.passMark = C.passPercent; S.final.passed = true; if (!S.final.passedAt) S.final.passedAt = now(); }
     if (first) { S.badges.push({ name: C.final.badge.name, icon: C.final.badge.icon, tunic: C.final.badge.tunic, section: "final", at: now() }); addStars(C.stars.crown, "crown", "final"); }
     var missed = r.missed; S.run = null; save(); renderHero();
-    var h = '<div class="panel big-reward">' + (pass ? '<div class="ic">' + C.final.badge.icon + "</div><h1>You passed the Grand Trial!</h1><p>" + esc(C.final.badge.desc) + "</p>" + (first ? "<p class=\"star-pop\">+" + C.stars.crown + " ⭐ crown bonus!</p>" : "") : "<h1>So close!</h1><p>You need " + C.passPercent + "% to win the crown. Review the topics below and try again.</p>") +
+    var h = '<div class="panel big-reward">' + (pass ? '<div class="ic">' + C.final.badge.icon + "</div><h1>You passed the Grand Trial!</h1><p>" + esc(C.final.badge.desc) + "</p>" + (first ? "<p class=\"star-pop\">+" + C.stars.crown + " ⭐ crown bonus!</p>" : "") : "<h1>So close!</h1><p>You need " + C.passPercent + "% (" + passNeed(r.order.length) + " of " + r.order.length + " right) to win the crown. Review the topics below and try again.</p>") +
       "<p>Score: <b>" + r.right + " / " + r.order.length + " (" + p + "%)</b></p></div>";
     if (missed.length) {
       h += '<div class="panel"><h2>Questions to review</h2>';
@@ -931,17 +966,17 @@
     L.push("Hero names used: " + (Object.keys(S.players).map(function (k) { return S.players[k].name; }).join(", ") || p.name));
     L.push("Overall: " + S.totalCorrect + "/" + S.totalAnswered + " answers correct (" + pct(S.totalCorrect, S.totalAnswered) + "%), including review and Grand Trial answers.");
     L.push("");
-    L.push("SECTIONS (mastery = " + C.passPercent + "% first-try trial score + all misses cleared)");
+    L.push("SECTIONS (mastery = " + C.passPercent + "% first-try trial score, e.g. " + passNeed(24) + " of 24, + all misses cleared)");
     C.sections.forEach(function (s, i) {
       var st = S.sections[s.id];
       if (!st || !st.attempts) { L.push((i + 1) + ". " + s.title + ": " + (isUnlocked(i) ? "not started" : "locked")); return; }
       var hist = st.history.map(function (h) { return h.pct + "%"; }).join(" → ");
-      L.push((i + 1) + ". " + s.title + ": " + (st.completed ? "MASTERED " + fmtDate(st.completedAt) : "in progress") + " | trial attempts: " + st.attempts + " | first-try scores: " + (hist || "—") + " | best: " + st.bestPct + "% | gear: " + st.gearEarned + "/" + s.gear.length);
+      L.push((i + 1) + ". " + s.title + ": " + (st.completed ? "MASTERED " + fmtDate(st.completedAt) + (st.passMark && st.passMark < C.passPercent ? " (at the earlier " + st.passMark + "% mark)" : "") : "in progress") + " | trial attempts: " + st.attempts + " | first-try scores: " + (hist || "—") + " | best: " + st.bestPct + "% | gear: " + st.gearEarned + "/" + s.gear.length);
       var tl = Object.keys(st.topics).map(function (t) { var x = st.topics[t]; return "   - " + topicTitle(s, t) + ": " + x.right + " right, " + x.wrong + " missed (" + pct(x.right, x.right + x.wrong) + "%)"; });
       L.push.apply(L, tl);
     });
     L.push("");
-    L.push("GRAND TRIAL (end-of-unit quiz): " + (S.final.passed ? "PASSED " + fmtDate(S.final.passedAt) : (allDone() ? "unlocked" : "locked")) + " | attempts: " + S.final.attempts + (S.final.history.length ? " | scores: " + S.final.history.map(function (h) { return h.pct + "%"; }).join(" → ") : ""));
+    L.push("GRAND TRIAL (end-of-unit quiz): " + (S.final.passed ? "PASSED " + fmtDate(S.final.passedAt) + (S.final.passMark && S.final.passMark < C.passPercent ? " (at the earlier " + S.final.passMark + "% mark)" : "") : (allDone() ? "unlocked" : "locked")) + " | attempts: " + S.final.attempts + (S.final.history.length ? " | scores: " + S.final.history.map(function (h) { return h.pct + "%"; }).join(" → ") : ""));
     L.push("");
     var w = weakAreas();
     L.push("WEAK AREAS TO REVIEW: " + (w.length ? "" : "none flagged yet"));
@@ -972,7 +1007,7 @@
     var rows = "";
     C.sections.forEach(function (s, i) {
       var st = S.sections[s.id] || {};
-      rows += "<tr><td>" + s.icon + " " + esc(s.title) + "</td><td>" + (st.completed ? "✅ Mastered" : (st.attempts ? "In progress" : (isUnlocked(i) ? "Not started" : "🔒"))) + "</td><td>" + (st.history && st.history.length ? st.history[st.history.length - 1].pct + "%" : "—") + "</td><td>" + (st.bestPct || 0) + "%</td><td>" + (st.attempts || 0) + "</td><td>" + (st.gearEarned || 0) + "/" + s.gear.length + "</td></tr>";
+      rows += "<tr><td>" + s.icon + " " + esc(s.title) + "</td><td>" + (st.completed ? "✅ Mastered" + (st.passMark && st.passMark < C.passPercent ? " (" + st.passMark + "% mark)" : "") : (st.attempts ? "In progress" : (isUnlocked(i) ? "Not started" : "🔒"))) + "</td><td>" + (st.history && st.history.length ? st.history[st.history.length - 1].pct + "%" : "—") + "</td><td>" + (st.bestPct || 0) + "%</td><td>" + (st.attempts || 0) + "</td><td>" + (st.gearEarned || 0) + "/" + s.gear.length + "</td></tr>";
     });
     rows += "<tr><td>" + C.final.icon + " Grand Trial</td><td>" + (S.final.passed ? "✅ Passed" : (allDone() ? "Unlocked" : "🔒")) + "</td><td>" + (S.final.history.length ? S.final.history[S.final.history.length - 1].pct + "%" : "—") + "</td><td>" + S.final.bestPct + "%</td><td>" + S.final.attempts + "</td><td>—</td></tr>";
     var w = weakAreas();
@@ -1006,6 +1041,6 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson };
+  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson };
   home();
 })();

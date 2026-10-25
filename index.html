@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>American Beginnings: A Unit 1 History Quest</title>
+<meta name="description" content="A low-poly adventure RPG for 7th-grade U.S. History, Unit 1: First Americans through the English Colonies.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦣</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="world"></canvas>
+<div id="sky-fallback"></div>
+<header id="topbar">
+  <button id="btn-home" class="chip" title="World map">🗺️ Map</button>
+  <div id="hud"></div>
+  <button id="btn-inv" class="chip" title="Inventory">🎒 Gear</button>
+  <button id="btn-report" class="chip" title="Parent Report">📋 Parent</button>
+</header>
+<main id="stage">
+  <aside id="hero-panel">
+    <div id="hero"></div>
+    <div id="hero-name"></div>
+    <div id="gear-progress"></div>
+  </aside>
+  <section id="screen" aria-live="polite"></section>
+</main>
+<div id="modal" class="hidden"><div id="modal-box"></div></div>
+<div id="toast" class="hidden"></div>
+<div id="game-version" class="game-version">v1.0</div>
+<noscript><p style="padding:2em;color:#fff">This game needs JavaScript turned on.</p></noscript>
+<script src="content/00-header.js"></script>
+<script src="content/s1.js"></script>
+<script src="content/s2.js"></script>
+<script src="content/s3.js"></script>
+<script src="content/s4.js"></script>
+<script src="content/s5.js"></script>
+<script src="content/s6.js"></script>
+<script src="app.js"></script>
+<script type="module" src="world.js"></script>
+</body>
+</html>

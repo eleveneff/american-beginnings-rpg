@@ -103,19 +103,27 @@ GAME_CONTENT.videos = {
   "s5-virginia-struggles": {
     title: "Early Virginia: Struggles and Recovery",
     cues: [
-      "Swampy land, bad water, and disease killed many settlers.",
-      "**Starving Time, 1609–1610:** only about 60 of some 500 colonists survived.",
-      "**June 1610:** Lord De La Warr's supply ships arrive just as survivors are leaving.",
-      "**John Rolfe's tobacco** becomes a cash crop, and the colony recovers.",
-      "**1619:** the **House of Burgesses** meets, the first elected assembly in English America."
+      "Hard early years: **swampy ground, bad water, disease**, and conflict with the **Powhatan**.",
+      "**John Smith's rule:** \"He that will not work shall not eat.\"",
+      "**Starving Time, winter 1609–1610:** only about **60 of some 500** colonists survived.",
+      "About **1612**, **John Rolfe's** sweeter **tobacco** becomes Virginia's **cash crop** and saves the colony.",
+      "**1619:** the **House of Burgesses**, the first elected representative assembly in English America. The first recorded **Africans** also arrive, as forced laborers."
+    ],
+    facts: [
+      "Jamestown's early years were hard: **swampy ground, bad water, disease**, and conflict with the **Powhatan**.",
+      "**John Smith** made a rule: **\"He that will not work shall not eat.\"**",
+      "In the **Starving Time** (winter **1609–1610**), only about **60 of some 500** colonists stayed alive.",
+      "**John Rolfe's** sweeter **tobacco** (about **1612**) became Virginia's **cash crop** and saved the colony.",
+      "**1619:** the **House of Burgesses** met, the **first elected representative assembly** in English America.",
+      "Also in **1619**, the first recorded **Africans** arrived in Virginia as **forced laborers**."
     ],
     check: [
-      { q: "What crop saved Virginia's economy?",
+      { q: "What cash crop saved the Jamestown colony?",
         choices: ["Tobacco", "Cotton", "Sugar cane", "Wheat"],
-        explain: "John Rolfe's sweeter tobacco sold well in England." },
+        explain: "About 1612, John Rolfe's sweeter tobacco sold well in England and became Virginia's cash crop." },
       { q: "What happened in Virginia in 1619?",
         choices: ["The House of Burgesses, the first elected assembly in English America, met", "The Mayflower landed at Cape Cod", "Jamestown was abandoned forever", "Spain took over Virginia"],
-        explain: "It was a seed of American self-government. That same year, the first recorded Africans arrived, brought against their will." }
+        explain: "It was a seed of American self-government. That same year, the first recorded Africans arrived in Virginia as forced laborers." }
     ]
   },
   "s5-pilgrim-voyage": {

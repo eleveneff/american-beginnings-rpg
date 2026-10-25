@@ -237,7 +237,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
      file falls back to a placeholder fact tour. */
   await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
   const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
-  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1 }; assert(true, 'only the 2 verified clips are embedded');
+  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-virginia-struggles': 1 }; assert(true, 'only the 3 verified clips are embedded');
   for (const v of vids) {
     const before = (await st()).stars.balance;
     await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);
@@ -251,7 +251,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       capSeen = await p.evaluate(() => { const t = document.querySelector('.lower3.on .l3-t'); return t ? t.textContent : ''; });
       await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     }
-    if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });
+    if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage' || v.key === 's5-jamestown-settlers') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });
     for (let q = 0; q < v.nq; q++) {
       await p.evaluate(key => { const c = window.GAME_CONTENT.videos[key].check; const qt = document.querySelector('.vc-q b').textContent; const qq = c.find(x => x.q.replace(/\*/g, '') === qt) || c[0]; [...document.querySelectorAll('.vc-ch button')].find(b => b.textContent === qq.choices[0].replace(/\*/g, '')).click(); }, v.key);
       await sleep(80); await click('.vc-next');

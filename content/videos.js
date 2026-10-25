@@ -119,8 +119,8 @@ GAME_CONTENT.videos = {
     ]
   },
   "s5-pilgrim-voyage": {
-    /* PROVISIONAL: the clip will be replaced by a version showing the arrival at Cape Cod.
-       Review these captions when the new file arrives. */
+    /* PROVISIONAL: placeholder until a verified clip arrives. The v3 clip was pulled because it showed an inaccurate flag.
+       Review these captions against the new file. */
     title: "The Mayflower Voyage, 1620",
     cues: [
       "The **Pilgrims** were Separatists seeking **freedom to worship** as they believed.",

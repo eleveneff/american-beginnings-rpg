@@ -30,7 +30,7 @@ Progress is saved in the browser's localStorage under the key `americanBeginning
 |---|---|---|
 | 1. First Peoples of the Americas | 27 | 7 (2 with video) |
 | 2. Native Nations of North America | 18 | 6 |
-| 3. The Age of Exploration & Columbian Exchange | 20 | 5 |
+| 3. The Age of Exploration (incl. Columbian Exchange) | 20 | 5 |
 | 4. Spain, France, and the Netherlands | 19 | 5 |
 | 5. Jamestown and Plymouth | 19 | 5 |
 | 6. The Thirteen Colonies Grow | 26 | 6 |

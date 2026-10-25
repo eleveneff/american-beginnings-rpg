@@ -138,11 +138,11 @@ GAME_CONTENT.videos = {
   },
   "s5-pilgrim-voyage": {
     title: "The Mayflower Voyage, 1620",
-    cueTimes: [0, 7.33, 14.81, 22.12, 28.35], // narration starts 0.5 s after each cue
+    cueTimes: [0, 7.33, 14.81, 21.62, 27.85], // narration starts 0.5 s after each cue
     cues: [
       "**Sept 6, 1620:** the **Mayflower** leaves **Plymouth, England**, with about **102 passengers**.",
       "**66 days** of autumn Atlantic storms; a cracked main beam is braced with a great **iron screw**.",
-      "**Below deck:** families like the **Brewsters** and **Hopkinses** kept up daily **prayer and Bible reading** through the long, cramped crossing.",
+      "**Below deck:** **Separatist** families kept up daily **prayer and Bible reading** through the long, cramped crossing.",
       "**Nov 9, 1620:** land sighted at **Cape Cod**, far north of their Virginia grant.",
       "**Nov 11:** anchored in today's **Provincetown Harbor**, **41 men sign the Mayflower Compact**, and the first men go ashore."
     ],

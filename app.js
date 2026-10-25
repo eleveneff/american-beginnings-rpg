@@ -204,10 +204,11 @@
       vid.addEventListener("timeupdate", function () {
         var dt = vid.currentTime - lastT; lastT = vid.currentTime;
         if (dt > 0 && dt < 1) played += dt;
+        if (v.cueTimes) { var ci = 0; v.cueTimes.forEach(function (t, k) { if (vid.currentTime >= t) ci = k; }); cue(ci); prog.style.width = Math.min(100, vid.currentTime / (vid.duration || 1) * 100) + "%"; return; }
         cue(Math.min(n - 1, Math.floor(played / per()))); prog.style.width = Math.min(100, played / (per() * n) * 100) + "%";
       });
       vid.addEventListener("ended", function () {
-        if (played + 0.3 < per() * n) { vid.currentTime = 0; lastT = 0; vid.play().catch(function () {}); return; }
+        if (!v.cueTimes && played + 0.3 < per() * n) { vid.currentTime = 0; lastT = 0; vid.play().catch(function () {}); return; }
         prog.style.width = "0"; ended();
       });
       vid.src = vid.getAttribute("data-src");

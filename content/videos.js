@@ -1,5 +1,6 @@
 /* v2: every lesson video is one entry here. Each entry has:
-   - cues: 3-5 timed fact captions shown as a lower third while the video plays.
+   - cueTimes (optional): start second for each cue in the real clip.
+   - cues: 2-5 timed fact captions shown as a lower third while the video plays.
      They are spread evenly over the real video length, or play as a timed
      "fact tour" when the file is still a placeholder.
    - facts: the Key Facts card shown below the video.
@@ -127,47 +128,50 @@ GAME_CONTENT.videos = {
     ]
   },
   "s5-pilgrim-voyage": {
-    /* PROVISIONAL: placeholder until a verified clip arrives. The v3 clip was pulled because it showed an inaccurate flag.
-       Review these captions against the new file. */
     title: "The Mayflower Voyage, 1620",
+    cueTimes: [0, 4, 8, 12],
     cues: [
-      "The **Pilgrims** were Separatists seeking **freedom to worship** as they believed.",
-      "**September 1620:** the Mayflower sails from **Plymouth, England**, with about **102 passengers**.",
-      "**66 days at sea**, through Atlantic storms; a cracked main beam is braced with a great iron screw.",
-      "**November 1620:** they sight **Cape Cod**, far north of their Virginia charter.",
-      "Before landing, the men sign the **Mayflower Compact** aboard ship, promising to make and obey \"just and equal laws.\""
+      "**Sept 6, 1620:** the **Mayflower** leaves **Plymouth, England**, with about **102 passengers**.",
+      "**66 days** of autumn Atlantic storms; a cracked main beam is braced with a great **iron screw**.",
+      "**Nov 9, 1620:** land sighted at **Cape Cod**, far north of their Virginia grant.",
+      "**Nov 11:** anchored in today's **Provincetown Harbor**, **41 men sign the Mayflower Compact**, and the first men go ashore."
     ],
     facts: [
-      "About **102 passengers**, Pilgrims and other settlers, sailed on the **Mayflower** in **September 1620**.",
-      "The crossing took **66 days**. They sighted **Cape Cod** in **November 1620**.",
-      "They had landed outside their charter, so **41 men signed the Mayflower Compact aboard ship before going ashore**.",
-      "The Compact made government rest on the **consent of the governed**, a founding American ideal."
+      "About **102 passengers** sailed on the **Mayflower**.",
+      "The crossing took **66 days at sea**.",
+      "They reached **Cape Cod** in **November 1620**.",
+      "The **Mayflower Compact** was an agreement to make **\"just and equal laws\"** for the general good, an early example of **self-government by consent**."
     ],
     check: [
-      { q: "What did the Pilgrims sign aboard the Mayflower before landing?",
-        choices: ["The Mayflower Compact", "The Declaration of Independence", "The Body of Liberties", "The Treaty of Paris"],
-        explain: "Signed in November 1620, it promised just and equal laws made by consent." },
-      { q: "Where did storms bring the Mayflower in November 1620?",
+      { q: "What agreement did the Pilgrims sign before going ashore?",
+        choices: ["The Mayflower Compact", "Magna Carta", "The House of Burgesses charter", "The Declaration of Independence"],
+        explain: "On November 11, 1620, 41 men signed the Mayflower Compact aboard ship, agreeing to make just and equal laws for the general good." },
+      { q: "Where did the Mayflower reach land in November 1620?",
         choices: ["Cape Cod", "Jamestown", "Florida", "Hudson Bay"],
-        explain: "Landing outside their Virginia charter led to the Mayflower Compact." }
+        explain: "Cape Cod was far north of their Virginia grant, which is one reason they wrote the Compact." }
     ]
   },
   "s5-new-england": {
-    title: "The Mayflower Compact and a New England Beginning",
+    title: "Plymouth and a New England Beginning",
+    cueTimes: [0, 4],
     cues: [
-      "**41 men sign the Mayflower Compact:** \"just and equal laws\" for the general good.",
-      "About **half the settlers die** in the first hard winter at Plymouth.",
-      "**Squanto (Tisquantum)** teaches them to plant corn with fish as fertilizer.",
-      "**Massasoit's Wampanoag** make a peace treaty of mutual defense, 1621.",
-      "**Autumn 1621:** a three-day harvest feast, and New England grows town by town."
+      "**Plymouth Colony:** about **half the settlers died** the first winter; **Squanto** and **Massasoit's Wampanoag** helped the survivors, and the **1621 harvest feast** followed.",
+      "The hilltop **fort doubled as the meetinghouse**; from **1630**, **Puritans** built **Massachusetts Bay**, with **town meetings** and **schools**."
+    ],
+    facts: [
+      "The first winter at Plymouth killed **about half** of the settlers.",
+      "In **1621**, **Massasoit** of the **Wampanoag** made a **peace treaty** with Plymouth.",
+      "Plymouth's hilltop **fort** also served as the **meetinghouse** for worship and meetings.",
+      "The **Puritans** hoped Massachusetts Bay would be a **\"city upon a hill\"** and governed towns through **town meetings**.",
+      "Massachusetts's **1647 school law** required towns to support schools so children could learn to read."
     ],
     check: [
-      { q: "What did the Mayflower Compact promise?",
-        choices: ["To make and obey \"just and equal laws\" for the general good", "To return to England in one year", "To obey the king of Spain", "To search for the Northwest Passage"],
-        explain: "It is an early example of self-government by consent." },
-      { q: "Who taught the Pilgrims to plant corn using fish as fertilizer?",
-        choices: ["Squanto (Tisquantum)", "John Smith", "Pocahontas", "Samuel de Champlain"],
-        explain: "Squanto had learned English after being kidnapped to Europe." }
+      { q: "Which Wampanoag leader made a peace treaty with Plymouth in 1621?",
+        choices: ["Massasoit", "Powhatan", "Pocahontas", "Metacom"],
+        explain: "Massasoit's 1621 treaty of peace and mutual defense lasted for decades." },
+      { q: "Who helped the Plymouth survivors after the first hard winter?",
+        choices: ["Squanto and Massasoit's Wampanoag", "John Smith and the Powhatan", "Spanish soldiers from Florida", "Dutch traders from New Amsterdam"],
+        explain: "Squanto taught them to plant corn, and the Wampanoag made peace with them." }
     ]
   }
 };

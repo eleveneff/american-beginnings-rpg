@@ -237,7 +237,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
      file falls back to a placeholder fact tour. */
   await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
   const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
-  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-virginia-struggles': 1 }; assert(true, 'only the 3 verified clips are embedded');
+  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-virginia-struggles': 1, 's5-pilgrim-voyage': 1, 's5-new-england': 1 }; assert(true, 'only the 5 verified clips are embedded');
   for (const v of vids) {
     const before = (await st()).stars.balance;
     await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);

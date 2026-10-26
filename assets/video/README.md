@@ -20,4 +20,6 @@ Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 
 **New England clip (`s5-new-england.mp4`):** six scenes, one per caption: the first winter (still, slow push-in), the March 1621 treaty of Massasoit and Governor Carver, Tisquantum planting corn with fish, the autumn 1621 harvest gathering, the 1630 Winthrop fleet (still), and a New England town street (still). The treaty, planting, and harvest scenes are AI-generated animations of generated period stills (Wampanoag deerskin, Separatist-era English dress), six takes each, checked frame by frame, with the cleanest kept. Fact cards carry the dates and numbers.
 
+**Clovis points clip (`s1-clovis-points.mp4`):** five scenes, one per caption: the 1930s dig at Blackwater Draw with mammoth bones, the point turning on hide (shown forward, then in reverse), a point being lashed to a spear shaft by a fire, and hunters near mammoths at a water hole. All are AI-generated animations, six takes each for the dig, hafting, and hunt scenes, checked frame by frame, with the cleanest kept. Fact cards carry the dates, stones, and finds.
+
 Every key also has captions, Key Facts, and a check in `content/videos.js`. They work with or without the file.

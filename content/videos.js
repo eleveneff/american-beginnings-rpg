@@ -42,20 +42,21 @@ GAME_CONTENT.videos = {
   },
   "s1-clovis-points": {
     title: "Clovis Points: Ice Age Ingenuity",
-    cueTimes: [0, 6.09, 11.13, 17.15, 22.29], // narration starts 0.5 s after each cue
+    cueTimes: [0, 6.35, 12.23, 18.25, 23.39], // narration starts 0.5 s after each cue
     cues: [
-      "**Clovis points** are named for **Clovis, New Mexico**, where they were found in the **1930s**.",
-      "They date to about **13,000 years ago**, near the end of the Ice Age.",
+      "**Clovis points** are named for finds at **Blackwater Draw**, near **Clovis, New Mexico**, in the early **1930s**.",
+      "Most scientists date them to about **13,000 years ago**, near the end of the Ice Age.",
       "Leaf-shaped, chipped from stone such as **chert**, with sharp edges and no notches.",
       "A groove at the base, the **flute**, let the point be tied to a **spear shaft**.",
-      "Why it matters: with this **ingenuity**, hunters took **mammoths and bison**."
+      "Clovis points have been found with **mammoth bones**, so these hunters took **giant game**."
     ],
     facts: [
-      "**Clovis points** are named for **Clovis, New Mexico**, where they were found in the **1930s**.",
-      "They date to about **13,000 years ago**.",
-      "They are **leaf-shaped** and were **chipped from stone like chert**.",
+      "**Clovis points** are named for **Blackwater Draw**, near **Clovis, New Mexico**, found in 1929 and dug in **1932–1933**.",
+      "They date to about **13,000 years ago**, near the end of the Ice Age.",
+      "They are **leaf-shaped** and were **chipped from stone** such as **chert, jasper, or obsidian**.",
       "A groove at the base, the **flute**, let them be **tied to a spear shaft**.",
-      "Hunters used them on large Ice Age animals such as **mammoths and bison**."
+      "Clovis points have been found with **mammoth bones**, so hunters took large Ice Age animals.",
+      "Why it matters: they show the **skill and ingenuity** of some of the earliest people in America."
     ],
     check: [
       { q: "What was the groove (flute) at the base of a Clovis point for?",

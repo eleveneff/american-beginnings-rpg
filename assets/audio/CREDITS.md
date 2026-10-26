@@ -31,8 +31,8 @@ Mixed at about -16 LUFS; ambience sits about 17 dB lower. There is no music.
 | Jamestown (riverbank at the fort) | [On a pebble beach](https://commons.wikimedia.org/wiki/File:On_a_pebble_beach.ogg) | earthcalling | Public domain |
 | Jamestown (gulls at the river) | [XC707075 - European Herring Gull - Larus argentatus](https://commons.wikimedia.org/wiki/File:XC707075_-_European_Herring_Gull_-_Larus_argentatus.mp3) | Sonothèque ADVL | CC0 |
 | Jamestown, Founders of Virginia (Chesapeake shore, softened) | [Ocean Waves on a Tropical Beach](https://commons.wikimedia.org/wiki/File:Ocean_Waves_on_a_Tropical_Beach.ogg) | Jarrod Stanley | CC0 |
-| Founders of Virginia (winter wind, low-passed) | [Howling wind](https://commons.wikimedia.org/wiki/File:Howling_wind.ogg) | Tvabutzku1234 | CC0 |
+| Founders of Virginia (winter wind, low-passed), Clovis points (open plains wind, low-passed) | [Howling wind](https://commons.wikimedia.org/wiki/File:Howling_wind.ogg) | Tvabutzku1234 | CC0 |
 
 **Other ambience:** the soft breeze under Jamestown, Founders of Virginia, New England, Clovis, and the two fact tours was
-synthesized with ffmpeg (filtered pink noise). The Mayflower (open sea and storm), Virginia, Founders of Virginia (two shots), and Clovis clips also keep
+synthesized with ffmpeg (filtered pink noise). The Mayflower (open sea and storm), Virginia, and Founders of Virginia (two shots) clips also keep
 their own natural background sound, slowed with the picture where it is slowed, and checked to contain no voices or music.

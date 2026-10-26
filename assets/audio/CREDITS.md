@@ -21,6 +21,8 @@ Mixed at about -16 LUFS; ambience sits about 17 dB lower. There is no music.
 | Mayflower voyage (surf at Cape Cod) | [Ocean Waves on a Tropical Beach](https://commons.wikimedia.org/wiki/File:Ocean_Waves_on_a_Tropical_Beach.ogg) | Jarrod Stanley | CC0 |
 | Mayflower voyage (gulls) | [XC707075 - European Herring Gull - Larus argentatus](https://commons.wikimedia.org/wiki/File:XC707075_-_European_Herring_Gull_-_Larus_argentatus.mp3) | Sonothèque ADVL | CC0 |
 | Mayflower voyage (storm at sea; below-deck cabin) | Natural sound of the storm shot itself. Under the prayer shot it is low-passed so the sea is heard through the hull, with a soft synthesized wind, and it is ducked under the voice | (part of the clip) | (part of the clip) |
+| Mayflower voyage (Plymouth quay, 1620 departure) | The same surf recording, softened and low-passed into water lapping against the stone quay, with a synthesized harbour breeze and the gull recording above | (as above) | CC0 |
+| Mayflower voyage (Compact cabin, at anchor) | The calm-sea sound of the open-sea shot, low-passed so it is heard through the hull, with a faint synthesized wind, ducked under the voice | (part of the clip) | (part of the clip) |
 | Jamestown, New England (woodland birdsong) | [Wood Thrush](https://commons.wikimedia.org/wiki/File:Wood_Thrush.ogg) | G. McGrane | Public domain |
 | New England | [Black-capped Chickadee 201947598](https://commons.wikimedia.org/wiki/File:Black-capped_Chickadee_201947598.wav) | *ngoomie | CC0 |
 | New England | [American Crow](https://commons.wikimedia.org/wiki/File:American_Crow.ogg) | G McGrane | Public domain |

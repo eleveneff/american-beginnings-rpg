@@ -26,11 +26,11 @@ GAME_CONTENT.sections.push({
         "The site was swampy, the water was bad, and many colonists searched for gold instead of planting food. Many died of disease and hunger.",
         "**Captain John Smith** took charge and made a strict rule: **\"He that will not work shall not eat.\"**",
         "The colonists lived near the **Powhatan Confederacy**, a union of about 30 Algonquian-speaking groups led by **Powhatan (Wahunsenacah)**. The Powhatan traded corn to the colonists, but relations were often tense.",
-        "The winter of **1609–1610** was called the **\"Starving Time.\"** Only about 60 of some 500 colonists survived."
+        "The winter of **1609–1610** was called the **\"Starving Time.\"** Only about 60 of some 300 colonists survived."
       ] },
     { topic: "tobacco", title: "Scroll 3: Pocahontas, Tobacco, and Self-Government", video: null,
       videoKey: "s5-virginia-struggles", videoTitle: "Early Virginia: Struggles and Recovery",
-      videoFacts: ["Swampy land, bad water, disease, and hunger kill many colonists.", "In the **Starving Time (1609–1610)**, only about 60 of some 500 colonists survive.", "In June 1610, supply ships under **Lord De La Warr** arrive just as the survivors are leaving.", "**John Rolfe's tobacco** (about 1612) becomes Virginia's **cash crop**, and the **headright system** brings more settlers.", "In **1619**, the **House of Burgesses**, the first elected assembly in English America, meets. That same year, the first recorded Africans arrive, brought against their will.", "Conflict with the Powhatan grows; after the **1622** attack, Virginia becomes a **royal colony (1624)**."],
+      videoFacts: ["Swampy land, bad water, disease, and hunger kill many colonists.", "In the **Starving Time (1609–1610)**, only about 60 of some 300 colonists survive.", "In June 1610, supply ships under **Lord De La Warr** arrive just as the survivors are leaving.", "**John Rolfe's tobacco** (about 1612) becomes Virginia's **cash crop**, and the **headright system** brings more settlers.", "In **1619**, the **House of Burgesses**, the first elected assembly in English America, meets. That same year, the first recorded Africans arrive, brought against their will.", "Conflict with the Powhatan grows; after the **1622** attack, Virginia becomes a **royal colony (1624)**."],
       videoIdea: "Low-poly N64-style: green tobacco fields and a wooden church where elected burgesses meet.",
       text: [
         "**Pocahontas**, Powhatan's daughter, helped the colonists with food and messages. In **1614** she married colonist **John Rolfe**, which brought several years of peace.",
@@ -89,7 +89,7 @@ GAME_CONTENT.sections.push({
       explain: "His name was Wahunsenacah; the English called him Powhatan." },
     { id: "s5q7", topic: "jamestown", type: "mc", q: "What was the \"Starving Time\" at Jamestown?",
       choices: ["The winter of 1609–1610, when most colonists died of hunger and disease", "A holiday feast", "A tobacco harvest festival", "A war between England and Spain"],
-      explain: "Only about 60 of roughly 500 colonists survived." },
+      explain: "Only about 60 of some 300 colonists survived." },
     { id: "s5q8", topic: "tobacco", type: "vocab", term: "cash crop",
       choices: ["A crop grown to be sold for profit", "A crop grown only for a family to eat", "A wild plant gathered in the forest", "A crop that is given away"],
       explain: "Tobacco became Virginia's cash crop." },

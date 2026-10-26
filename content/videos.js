@@ -111,18 +111,18 @@ GAME_CONTENT.videos = {
   },
   "s5-virginia-struggles": {
     title: "Early Virginia: Struggles and Recovery",
-    cueTimes: [0, 5.89, 10.35, 18.66, 25.33], // narration starts 0.5 s after each cue
+    cueTimes: [0, 5.89, 10.35, 18.11, 24.78], // narration starts 0.5 s after each cue
     cues: [
       "Hard early years: **swampy ground, bad water, disease**, and conflict with the **Powhatan**.",
       "**John Smith's rule:** \"He that will not work shall not eat.\"",
-      "**Starving Time, winter 1609–1610:** only about **60 of some 500** colonists survived.",
+      "**Starving Time, winter 1609–1610:** only **about 60 of some 300** colonists survived.",
       "About **1612**, **John Rolfe's** sweeter **tobacco** becomes Virginia's **cash crop** and saves the colony.",
       "**1619:** the **House of Burgesses**, the first elected representative assembly in English America. The first recorded **Africans** also arrive, as forced laborers."
     ],
     facts: [
       "Jamestown's early years were hard: **swampy ground, bad water, disease**, and conflict with the **Powhatan**.",
       "**John Smith** made a rule: **\"He that will not work shall not eat.\"**",
-      "In the **Starving Time** (winter **1609–1610**), only about **60 of some 500** colonists stayed alive.",
+      "In the **Starving Time** (winter **1609–1610**), only **about 60 of some 300** colonists stayed alive.",
       "**John Rolfe's** sweeter **tobacco** (about **1612**) became Virginia's **cash crop** and saved the colony.",
       "**1619:** the **House of Burgesses** met, the **first elected representative assembly** in English America.",
       "Also in **1619**, the first recorded **Africans** arrived in Virginia as **forced laborers**."
@@ -138,25 +138,30 @@ GAME_CONTENT.videos = {
   },
   "s5-pilgrim-voyage": {
     title: "The Mayflower Voyage, 1620",
-    cueTimes: [0, 7.33, 14.81, 21.62, 27.85], // narration starts 0.5 s after each cue
+    cueTimes: [0, 9.29, 16.14, 23.62, 30.43, 36.66, 48.06], // narration starts 0.5 s after each cue
     cues: [
-      "**Sept 6, 1620:** the **Mayflower** leaves **Plymouth, England**, with about **102 passengers**.",
+      "**Sept 6, 1620:** the **Mayflower** sails alone from **Plymouth, England**; the leaky **Speedwell** had turned back.",
+      "About **102 passengers** and **20 to 30 crew** crowd aboard the small merchant ship.",
       "**66 days** of autumn Atlantic storms; a cracked main beam is braced with a great **iron screw**.",
       "**Below deck:** **Separatist** families kept up daily **prayer and Bible reading** through the long, cramped crossing.",
       "**Nov 9, 1620:** land sighted at **Cape Cod**, far north of their Virginia grant.",
-      "**Nov 11:** anchored in today's **Provincetown Harbor**, **41 men sign the Mayflower Compact**, and the first men go ashore."
+      "**Nov 11:** still aboard ship off Cape Cod, **41 men sign the Mayflower Compact**, promising **\"just and equal laws\"** for the general good: a seed of **American self-government**.",
+      "They anchor in today's **Provincetown Harbor**, and the first men go ashore."
     ],
     facts: [
-      "About **102 passengers** sailed on the **Mayflower**.",
+      "The leaky **Speedwell** turned back, so the **Mayflower** crossed **alone**.",
+      "About **102 passengers** sailed, with a crew of about **20 to 30**.",
       "The crossing took **66 days at sea**.",
-      "The **Pilgrims (Separatists)** crossed to **worship freely**; **prayer and Scripture** sustained them on the voyage.",
+      "Many passengers were **Separatists (the Pilgrims)** who crossed to **worship freely**; **prayer and Scripture** sustained them on the voyage.",
       "They reached **Cape Cod** in **November 1620**.",
-      "The **Mayflower Compact** was an agreement to make **\"just and equal laws\"** for the general good, an early example of **self-government by consent**."
+      "The **Mayflower Compact** was an agreement to make **\"just and equal laws\"** for the general good, an early example of **self-government by consent**, a seed of American self-government.",
+      "The Mayflower anchored in what is now **Provincetown Harbor**.",
+      "The dates are from the **old calendar** England used then; by today's calendar the Compact was signed on **November 21**."
     ],
     check: [
       { q: "What agreement did the Pilgrims sign before going ashore?",
         choices: ["The Mayflower Compact", "Magna Carta", "The House of Burgesses charter", "The Declaration of Independence"],
-        explain: "On November 11, 1620, 41 men signed the Mayflower Compact aboard ship, agreeing to make just and equal laws for the general good." },
+        explain: "On November 11, 1620, 41 men signed the Mayflower Compact aboard ship, agreeing to make just and equal laws for the general good. It was a seed of American self-government." },
       { q: "Where did the Mayflower reach land in November 1620?",
         choices: ["Cape Cod", "Jamestown", "Florida", "Hudson Bay"],
         explain: "Cape Cod was far north of their Virginia grant, which is one reason they wrote the Compact." }

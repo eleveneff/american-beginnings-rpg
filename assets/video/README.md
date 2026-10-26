@@ -13,4 +13,6 @@ Section 5 keys (all four are embedded and verified):
 
 Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 
+**Mayflower voyage clip (`s5-pilgrim-voyage.mp4`):** the opening departure from Plymouth (September 6, 1620) and the Mayflower Compact cabin scene (November 11, 1620) are AI-generated, animated from generated period stills (Separatist-era dress: doublets, falling collars, coifs, capotains, no buckles), and were checked frame by frame. Seven animation takes were made for each scene and only the cleanest was kept. On-screen fact cards use [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) and [IM Fell English SC](https://fonts.google.com/specimen/IM+Fell+English+SC) (both SIL Open Font License 1.1).
+
 Every key also has captions, Key Facts, and a check in `content/videos.js`. They work with or without the file.

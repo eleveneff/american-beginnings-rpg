@@ -16,19 +16,21 @@
 GAME_CONTENT.videos = {
   "s1-beringia": {
     title: "Crossing Beringia",
-    cueTimes: [0, 5.53, 10.70, 16.72, 21.32], // narration starts 0.5 s after each cue
-    audio: "assets/audio/s1-beringia.m4a",
+    cueTimes: [0, 5.53, 10.7, 17.84, 22.44, 28.33], // narration starts 0.5 s after each cue
     cues: [
       "Ice Age: glaciers held so much water that the sea dropped hundreds of feet.",
       "A land bridge, **Beringia**, joined **Siberia (Asia)** and **Alaska**.",
-      "More than **15,000 years ago**, hunters crossed it following **mammoths** and other big game.",
+      "Many scientists think people crossed it more than **15,000 years ago**, hunting **mammoths** and other big game.",
       "Some may also have traveled **by boat along the Pacific coast**.",
+      "As the ice melted, the sea rose and covered the bridge again, about **11,000 years ago**.",
       "Why it matters: these hardy pioneers became the **first peoples of the Americas**."
     ],
     facts: [
-      "**Beringia** was a land bridge between Siberia and Alaska during the last Ice Age.",
+      "About **21,000 years ago**, the sea was about **400 feet (120 m)** lower than today.",
+      "**Beringia** was a tundra land bridge between Siberia and Alaska, over **1,000 miles** wide from north to south.",
       "Many scientists think the first Americans arrived **more than 15,000 years ago**, on foot across Beringia, by boat along the coast, or both.",
       "They followed herds of **woolly mammoths, mastodons, and bison**.",
+      "About **11,000 years ago** rising seas covered the bridge; today the **Bering Strait** is about **51 miles (82 km)** wide.",
       "Many Native nations also have their own origin stories that teach they have always lived in their homelands."
     ],
     check: [

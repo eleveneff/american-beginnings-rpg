@@ -73,8 +73,8 @@
 
   /* ---------------- save data ---------------- */
   function blankSave() {
-    return { version: 2, created: now(), lastPlayed: now(), players: {}, sections: {}, final: { attempts: 0, bestPct: 0, passed: false, passedAt: null, history: [] }, gear: [], badges: [], totalCorrect: 0, totalAnswered: 0, run: null,
-      stars: { balance: 0, earned: 0, spent: 0, bySource: {} }, starLog: [], qStar: {}, acts: {}, owned: [], equip: {}, purchases: [], videos: {}, vidQ: {} };
+    return { version: 3, created: now(), lastPlayed: now(), players: {}, sections: {}, final: { attempts: 0, bestPct: 0, passed: false, passedAt: null, history: [] }, gear: [], badges: [], totalCorrect: 0, totalAnswered: 0, run: null,
+      stars: { balance: 0, earned: 0, spent: 0, bySource: {} }, starLog: [], qStar: {}, acts: {}, owned: [], equip: {}, purchases: [], videos: {}, vidQ: {}, srcQ: {}, skills: {} };
   }
   var S;
   function load() {
@@ -105,7 +105,10 @@
     Object.keys(d.sections || {}).forEach(function (id) { var x = d.sections[id]; if (x && x.completed && !x.passMark) x.passMark = C.legacyPassPercent || 80; });
     if (d.final.passed && !d.final.passMark) d.final.passMark = C.legacyPassPercent || 80;
     if (d.stars.balance < 0) d.stars.balance = 0;
-    d.version = Math.max(2, d.version); return d;
+    /* v2 -> v3 (v2.1): adds srcQ (source-scroll quizzes) and skills (map & timeline stats). The blank-key fill above creates them. */
+    if (!d.srcQ || typeof d.srcQ !== "object") d.srcQ = {};
+    if (!d.skills || typeof d.skills !== "object") d.skills = {};
+    d.version = Math.max(3, d.version); return d;
   }
   function save() { S.lastPlayed = now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { } }
   function sec(id) {
@@ -404,19 +407,72 @@
     if (l.video) return '<div class="video-wrap"><video controls playsinline preload="metadata" ' + (l.poster ? 'poster="' + esc(l.poster) + '"' : "") + ' src="' + esc(l.video) + '"></video></div>' + (l.videoCaption ? '<div class="video-cap">🎬 ' + esc(l.videoCaption) + "</div>" : "");
     return '<div class="video-ph"><b>🎬 Video coming soon</b>' + esc(l.videoIdea || "A short animated clip for this lesson will appear here.") + "</div>";
   }
+  /* v2.1 primary-source parchment. A lesson with a `source` shows the
+     source (author, title, date, context, excerpt, note, link) instead of a video. */
+  function sourceBlock(l) {
+    var x = l.source; if (!x) return "";
+    var art = x.kind === "artifact", host = "";
+    try { host = new URL(x.url).hostname.replace(/^www\./, ""); } catch (e) { host = x.url || ""; }
+    var h = '<div class="src-scroll' + (art ? " artifact" : "") + '"><div class="src-kind">' + (art ? "🏺 Artifact evidence" : "📜 Primary source") + "</div>" +
+      "<h3>" + esc(x.title) + '</h3><div class="src-meta"><div><b>' + (art ? "Made by:" : "Author:") + "</b> " + esc(x.author) + "</div><div><b>Date:</b> " + esc(x.date) + "</div></div>" +
+      '<p class="src-ctx"><b>Context:</b> ' + esc(x.context) + "</p>";
+    if (x.clues) h += '<ul class="src-clues">' + x.clues.map(function (c) { return "<li>" + md(c) + "</li>"; }).join("") + "</ul>";
+    if (x.excerpt) h += (x.excerptLabel ? '<div class="src-lbl">' + esc(x.excerptLabel) + "</div>" : "") + '<blockquote class="src-quote">' + x.excerpt.map(function (q) { return "<p>" + esc(q) + "</p>"; }).join("") + "</blockquote>";
+    if (x.note) h += '<p class="src-note">✍️ ' + esc(x.note) + "</p>";
+    if (x.url) h += '<p class="src-url">Source: <a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(host) + "</a></p>";
+    return h + "</div>";
+  }
+  function scrollBody(l) {
+    var h = l.source ? sourceBlock(l) : videoBlock(l);
+    l.text.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
+    return h;
+  }
+  function srcQs(s, topic) { return s.questions.filter(function (q) { return q.topic === topic; }); }
+  function srcRec(topic) { return S.srcQ[topic] || (S.srcQ[topic] = { plays: 0, best: 0, last: 0, total: 0, right: 0, wrong: 0, firstAt: now(), lastAt: null }); }
+  /* In-scroll source quiz: every question for this source, misses come back
+     until cleared. Answers count like trial answers (topic stats, mastery
+     review list, stars, and gear every 5 correct). */
+  function sourceQuiz(sid, i) {
+    var s = sectionById(sid), l = s.lessons[i], qs = shuffle(srcQs(s, l.topic)), queue = qs.map(function (q) { return q.id; }), first = {}, right = 0, n = qs.length;
+    function back() { lesson(sid, i, false); }
+    function step() {
+      if (!queue.length) return results();
+      var q = qById(queue[0]).q, again = first[q.id] !== undefined;
+      show('<div class="panel"><details class="src-peek"><summary>📜 Look at the source again</summary>' + sourceBlock(l) + "</details>" +
+        askHTML(q, "📜 " + esc(topicTitle(s, l.topic)) + " · " + (again ? '<span class="review-tag">TRY AGAIN</span>' : "Question " + (Object.keys(first).length + 1) + " of " + n)) + '</div><div class="panel" style="padding:.6rem 1rem"><button class="btn alt" id="b-sq-back">◀ Back to the scroll</button></div>');
+      on("b-sq-back", back);
+      wireAnswer(q, function (ok) {
+        if (!again) { first[q.id] = ok; if (ok) right++; }
+        var r = srcRec(l.topic); if (ok) r.right++; else r.wrong++;
+        queue.shift(); if (!ok) queue.push(q.id);
+        afterAnswer(sid, q, ok, step);
+      });
+      renderHero();
+    }
+    function results() {
+      var r = srcRec(l.topic); r.plays++; r.last = right; r.total = n; r.best = Math.max(r.best, right); r.lastAt = now(); save();
+      show('<div class="panel big-reward"><div class="ic">📜</div><h1>Source questions complete!</h1><p>First try: <b>' + right + " / " + n + " (" + pct(right, n) + "%)</b>" + (right < n ? " · every miss was cleared" : " · perfect reading! 🌟") + "</p><p>Best so far: " + r.best + " / " + n + "</p>" +
+        '<button class="btn" id="b-sq-again">🔁 Try again</button><button class="btn alt" id="b-sq-scroll">◀ Back to the scroll</button>' + (i < s.lessons.length - 1 ? '<button class="btn gold" id="b-sq-next">Next scroll ▶</button>' : '<button class="btn gold" id="b-sq-trial">⚔️ Go to the Trial</button>') + "</div>");
+      on("b-sq-again", function () { sourceQuiz(sid, i); }); on("b-sq-scroll", back);
+      on("b-sq-next", function () { lesson(sid, i + 1, false); }); on("b-sq-trial", function () { startTrial(sid); });
+      renderHero();
+    }
+    step();
+  }
   function lesson(sid, i, resumeAfter) {
     var s = sectionById(sid), l = s.lessons[i];
     var acts = (s.activities || []).filter(function (a) { return a.topic === l.topic; });
-    var h = '<div class="panel"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + "</span><span>Scroll " + (i + 1) + " of " + s.lessons.length + "</span></div><h2>📜 " + esc(l.title) + "</h2>" + videoBlock(l);
-    l.text.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
+    var h = '<div class="panel"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + "</span><span>Scroll " + (i + 1) + " of " + s.lessons.length + "</span></div><h2>📜 " + esc(l.title) + "</h2>" + scrollBody(l);
+    if (l.source && !resumeAfter) { var sq = srcQs(s, l.topic), sr = S.srcQ[l.topic]; if (sq.length) h += '<div class="try-act src-q">📜 <button class="btn small gold" id="b-srcq">Answer the source questions (' + sq.length + ")</button> <small>" + (sr && sr.plays ? "Best: " + sr.best + "/" + sq.length : "Counts toward stars and gear!") + "</small></div>"; }
     if (acts.length && !resumeAfter) h += '<div class="try-act">🎮 Try it: ' + acts.map(function (a) { return '<button class="btn alt small" data-act="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") + "</div>";
     h += '<div class="scroll-nav"><span>' + (i > 0 ? '<button class="btn alt" id="b-prev">◀ Back</button>' : "") + "</span><span>" +
       (i < s.lessons.length - 1 ? '<button class="btn" id="b-next">Next scroll ▶</button>' : '<button class="btn gold" id="b-trial">⚔️ ' + (resumeAfter ? "Return to my trial" : "Begin the Trial!") + "</button>") + "</span></div></div>";
     show(h);
     on("b-prev", function () { lesson(sid, i - 1, resumeAfter); });
     on("b-next", function () { lesson(sid, i + 1, resumeAfter); });
+    on("b-srcq", function () { sourceQuiz(sid, i); });
     on("b-trial", function () { if (resumeAfter) { S.run.phase === "review" ? nextReview() : nextQuestion(); } else startTrial(sid); });
-    $all(".try-act button", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act"), function () { lesson(sid, i, false); }); }; });
+    $all(".try-act button[data-act]", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act"), function () { lesson(sid, i, false); }); }; });
     renderHero();
   }
 
@@ -539,8 +595,7 @@
     var r = S.run, s = sectionById(r.sid);
     if (!r.queue.length) return finishCheck();
     var q = qById(r.queue[0]).q, l = lessonFor(s, q.topic);
-    var h = '<div class="panel"><span class="review-tag">REVIEW · ' + r.queue.length + " left</span><h2>📜 " + esc(l.title) + "</h2>" + videoBlock(l);
-    l.text.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
+    var h = '<div class="panel"><span class="review-tag">REVIEW · ' + r.queue.length + " left</span><h2>📜 " + esc(l.title) + "</h2>" + scrollBody(l);
     h += '<button class="btn gold" id="b-ready">I\'m ready: ask me again ▶</button></div>';
     show(h);
     on("b-ready", function () {
@@ -957,6 +1012,14 @@
     });
     return out.sort(function (a, b) { return a.p - b.p; });
   }
+  function srcList() { var o = []; C.sections.forEach(function (s) { s.lessons.forEach(function (l) { if (l.source) o.push({ s: s, l: l }); }); }); return o; }
+  function srcStat(x) { var st = S.sections[x.s.id], t = st && st.topics[x.l.topic], r = S.srcQ[x.l.topic], n = srcQs(x.s, x.l.topic).length; return { right: t ? t.right : 0, wrong: t ? t.wrong : 0, n: n, quiz: r }; }
+  function srcReportLines() {
+    var L = [], list = srcList();
+    L.push("PRIMARY-SOURCE SCROLLS (" + list.filter(function (x) { var r = S.srcQ[x.l.topic]; return r && r.plays; }).length + " of " + list.length + " quizzes done; accuracy counts every answer, including trials):");
+    list.forEach(function (x) { var k = srcStat(x), tot = k.right + k.wrong; L.push(" - [" + x.s.title + "] " + topicTitle(x.s, x.l.topic) + ": " + (tot ? k.right + "/" + tot + " right (" + pct(k.right, tot) + "%)" : "not answered yet") + (k.quiz && k.quiz.plays ? " | source quiz best " + k.quiz.best + "/" + k.n + ", played " + k.quiz.plays + "x" : "")); });
+    return L;
+  }
   function reportText() {
     var L = [], p = currentPlayer();
     L.push("AMERICAN BEGINNINGS — PARENT REPORT");
@@ -995,6 +1058,8 @@
     L.push("LESSON VIDEOS (" + vk.filter(function (k) { return S.videos[k] && S.videos[k].views; }).length + " of " + vk.length + " watched):");
     vk.forEach(function (k) { var r = S.videos[k]; if (r && (r.views || r.checked)) L.push(" - " + C.videos[k].title + ": watched " + r.views + "x, finished " + r.ended + "x, check best " + r.best + "/" + C.videos[k].check.length + " (" + r.right + " right, " + r.wrong + " missed), stars " + r.stars); });
     L.push("");
+    L.push.apply(L, srcReportLines());
+    L.push("");
     L.push("MARKETPLACE PURCHASES: " + (S.purchases.length ? "" : "none yet"));
     S.purchases.forEach(function (x) { var m = marketById(x.market); L.push(" - " + x.name + " (" + x.price + " stars) at " + (m ? m.name : x.market) + ", " + fmtDate(x.at)); });
     L.push("");
@@ -1017,6 +1082,7 @@
       '<table class="rep"><tr><th>Earned from</th><th>Stars</th></tr>' + Object.keys(S.stars.bySource).map(function (k) { return "<tr><td>" + esc(SRC_LABEL[k] || k) + "</td><td>" + S.stars.bySource[k] + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🎮 Activities</h3>" + '<table class="rep"><tr><th>Activity</th><th>Plays</th><th>Best</th><th>Stars</th></tr>' + allActs().map(function (x) { var r = S.acts[x.a.id] || {}; return "<tr><td>" + x.a.icon + " " + esc(x.a.title) + "</td><td>" + (r.plays || 0) + "</td><td>" + (r.best ? "⭐".repeat(r.best) : "—") + "</td><td>" + (r.earned || 0) + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🎬 Lesson Videos</h3>" + '<table class="rep"><tr><th>Video</th><th>Watched</th><th>Check best</th><th>Stars</th></tr>' + Object.keys(C.videos || {}).map(function (k) { var r = S.videos[k] || {}; return "<tr><td>" + esc(C.videos[k].title) + "</td><td>" + (r.views || 0) + "</td><td>" + (r.checked ? r.best + "/" + C.videos[k].check.length : "–") + "</td><td>" + (r.stars || 0) + "</td></tr>"; }).join("") + "</table>" +
+      "<h3>📜 Primary-Source Scrolls</h3>" + '<table class="rep" id="rep-src"><tr><th>Source</th><th>Accuracy</th><th>Quiz best</th></tr>' + srcList().map(function (x) { var k = srcStat(x), tot = k.right + k.wrong; return "<tr><td>" + x.s.icon + " " + esc(topicTitle(x.s, x.l.topic)) + "</td><td>" + (tot ? pct(k.right, tot) + "% (" + k.right + "/" + tot + ")" : "—") + "</td><td>" + (k.quiz && k.quiz.plays ? k.quiz.best + "/" + k.n : "—") + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🏪 Purchases</h3>" + (S.purchases.length ? "<ul>" + S.purchases.map(function (x) { return "<li>" + esc(x.name) + " · ⭐ " + x.price + " · " + fmtDate(x.at) + "</li>"; }).join("") + "</ul>" : "<p>None yet.</p>") +
       "<h3>Weak areas</h3>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + x.s.icon + " " + esc(topicTitle(x.s, x.topic)) + ": " + x.p + "% (missed " + x.wrong + "×)</li>"; }).join("") + "</ul>" : "<p>None flagged yet.</p>") +
       '<h3>Full text report</h3><pre class="report" id="rep-text">' + esc(reportText()) + "</pre>" +
@@ -1041,6 +1107,6 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson };
+  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz };
   home();
 })();

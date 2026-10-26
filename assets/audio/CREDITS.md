@@ -1,11 +1,11 @@
 # Narration and ambience credits
 
-**Narration** for every lesson video and the two narrated fact tours is synthesized offline with
+**Narration** for every lesson video is synthesized offline with
 [Piper TTS](https://github.com/rhasspy/piper). Two voices are used, each with a mild accent that suits its period:
 
 | Clips | Piper voice | Settings | Voice training data |
 |---|---|---|---|
-| All narrated clips and tours: Clovis points, Beringia, early maize tour, Mayflower voyage, New England, Jamestown settlers, Virginia struggles, Founders of Virginia | `en_GB-aru-medium`, speaker `01` (id 3), a male British English voice | length scale 0.65, noise 0.6–0.75, noise width 0.8; best of 8–16 takes per line, checked by speech recognition | [ARU speech corpus](https://www.liverpool.ac.uk/architecture/research/acoustics-research-unit/speech-corpus/) (University of Liverpool Acoustics Research Unit), CC BY 4.0 |
+| All narrated clips: Clovis points, Beringia, early maize, Mayflower voyage, New England, Jamestown settlers, Virginia struggles, Founders of Virginia | `en_GB-aru-medium`, speaker `01` (id 3), a male British English voice | length scale 0.65, noise 0.6–0.75, noise width 0.8; best of 8–16 takes per line, checked by speech recognition | [ARU speech corpus](https://www.liverpool.ac.uk/architecture/research/acoustics-research-unit/speech-corpus/) (University of Liverpool Acoustics Research Unit), CC BY 4.0 |
 
 One narrator voices every clip and tour, set about 10% faster than the first narration (`en_US-lessac-high`, length scale 1.08).
 Earlier voices: before v2.1 the English-colony clips used `en_GB-cori-high` (public domain) and the ancient-peoples clips used
@@ -27,12 +27,14 @@ Mixed at about -16 LUFS; ambience sits about 17 dB lower. There is no music.
 | New England | [Black-capped Chickadee 201947598](https://commons.wikimedia.org/wiki/File:Black-capped_Chickadee_201947598.wav) | *ngoomie | CC0 |
 | New England | [American Crow](https://commons.wikimedia.org/wiki/File:American_Crow.ogg) | G McGrane | Public domain |
 | New England (distant farmyard) | [Medium rooster crowing](https://commons.wikimedia.org/wiki/File:Medium_rooster_crowing.ogg) | alys | Public domain |
-| Jamestown, Founders of Virginia (James River bank, low-passed) | [Forest lawn creek](https://commons.wikimedia.org/wiki/File:Forest_lawn_creek.ogg) | Dsw4 | Public domain |
+| Jamestown, Founders of Virginia (James River bank, low-passed), New England (Town Brook), early maize (Balsas valley stream) | [Forest lawn creek](https://commons.wikimedia.org/wiki/File:Forest_lawn_creek.ogg) | Dsw4 | Public domain |
+| New England (Town Brook), early maize (Balsas valley, Three Sisters field) | [Birds forest](https://commons.wikimedia.org/wiki/File:Birds_forest.ogg) | Barracuda1983 | Public domain |
+| New England (outdoor gatherings), early maize (the village) | [Birds chirping in a garden](https://commons.wikimedia.org/wiki/File:Birds_chirping_in_a_garden.ogg) | Akum20 | CC0 |
 | Jamestown (riverbank at the fort), Beringia (the coast) | [On a pebble beach](https://commons.wikimedia.org/wiki/File:On_a_pebble_beach.ogg) | earthcalling | Public domain |
 | Jamestown (gulls at the river) | [XC707075 - European Herring Gull - Larus argentatus](https://commons.wikimedia.org/wiki/File:XC707075_-_European_Herring_Gull_-_Larus_argentatus.mp3) | Sonothèque ADVL | CC0 |
 | Jamestown, Founders of Virginia (Chesapeake shore, softened) | [Ocean Waves on a Tropical Beach](https://commons.wikimedia.org/wiki/File:Ocean_Waves_on_a_Tropical_Beach.ogg) | Jarrod Stanley | CC0 |
-| Founders of Virginia (winter wind, low-passed), Clovis points and Beringia (open plains and Ice Age wind, low-passed) | [Howling wind](https://commons.wikimedia.org/wiki/File:Howling_wind.ogg) | Tvabutzku1234 | CC0 |
+| Founders of Virginia (winter wind, low-passed), Clovis points, Beringia, and early maize (open plains and Ice Age wind, low-passed) | [Howling wind](https://commons.wikimedia.org/wiki/File:Howling_wind.ogg) | Tvabutzku1234 | CC0 |
 
-**Other ambience:** the soft breeze under Jamestown, Founders of Virginia, New England, Clovis, Beringia, and the early maize fact tour was
+**Other ambience:** the soft breeze under Jamestown, Founders of Virginia, New England, Clovis, Beringia, and early maize was
 synthesized with ffmpeg (filtered pink noise). The Mayflower (open sea and storm), Virginia, and Founders of Virginia (two shots) clips also keep
 their own natural background sound, slowed with the picture where it is slowed, and checked to contain no voices or music.

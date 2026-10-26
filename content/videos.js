@@ -71,17 +71,20 @@ GAME_CONTENT.videos = {
   },
   "s1-early-maize": {
     title: "Early Maize: The Gift of Farming",
-    cueTimes: [0, 5.37, 12.26, 17.91], // narration starts 0.5 s after each cue
-    audio: "assets/audio/s1-early-maize.m4a",
+    cueTimes: [0, 5.37, 13.7, 20.52, 26.93], // narration starts 0.5 s after each cue
     cues: [
-      "As the Ice Age ended, many giant animals died out, and people began to **farm**.",
-      "In **Mexico**, farmers developed **maize (corn)** from a wild grass, starting about **9,000 years ago**.",
-      "The **Three Sisters**, corn, beans, and squash, grew together and helped each other.",
-      "Why it matters: a food **surplus** led to permanent villages, cities, and **civilizations**."
+      "As the **Ice Age** ended, about 11,700 years ago, many giant animals such as mammoths died out, and people began to **farm**.",
+      "In **Mexico's Balsas River valley**, starting about **9,000 years ago**, farmers developed **maize (corn)** from a wild grass called **teosinte**.",
+      "Season after season they **saved seeds** from the best plants, and tiny wild ears grew into big **cobs**.",
+      "Later farmers planted the **Three Sisters** together, **corn, beans, and squash**, which helped each other grow.",
+      "Why it matters: a food **surplus** led to permanent **villages**, and later to cities and **civilizations**."
     ],
     facts: [
-      "Maize was developed from **teosinte**, a wild grass, in Mesoamerica.",
+      "Maize was developed from **teosinte**, a wild grass of southern Mexico, about **9,000 years ago**.",
+      "A teosinte ear holds only **5 to 12 kernels**, each sealed in a stony case; a maize ear can hold **500 or more**.",
+      "Ancient maize cobs about **6,250 years old** were found in **Guilá Naquitz** cave in Oaxaca, Mexico.",
       "**Three Sisters:** corn stalks hold up beans, beans enrich the soil, and squash leaves shade out weeds.",
+      "Maize farming spread north; after about **AD 900 to 1000** it became a major crop across much of what is now the eastern United States.",
       "Farming let people settle in one place, grow a surplus, and build civilizations."
     ],
     check: [

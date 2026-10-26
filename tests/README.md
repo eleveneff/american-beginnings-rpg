@@ -10,7 +10,7 @@ Headless Chromium smoke test (puppeteer-core, v2). It checks:
 - persistence after reload
 - the 95% pass mark: 23 of 24 passes Section 1; 22 of 24 (91.7%) in Section 2 means review, then retake
 - lands passed under the old 80% mark stay passed after loading the save
-- the video player on all 8 slots: the seven embedded clips (Beringia, Clovis points, Jamestown, Founders of Virginia, Virginia struggles, the Mayflower voyage, and New England) start unmuted from the "Play with sound" click, decode their narration track, and show each caption at its `cueTimes`; the Section 1 early-maize placeholder runs a narrated fact tour from `assets/audio/`. Each slot shows a lower-third caption, at least 3 Key Facts, a check that stays locked until the end, +5★ per check question answered right, and no stars on a retake (90 video stars in total). The check questions are in the Section 5 trial pool, and the Parent Report lists the videos
+- the video player on all 8 slots: the eight embedded clips (Beringia, Clovis points, early maize, Jamestown, Founders of Virginia, Virginia struggles, the Mayflower voyage, and New England) start unmuted from the "Play with sound" click, decode their narration track, and show each caption at its `cueTimes`. Each slot shows a lower-third caption, at least 3 Key Facts, a check that stays locked until the end, +5★ per check question answered right, and no stars on a retake (90 video stars in total). The check questions are in the Section 5 trial pool, and the Parent Report lists the videos
 - every one of the 19 activities solved
 - all 5 markets
 - the Grand Trial and its 50-star Crown

@@ -1,6 +1,6 @@
 Drop lesson videos here as `<key>.mp4`. The game picks them up automatically, and shows a placeholder until a file exists.
 
-Section 1 keys (Beringia and Clovis points are embedded and verified; early maize is a placeholder):
+Section 1 keys (all three are embedded and verified):
 - `s1-beringia.mp4`: Scroll 1, the land bridge
 - `s1-clovis-points.mp4`: Scroll 3, Clovis point technology
 - `s1-early-maize.mp4`: Scroll 4, farming and early maize
@@ -21,6 +21,8 @@ Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 **New England clip (`s5-new-england.mp4`):** six scenes, one per caption: the first winter (still, slow push-in), the March 1621 treaty of Massasoit and Governor Carver, Tisquantum planting corn with fish, the autumn 1621 harvest gathering, the 1630 Winthrop fleet (still), and a New England town street (still). The treaty, planting, and harvest scenes are AI-generated animations of generated period stills (Wampanoag deerskin, Separatist-era English dress), six takes each, checked frame by frame, with the cleanest kept. Fact cards carry the dates and numbers.
 
 **Beringia clip (`s1-beringia.mp4`):** the sea-level scenes are the NOAA [PALE Paleoenvironmental Atlas of Beringia](https://commons.wikimedia.org/wiki/File:Beringia_land_bridge-noaagov.gif) coastline maps (NOAA, public domain), shown at 21,000 years ago and then animated from 13,000 years ago to 11,000 years ago and on to today, with added labels, legend, and year counter. The hunters on the steppe and the skin boats on the coast are AI-generated animations of generated stills (six takes each, checked frame by frame, the cleanest kept). The coastal route is shown as a theory, which is how scientists treat it.
+
+**Early maize clip (`s1-early-maize.mp4`):** the teosinte, hybrid, and maize ears are a real photograph, [Maize-teosinte.jpg](https://commons.wikimedia.org/wiki/File:Maize-teosinte.jpg) by John Doebley ([CC BY 3.0](https://creativecommons.org/licenses/by/3.0)), placed on a matching red background. The Ice Age steppe, the Balsas valley rock shelter, the Three Sisters field, and the farming village are AI-generated animations of generated stills (six takes each for the new scenes, checked frame by frame, the cleanest kept; the steppe shot is an unused take from the Beringia set).
 
 **Clovis points clip (`s1-clovis-points.mp4`):** five scenes, one per caption: the 1930s dig at Blackwater Draw with mammoth bones, the point turning on hide (shown forward, then in reverse), a point being lashed to a spear shaft by a fire, and hunters near mammoths at a water hole. All are AI-generated animations, six takes each for the dig, hafting, and hunt scenes, checked frame by frame, with the cleanest kept. Fact cards carry the dates, stones, and finds.
 

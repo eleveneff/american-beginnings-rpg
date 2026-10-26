@@ -18,7 +18,7 @@ GAME_CONTENT.sections.push({
         "England's victory over the **Spanish Armada** in **1588** had also made England stronger at sea and ready to compete for colonies."
       ] },
     { topic: "jamestown", title: "Scroll 2: Jamestown, 1607", video: null,
-      videoKey: "s5-jamestown-settlers", videoTitle: "The First Settlers of Jamestown, 1607",
+      videoKey: "s5-jamestown-settlers", videoTitle: "Jamestown: The Colony That Lasted",
       videoFacts: ["May 1607: about 104 English men and boys land on Jamestown Island in **Virginia** aboard the **Susan Constant, Godspeed, and Discovery**.", "They were sent by the **Virginia Company of London**, a joint-stock company, and they build a **triangular wooden fort** within weeks.", "Jamestown becomes the **first permanent English settlement** in North America.", "**Captain John Smith** takes charge with the rule \"He that will not work shall not eat.\"", "Their neighbors are the **Powhatan Confederacy**, about 30 Algonquian-speaking groups led by **Powhatan (Wahunsenacah)**, who trade corn with them."],
       videoIdea: "Low-poly N64-style: three English ships on the James River; colonists build a triangular log fort.",
       text: [
@@ -28,7 +28,18 @@ GAME_CONTENT.sections.push({
         "The colonists lived near the **Powhatan Confederacy**, a union of about 30 Algonquian-speaking groups led by **Powhatan (Wahunsenacah)**. The Powhatan traded corn to the colonists, but relations were often tense.",
         "The winter of **1609–1610** was called the **\"Starving Time.\"** Only about 60 of some 300 colonists survived."
       ] },
-    { topic: "tobacco", title: "Scroll 3: Pocahontas, Tobacco, and Self-Government", video: null,
+    { topic: "founders", title: "Scroll 3: Founders of Virginia", video: null,
+      videoKey: "s5-virginia-founders", videoTitle: "Founders of Virginia",
+      text: [
+        "Jamestown survived because of the courage and hard work of many people. Here are some of the colony's key founders.",
+        "**Christopher Newport**, a one-armed veteran sea captain, commanded the **1607 fleet**. His supply voyages from England kept the colony alive.",
+        "**Bartholomew Gosnold**, who had named **Cape Cod** in **1602**, was, in John Smith's words, \"one of the first movers\" of the colony. He helped choose the colony's leaders but died of sickness in August 1607.",
+        "**Captain John Smith** led the colony in **1608–1609**. He made everyone work, traded with the Powhatan for corn, and **mapped the Chesapeake Bay**.",
+        "**Pocahontas**, daughter of **Chief Powhatan**, brought food to the hungry fort. Her **1614** marriage to **John Rolfe** helped bring years of peace.",
+        "**Lord De La Warr** arrived in **June 1610**, just as the starving survivors were leaving. He turned them back and rebuilt the fort.",
+        "**John Rolfe's** sweeter **tobacco** (about 1612) became Virginia's **cash crop**. In **1619**, **Governor George Yeardley** brought the **Great Charter**, backed by **Sir Edwin Sandys** of the Virginia Company, and called the first elected assembly in English America."
+      ] },
+    { topic: "tobacco", title: "Scroll 4: Pocahontas, Tobacco, and Self-Government", video: null,
       videoKey: "s5-virginia-struggles", videoTitle: "Early Virginia: Struggles and Recovery",
       videoFacts: ["Swampy land, bad water, disease, and hunger kill many colonists.", "In the **Starving Time (1609–1610)**, only about 60 of some 300 colonists survive.", "In June 1610, supply ships under **Lord De La Warr** arrive just as the survivors are leaving.", "**John Rolfe's tobacco** (about 1612) becomes Virginia's **cash crop**, and the **headright system** brings more settlers.", "In **1619**, the **House of Burgesses**, the first elected assembly in English America, meets. That same year, the first recorded Africans arrive, brought against their will.", "Conflict with the Powhatan grows; after the **1622** attack, Virginia becomes a **royal colony (1624)**."],
       videoIdea: "Low-poly N64-style: green tobacco fields and a wooden church where elected burgesses meet.",
@@ -40,7 +51,7 @@ GAME_CONTENT.sections.push({
         "In **1619**, the **House of Burgesses** met for the first time. It was the **first elected representative assembly** in the English colonies, a seed of American self-government.",
         "Also in 1619, the first recorded **Africans** arrived in Virginia, brought against their will. Over time, slavery grew in the colonies."
       ] },
-    { topic: "pilgrims", title: "Scroll 4: The Pilgrims and the Mayflower Compact", video: null,
+    { topic: "pilgrims", title: "Scroll 5: The Pilgrims and the Mayflower Compact", video: null,
       videoKey: "s5-pilgrim-voyage", videoTitle: "The Mayflower Voyage, 1620",
       videoFacts: ["The **Pilgrims** were Separatists seeking freedom to worship. They first lived in **Leiden, the Netherlands**.", "The **Speedwell** leaked and turned back. In **September 1620**, the **Mayflower** sailed alone from **Plymouth, England**, carrying **102 passengers**.", "During the **66-day** stormy crossing, a main beam cracked and was repaired with a great iron screw. A baby, **Oceanus Hopkins**, was born at sea.", "In **November 1620**, storms brought them to **Cape Cod**, outside their Virginia charter."],
       videoIdea: "Low-poly N64-style: the Mayflower crossing stormy seas, then passengers signing a paper in the ship's cabin by candlelight.",
@@ -50,7 +61,7 @@ GAME_CONTENT.sections.push({
         "Before going ashore, 41 men signed the **Mayflower Compact**. They agreed to make \"just and equal laws\" and obey them for the general good. It was an early example of **self-government** and **majority rule**.",
         "They founded **Plymouth Colony**. About half of them died during the first harsh winter."
       ] },
-    { topic: "plymouth", title: "Scroll 5: Squanto, Massasoit, and the Harvest Feast", video: null,
+    { topic: "plymouth", title: "Scroll 6: Squanto, Massasoit, and the Harvest Feast", video: null,
       videoKey: "s5-new-england", videoTitle: "The Mayflower Compact and a New England Beginning",
       videoFacts: ["Before landing, **41 men sign the Mayflower Compact**, promising \"just and equal laws\" for the general good, an early example of self-government.", "About half the settlers die during the first hard winter at **Plymouth**.", "In 1621, **Samoset** and **Squanto (Tisquantum)** help them; Squanto teaches them to plant corn with fish as fertilizer.", "**Massasoit** and the **Wampanoag** make a peace treaty of mutual defense that lasts more than 50 years.", "In autumn 1621, the Pilgrims and about 90 Wampanoag share a **three-day harvest feast**.", "Under **Governor William Bradford**, Plymouth grows, and more New England towns, churches, and town meetings follow."],
       videoIdea: "Low-poly N64-style: Squanto shows Pilgrims how to plant corn with a fish in each mound; later a joyful harvest feast.",
@@ -122,6 +133,15 @@ GAME_CONTENT.sections.push({
       accept: ["massasoit"], display: "Massasoit", explain: "The treaty kept peace for many years." },
     { id: "s5q19", topic: "plymouth", type: "mc", q: "Who was Plymouth's longtime governor and wrote Of Plymouth Plantation?",
       choices: ["William Bradford", "John Smith", "Samuel de Champlain", "Roger Williams"],
-      explain: "His history is a key primary source." }
+      explain: "His history is a key primary source." },
+    { id: "s5q40", topic: "founders", type: "mc", q: "Who commanded the three ships that brought the first colonists to Jamestown in 1607?",
+      choices: ["Christopher Newport", "John Rolfe", "William Bradford", "Lord De La Warr"],
+      explain: "Newport, a one-armed veteran sea captain, also led the supply voyages that kept the colony alive." },
+    { id: "s5q41", topic: "founders", type: "mc", q: "Which Jamestown founder had named Cape Cod in 1602?",
+      choices: ["Bartholomew Gosnold", "John Smith", "George Yeardley", "Christopher Newport"],
+      explain: "Gosnold explored New England in 1602, then helped organize the Jamestown voyage. He died in August 1607." },
+    { id: "s5q42", topic: "founders", type: "mc", q: "Which governor brought the Great Charter and called Virginia's first elected assembly in 1619?",
+      choices: ["George Yeardley", "John Smith", "Christopher Newport", "Bartholomew Gosnold"],
+      explain: "Yeardley carried out reforms backed by Sir Edwin Sandys of the Virginia Company." }
   ]
 });

@@ -31,7 +31,7 @@ GAME_CONTENT.extend("s5", {
     ]
   },
   lessons: [
-    { topic: "voices5", title: "Scroll 6: Voices of Virginia and Plymouth", video: null,
+    { topic: "voices5", title: "Scroll 7: Voices of Virginia and Plymouth", video: null,
       text: [
         "John Smith recorded Powhatan asking the English: **\"Why will you take by force what you may have quietly by love?\"** Remember that we only have Smith's version of Powhatan's words.",
         "The **Mayflower Compact** (1620) says the signers **\"covenant and combine ourselves together into a civil body politic\"** to make **\"just and equal laws\"** for the general good, promising **\"all due submission and obedience.\"** They still called themselves loyal subjects of King James. Only the men signed; women and children were not asked.",

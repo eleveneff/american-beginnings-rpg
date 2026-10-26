@@ -16,7 +16,7 @@ GAME_CONTENT.extend("s3", {
 
 GAME_CONTENT.extend("s5", {
   lessons: [
-    { topic: "selfgov5", title: "Scroll 7: Seeds of Self-Government", video: null,
+    { topic: "selfgov5", title: "Scroll 8: Seeds of Self-Government", video: null,
       text: [
         "Two of America's founding ideals, **self-government** and **the rule of law**, took root in these first colonies, long before the American Revolution.",
         "**House of Burgesses, 1619.** On **July 30, 1619**, elected **burgesses** (two from each settlement) met with Governor **George Yeardley** in the church at **Jamestown**. It was the **first elected representative assembly** in English America: colonists chose people to make laws for them.",

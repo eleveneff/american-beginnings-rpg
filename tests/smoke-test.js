@@ -240,7 +240,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
      file falls back to a placeholder fact tour. */
   await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
   const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
-  assert(vids.length === 7 && ['s5-jamestown-settlers', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 7 video slots use the player (3 in s1, 4 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-virginia-struggles': 1, 's5-pilgrim-voyage': 1, 's5-new-england': 1 }; assert(true, 'only the 5 verified clips are embedded');
+  assert(vids.length === 8 && ['s5-jamestown-settlers', 's5-virginia-founders', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize'].every(k => vids.some(v => v.key === k)), 'all 8 video slots use the player (3 in s1, 5 in s5)'); const realWant = { 's1-clovis-points': 1, 's5-jamestown-settlers': 1, 's5-virginia-founders': 1, 's5-virginia-struggles': 1, 's5-pilgrim-voyage': 1, 's5-new-england': 1 }; assert(true, 'only the 6 verified clips are embedded');
   for (const v of vids) {
     const before = (await st()).stars.balance;
     await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);
@@ -268,7 +268,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       if (tour.audio) assert(tour.playing && !tour.muted, 'video ' + v.key + ': narrated fact tour plays its narration track');
       await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     }
-    if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage' || v.key === 's5-jamestown-settlers') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });
+    if (v.key === 's1-beringia' || v.key === 's5-pilgrim-voyage' || v.key === 's5-jamestown-settlers' || v.key === 's5-virginia-founders') await p.screenshot({ path: SHOTS + 'v-' + v.key + '.png', fullPage: true });
     for (let q = 0; q < v.nq; q++) {
       await p.evaluate(key => { const c = window.GAME_CONTENT.videos[key].check; const qt = document.querySelector('.vc-q b').textContent; const qq = c.find(x => x.q.replace(/\*/g, '') === qt) || c[0]; [...document.querySelectorAll('.vc-ch button')].find(b => b.textContent === qq.choices[0].replace(/\*/g, '')).click(); }, v.key);
       await sleep(80); await click('.vc-next');
@@ -286,7 +286,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const vs = await st();
   assert(vs.stars.balance === b0 && vs.stars.bySource.video === 5 * vids.reduce((t, v) => t + v.nq, 0), 'a video check retake pays no stars; ' + vs.stars.bySource.video + ' video stars in total');
   const vq = await p.evaluate(() => window.GAME_CONTENT.sections.find(s => s.id === 's5').questions.filter(q => q.fromVideo).length);
-  assert(vq === 8, 'video check questions are also in the Section 5 trial pool (' + vq + ')');
+  assert(vq === 12, 'video check questions are also in the Section 5 trial pool (' + vq + ')');
   await p.evaluate(() => ABRPG.home());
 
   /* final */

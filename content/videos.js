@@ -91,22 +91,67 @@ GAME_CONTENT.videos = {
     ]
   },
   "s5-jamestown-settlers": {
-    title: "The First Settlers of Jamestown, 1607",
-    cueTimes: [0, 7.10, 13.18, 18.25, 23.32], // narration starts 0.5 s after each cue
+    title: "Jamestown: The Colony That Lasted",
+    cueTimes: [0, 12.12, 23.92, 33.66, 45.29, 57.44, 69.34], // narration starts 0.5 s after each cue
     cues: [
-      "**May 1607:** about 104 English men and boys reach Virginia on three ships.",
-      "The **Susan Constant, Godspeed, and Discovery** were sent by the **Virginia Company of London**.",
-      "Within weeks they raise a **triangular wooden fort** on the James River.",
-      "**Captain John Smith:** \"He that will not work shall not eat.\"",
-      "Why it matters: Jamestown becomes the **first permanent English settlement** in North America."
+      "In **April 1606**, **King James the First** granted a charter to the **Virginia Company of London**. That December, **three small ships** sailed from London with **105 settlers** bound for America.",
+      "The **Susan Constant**, **Godspeed** and **Discovery** reached **Chesapeake Bay** in late April 1607. On **May 14**, **104 men and boys** came ashore beside a river they named the **James**.",
+      "Within weeks they finished **James Fort**, a **triangle** of log walls with a lookout bulwark at each corner. Jamestown became the **first permanent English settlement** in America.",
+      "Hard times came fast. Bad water and sickness killed **half the settlers** by fall. **Captain John Smith** ordered, **\"He that will not work shall not eat,\"** and traded with the **Powhatan** people for corn.",
+      "In the winter of 1609, the **Starving Time**, about 300 people were in the fort and **only about 60 survived**. In **June 1610**, **Lord De La Warr** arrived with supplies, and the colony held on.",
+      "About **1612**, **John Rolfe** began growing a sweeter **tobacco** that sold well in England. His **1614** marriage to **Pocahontas**, daughter of **Chief Powhatan**, brought several years of peace.",
+      "In **1619**, America's **first elected assembly** met at Jamestown, the birth of **self-government**. More English women came to build families, and about **20 Africans** were brought here **against their will**."
+    ],
+    facts: [
+      "In **1606**, **King James I** chartered the **Virginia Company of London** to plant a colony in America.",
+      "The **Susan Constant**, **Godspeed** and **Discovery** carried **105 settlers**; **104 men and boys** landed at Jamestown on **May 14, 1607**.",
+      "Jamestown was the **first permanent English settlement** in America, protected by the triangular **James Fort**.",
+      "**Captain John Smith's** rule, **\"He that will not work shall not eat,\"** and trade with the **Powhatan** helped the colony survive.",
+      "In the **Starving Time** (winter **1609–1610**), only **about 60 of some 300** people in the fort survived; **Lord De La Warr's** arrival in **June 1610** saved the colony.",
+      "In **1619**, the **General Assembly**, the **first elected lawmaking body** in English America, met at Jamestown; the same year the first recorded **Africans** arrived in English Virginia, **brought against their will**."
     ],
     check: [
       { q: "In what year was Jamestown founded?",
-        choices: ["1607", "1620", "1492", "1754"],
-        explain: "Jamestown was founded in May 1607." },
-      { q: "Which three ships brought the first Jamestown settlers?",
-        choices: ["Susan Constant, Godspeed, and Discovery", "Niña, Pinta, and Santa María", "Mayflower and Speedwell", "Half Moon, Victoria, and Golden Hind"],
-        explain: "The Virginia Company sent all three ships." }
+        choices: ["1607", "1620", "1492", "1776"],
+        explain: "104 men and boys landed on May 14, 1607. Jamestown was England's first permanent settlement in America." },
+      { q: "What crop helped Virginia make money and grow?",
+        choices: ["Tobacco", "Cotton", "Rice", "Sugar cane"],
+        explain: "Starting about 1612, John Rolfe's sweeter tobacco sold well in England and became Virginia's cash crop." },
+      { q: "Why is the year 1619 important in Virginia's history?",
+        choices: ["The first elected assembly met, and the first recorded Africans arrived", "The Mayflower landed", "The colony was founded", "Virginia became a state"],
+        explain: "The General Assembly began self-government in America. The same year about 20 Africans were brought to Virginia against their will." }
+    ]
+  },
+  "s5-virginia-founders": {
+    title: "Founders of Virginia",
+    cueTimes: [0, 8.90, 19.63, 27.33, 35.46, 42.98, 50.21], // narration starts 0.5 s after each cue
+    cues: [
+      "**Captain Christopher Newport**, a one-armed sea veteran, commanded the **1607 fleet** and sailed the **supply voyages** that kept Jamestown alive.",
+      "**Bartholomew Gosnold**, who named **Cape Cod** in **1602**, rallied support for the voyage and helped choose the colony's leaders. He died in August 1607.",
+      "**Captain John Smith** led the colony in **1608**, made every man work, traded for corn, and **mapped the Chesapeake Bay**.",
+      "**Pocahontas**, daughter of **Chief Powhatan**, brought food to the hungry fort and later became a **bridge of peace** between two peoples.",
+      "**Lord De La Warr** arrived in **June 1610** just as the settlers were leaving. He turned them back and **rebuilt the fort**.",
+      "**John Rolfe** planted a sweeter **tobacco** that sold well in England, giving Virginia the **cash crop** it needed to grow.",
+      "**Governor George Yeardley** brought the **Great Charter**, backed by **Sir Edwin Sandys**, and called America's **first elected assembly** in **1619**."
+    ],
+    facts: [
+      "**Christopher Newport**, a one-armed veteran sea captain, commanded the **1607 fleet** and the supply voyages that kept Jamestown alive.",
+      "**Bartholomew Gosnold**, the \"prime mover\" of the colony, had named **Cape Cod** in **1602**; he died in August 1607.",
+      "**Captain John Smith** led the colony in **1608–1609**, made everyone work, traded for corn, and **mapped the Chesapeake Bay**.",
+      "**Pocahontas**, daughter of **Chief Powhatan**, brought food to the fort and, by marrying **John Rolfe** in **1614**, helped bring years of peace.",
+      "**Lord De La Warr** arrived in **June 1610** just as the colonists were abandoning Jamestown, turned them back, and rebuilt the fort.",
+      "**John Rolfe's tobacco** (about 1612) became Virginia's **cash crop**. **Governor George Yeardley**, with reforms backed by **Sir Edwin Sandys**, called America's **first elected assembly** in **1619**."
+    ],
+    check: [
+      { q: "Which Jamestown leader said, \"He that will not work shall not eat\"?",
+        choices: ["John Smith", "John Rolfe", "Christopher Newport", "George Yeardley"],
+        explain: "As colony president in 1608, Smith made every settler work to grow and gather food." },
+      { q: "How did Pocahontas help Jamestown?",
+        choices: ["She brought food, and her marriage to John Rolfe helped bring peace", "She was the colony's first governor", "She sailed the ships from England", "She wrote the Great Charter"],
+        explain: "Pocahontas brought food to the hungry fort, and her 1614 marriage began the \"Peace of Pocahontas\"." },
+      { q: "Who arrived in 1610 and stopped the settlers from abandoning Jamestown?",
+        choices: ["Lord De La Warr", "Bartholomew Gosnold", "John Smith", "Edwin Sandys"],
+        explain: "In June 1610, De La Warr's ships met the departing settlers on the river, and he ordered them back to rebuild." }
     ]
   },
   "s5-virginia-struggles": {

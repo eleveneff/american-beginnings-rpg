@@ -214,17 +214,23 @@ GAME_CONTENT.videos = {
   },
   "s5-new-england": {
     title: "Plymouth and a New England Beginning",
-    cueTimes: [0, 11.18], // narration starts 0.5 s after each cue
+    cueTimes: [0, 6.39, 14.52, 24.82, 33.52, 42.72], // narration starts 0.5 s after each cue
     cues: [
-      "**Plymouth Colony:** about **half the settlers died** the first winter; **Squanto** and **Massasoit's Wampanoag** helped the survivors, and the **1621 harvest feast** followed.",
-      "The hilltop **fort doubled as the meetinghouse**; from **1630**, **Puritans** built **Massachusetts Bay**, with **town meetings** and **schools**."
+      "**The first winter at Plymouth (1620–1621):** about **half** of the settlers died of disease and hardship.",
+      "**March 1621:** the Wampanoag leader **Massasoit** and Governor **John Carver** made a treaty of **peace and mutual defense**.",
+      "**Tisquantum (Squanto)**, a **Patuxet** man who had learned English after being kidnapped to Europe, showed the settlers how to **plant corn with fish** to feed the soil.",
+      "**Autumn 1621:** Massasoit and **about 90** of his men joined the colonists for **three days** of feasting at the harvest celebration.",
+      "**1630:** **John Winthrop** brought a fleet of **Puritans** (11 ships) to found the **Massachusetts Bay Colony**: \"We shall be as a **city upon a hill**.\"",
+      "New England towns governed themselves in **town meetings**. A **1647** law required larger towns to keep **schools** so children could learn to read the Bible."
     ],
     facts: [
-      "The first winter at Plymouth killed **about half** of the settlers.",
-      "In **1621**, **Massasoit** of the **Wampanoag** made a **peace treaty** with Plymouth.",
-      "Plymouth's hilltop **fort** also served as the **meetinghouse** for worship and meetings.",
-      "The **Puritans** hoped Massachusetts Bay would be a **\"city upon a hill\"** and governed towns through **town meetings**.",
-      "Massachusetts's **1647 school law** required towns to support schools so children could learn to read."
+      "The first winter at Plymouth killed **about half** of the Mayflower's **102 passengers**.",
+      "On **March 22, 1621**, **Massasoit** of the **Wampanoag** and Governor **John Carver** made a treaty of **peace and mutual defense**.",
+      "**Tisquantum (Squanto)**, a **Patuxet** man, taught the settlers to **plant corn with fish** as fertilizer.",
+      "In autumn **1621**, Massasoit and **about 90** Wampanoag men joined the colonists for **three days** of harvest feasting.",
+      "In **1630**, **John Winthrop's** fleet of **11 ships** founded the **Massachusetts Bay Colony**, which he hoped would be a **\"city upon a hill.\"**",
+      "New England towns governed themselves in **town meetings** (Dorchester's is the earliest on record, **1633**).",
+      "Massachusetts's **1647 school law** required towns of **50 households** to provide a teacher of reading and writing."
     ],
     check: [
       { q: "Which Wampanoag leader made a peace treaty with Plymouth in 1621?",

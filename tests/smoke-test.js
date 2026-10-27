@@ -1,4 +1,4 @@
-/* American Beginnings RPG v2 headless smoke test.
+/* American Beginnings RPG v2.1 headless smoke test.
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/shots/ node tests/smoke-test.js */
 const puppeteer = require('puppeteer-core') /* executablePath below: adjust to your Chrome */;
 const SHOTS = process.env.SHOTS || '/tmp/smoke/';
@@ -36,19 +36,94 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await p.screenshot({ path: SHOTS + 'm-migrated-map.png' });
   await go(); s = await st();
   assert(s.stars.balance === 120, 'no double retro stars after second load');
+  assert(s.version === 3 && s.srcQ && s.skills, 'v1 save lands on save format v3 (srcQ + skills added)');
+
+  /* 1b. a v2.0 save (format 2: no srcQ / skills) loads in v2.1 with nothing lost */
+  await p.evaluate(k => { const d = JSON.parse(localStorage.getItem(k)); d.version = 2; delete d.srcQ; delete d.skills; d.stars.balance = 77; d.owned.push('moccasins'); localStorage.setItem(k, JSON.stringify(d)); }, KEY);
+  await go(); s = await st();
+  console.log('v2.0 save:');
+  assert(s.version === 3 && typeof s.srcQ === 'object' && typeof s.skills === 'object', 'v2 save upgraded to format 3 with empty srcQ and skills');
+  assert(s.stars.balance === 77 && s.owned.includes('moccasins') && s.sections.s1.completed && s.badges.length === 2, 'v2 save keeps stars, items, progress and badges');
+  assert(errs.length === 0, 'old saves load without page errors ' + JSON.stringify(errs));
 
   /* 2. fresh game */
   await p.evaluate(k => localStorage.removeItem(k), KEY); await go();
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.0', 'version marker v2.0');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.1' && (await p.evaluate(() => ABRPG.version)) === 'v2.1', 'version marker v2.1');
   await p.screenshot({ path: SHOTS + '1-map.png' });
   await click('.node[data-sid="s1"]');
   await click('#pg button[data-g="boy"]'); await click('#pn button'); await p.screenshot({ path: SHOTS + '2-char.png' });
   await click('#b-go'); await p.screenshot({ path: SHOTS + '3-intro.png', fullPage: true });
   const actIds = await p.$$eval('.act-card', els => els.map(e => e.getAttribute('data-act')));
-  assert(actIds.length === 3, 's1 shows 3 activities');
+  assert(actIds.length === 5, 's1 shows 5 activities (3 classic + map + timeline)');
+  assert((await p.evaluate(ids => ids.map(id => GAME_CONTENT.sections[0].activities.find(a => a.id === id).type).slice(3).join(), actIds)) === 'geomap,timeline', 's1 has a map challenge and a timeline challenge');
 
   /* activity solver: plays perfectly, or with `miss` deliberate mistakes */
+  /* v2.1 map challenge: places every label with real input, cycling tap -> touch drag -> mouse drag.
+     `miss` deliberate wrong taps go on the first label (dropped on the farthest dot). Drops land a few px off the dot to exercise tolerance. */
+  const geoActOnScreen = () => p.evaluate(() => { const h2 = document.querySelector('#screen h2').textContent; let a = null; GAME_CONTENT.sections.forEach(s => (s.activities || []).forEach(x => { if (x.type === 'geomap' && h2.includes(x.title)) a = x; })); return a; });
+  const dotXY = ti => p.evaluate(ti => { const el = document.querySelector('.geo-t[data-ti="' + ti + '"]'); el.scrollIntoView({ block: 'center' }); const r = el.querySelector('.dot').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, ti);
+  const fbText = () => p.$eval('#a-fb', e => e.innerText);
+  async function solveGeo(miss, log) {
+    let step = 0;
+    for (let guard = 0; guard < 40; guard++) {
+      const c = await p.$('.geo-tray .drag-item'); if (!c) break;
+      const ii = await p.evaluate(c => +c.getAttribute('data-ii'), c);
+      while (miss > 0) {
+        const far = await p.evaluate(ii => { const me = document.querySelector('.geo-t[data-ti="' + ii + '"] .dot').getBoundingClientRect(); let best = -1, bd = -1; document.querySelectorAll('.geo-t').forEach(t => { const r = t.querySelector('.dot').getBoundingClientRect(), d = Math.hypot(r.x - me.x, r.y - me.y); if (d > bd) { bd = d; best = +t.getAttribute('data-ti'); } }); return best; }, ii);
+        await p.click('.geo-tray .drag-item[data-ii="' + ii + '"]'); const o = await dotXY(far); await p.mouse.click(o[0], o[1]); await sleep(80); miss--;
+        if (log) log.wrong.push(await fbText());
+      }
+      const o = await dotXY(ii); const tx = o[0] + 6, ty = o[1] - 5;
+      const box = await (await p.$('.geo-tray .drag-item[data-ii="' + ii + '"]')).boundingBox();
+      const vp = p.viewport(), vis = box && box.y > 0 && box.y + box.height < vp.height;
+      const mode = (log && vis) ? step % 3 : 0; // bulk solves use tap only (reliable); dedicated test cycles modes
+      const left0 = await p.$$eval('.geo-tray .drag-item', x => x.length);
+      if (mode === 0) { await p.evaluate(ii => document.querySelector('.geo-tray .drag-item[data-ii="' + ii + '"]').click(), ii); const q = await dotXY(ii); await p.mouse.click(q[0] + 6, q[1] - 5); }
+      else if (mode === 1) { await p.touchscreen.touchStart(box.x + 6, box.y + 6); await p.touchscreen.touchMove((box.x + tx) / 2, (box.y + ty) / 2); await p.touchscreen.touchMove(tx, ty); await p.touchscreen.touchEnd(); }
+      else { await p.mouse.move(box.x + 6, box.y + 6); await p.mouse.down(); await p.mouse.move(tx, ty, { steps: 5 }); await p.mouse.up(); }
+      await sleep(90);
+      const f = await fbText(); if (!f.includes('✅')) throw new Error('map placement failed (' + ['tap', 'touch', 'mouse'][mode] + '): ' + f);
+      const left1 = await p.$$eval('.geo-tray .drag-item', x => x.length);
+      if (left1 !== left0 - 1 && !(await p.$('#a-again'))) throw new Error('map label not consumed after ' + ['tap', 'touch', 'mouse'][mode] + ' (left ' + left1 + '/' + left0 + ')');
+      if (log) log.modes[mode]++;
+      step++;
+    }
+    await p.waitForSelector('#a-again', { timeout: 8000 });
+  }
+  /* v2.1 timeline: puts each card in its gap by date with tap / touch drag / mouse drag; `miss` wrong gaps first */
+  async function solveTL(miss, log) {
+    let step = 0;
+    for (let guard = 0; guard < 30; guard++) {
+      const t = await p.evaluate(() => { const h2 = document.querySelector('#screen h2').textContent; let a = null; GAME_CONTENT.sections.forEach(s => (s.activities || []).forEach(x => { if (x.type === 'timeline' && h2.includes(x.title)) a = x; })); (GAME_CONTENT.finalActivities || []).forEach(x => { if (h2.includes(x.title)) a = x; });
+        const Y = {}; a.events.forEach(e => Y[e.t] = e.y); const line = [...document.querySelectorAll('.tl-ev b')].map(x => Y[x.textContent]); const card = document.querySelector('.tl-card'); if (!card) return null;
+        const y = Y[card.textContent]; let g = 0; while (g < line.length && line[g] < y) g++; return { ti: +card.getAttribute('data-ti'), g, sorted: line.every((v, i) => !i || line[i - 1] <= v) }; });
+      if (!t) break;
+      if (!t.sorted) throw new Error('timeline line out of order');
+      while (miss > 0) { await p.evaluate((ti, g) => { document.querySelector('.tl-card[data-ti="' + ti + '"]').click(); document.querySelector('.tl-gap[data-gap="' + g + '"]').click(); }, t.ti, t.g === 0 ? 1 : 0); await sleep(80); miss--; if (log) log.wrong.push(await fbText()); }
+      const mode = log ? step % 3 : 0; // bulk solves use tap only
+      const left0 = await p.$$eval('.tl-card', x => x.length);
+      if (mode === 0) { await p.evaluate((ti, g) => { document.querySelector('.tl-card[data-ti="' + ti + '"]').click(); document.querySelector('.tl-gap[data-gap="' + g + '"]').click(); }, t.ti, t.g); }
+      else { const gap = await p.$('.tl-gap[data-gap="' + t.g + '"]'); await gap.evaluate(e => e.scrollIntoView({ block: 'center' })); const gb = await gap.boundingBox(); const cb = await (await p.$('.tl-card[data-ti="' + t.ti + '"]')).boundingBox(); const gx = gb.x + gb.width / 2, gy = gb.y + gb.height / 2;
+        if (mode === 1) { await p.touchscreen.touchStart(cb.x + 8, cb.y + 8); await p.touchscreen.touchMove(gx, (cb.y + gy) / 2); await p.touchscreen.touchMove(gx, gy); await p.touchscreen.touchEnd(); }
+        else { await p.mouse.move(cb.x + 8, cb.y + 8); await p.mouse.down(); await p.mouse.move(gx, gy, { steps: 6 }); await p.mouse.up(); } }
+      await sleep(90);
+      const f = await fbText(); if (!f.includes('✅')) throw new Error('timeline placement failed (' + ['tap', 'touch', 'mouse'][mode] + '): ' + f);
+      let left1 = await p.$$eval('.tl-card', x => x.length);
+      if (left1 !== left0 - 1 && !(await p.$('#a-again'))) {
+        // sticky tray / overlay can eat a Puppeteer hit; retry once via element.click
+        await p.evaluate((ti, g) => { const c = document.querySelector('.tl-card[data-ti="' + ti + '"]'); if (c) c.click(); const gp = document.querySelector('.tl-gap[data-gap="' + g + '"]'); if (gp) gp.click(); }, t.ti, t.g);
+        await sleep(100);
+        left1 = await p.$$eval('.tl-card', x => x.length);
+        if (left1 !== left0 - 1 && !(await p.$('#a-again'))) throw new Error('timeline card not consumed after ' + ['tap', 'touch', 'mouse'][mode] + ' (left ' + left1 + '/' + left0 + ', fb=' + (await fbText()).slice(0, 60) + ')');
+      }
+      if (log) log.modes[mode]++;
+      step++;
+    }
+    await p.waitForSelector('#a-again', { timeout: 8000 });
+  }
   async function solve(miss) {
+    if (await p.$('.geo-tray')) return solveGeo(miss);
+    if (await p.$('.tl-tray')) return solveTL(miss);
     for (let guard = 0; guard < 200; guard++) {
       if (await p.$('#a-again')) return;
       const info = await p.evaluate(() => {
@@ -208,7 +283,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   /* persistence */
   await go(); s = await st();
-  assert(s.sections.s1.completed && s.owned.includes(cheap.key) && s.purchases.length === 1 && Object.keys(s.acts).length === 6, 'progress, purchases, activities persist after reload');
+  assert(s.sections.s1.completed && s.owned.includes(cheap.key) && s.purchases.length === 1 && Object.keys(s.acts).length === 8, 'progress, purchases, activities persist after reload');
 
   /* under-95% path in s2: miss 2 of 24 (22/24 = 91.7%, a pass under the old 80% mark) -> must review, then retake */
   await click('.node[data-sid="s2"]'); if (await p.$('#pn button')) { await click('#pn button'); await click('#b-go'); }
@@ -227,11 +302,64 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const all = await p.evaluate(() => GAME_CONTENT.sections.map(s => ({ sid: s.id, ids: (s.activities || []).map(a => a.id) })));
   let solvedN = 0;
   for (const sec of all) for (const id of sec.ids) {
-    await p.evaluate((sid, id) => ABRPG.runActivity(sid, id, ABRPG.home), sec.sid, id); await sleep(80);
+    await p.evaluate((sid, id) => ABRPG.runActivity(sid, id, ABRPG.home), sec.sid, id); await sleep(200);
     if (solvedN % 4 === 0) await p.screenshot({ path: SHOTS + 'act-' + id + '.png', fullPage: true });
-    await solve(0); solvedN++;
+    try { await solve(0); } catch (e) { throw new Error('activity ' + id + ' failed: ' + e.message); } solvedN++;
   }
-  assert(solvedN === 19, 'all 19 activities completed');
+  assert(solvedN === 31, 'all 31 activities completed (19 classic + 6 maps + 6 timelines)');
+
+  /* v2.1 primary-source scroll: shows the source, its quiz pays and records srcQ, a miss comes back until cleared */
+  console.log('primary-source scrolls:');
+  const srcL = await p.evaluate(() => { const o = []; GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.source) o.push({ sid: s.id, i, topic: l.topic, n: s.questions.filter(q => q.topic === l.topic).length }); })); return o; });
+  assert(srcL.length >= 8 && srcL.every(x => x.n >= 3), srcL.length + ' source scrolls, each with at least 3 source questions');
+  const sc = srcL[0];
+  await p.evaluate((sid, i) => ABRPG.lesson(sid, i), sc.sid, sc.i); await sleep(200);
+  assert(await p.evaluate(() => !!document.querySelector('.src-q #b-srcq') && document.querySelector('#screen').innerText.length > 400), 'scroll shows the source and a source-questions button');
+  await p.screenshot({ path: SHOTS + 'v21-primary-source.png', fullPage: true });
+  const srcBal = (await st()).stars.balance;
+  await click('#b-srcq'); await answer(false);
+  let srcAns = 0; while (await p.$('#screen .qtype')) { await answer(true); srcAns++; await sleep(30); if (srcAns > 40) throw new Error('source quiz loop'); }
+  assert(/Source questions complete/.test(await p.$eval('#screen', e => e.innerText)) && srcAns === sc.n, 'source quiz: missed question came back, all ' + sc.n + ' cleared');
+  s = await st(); assert(s.srcQ[sc.topic].plays === 1 && s.srcQ[sc.topic].last === sc.n - 1 && s.srcQ[sc.topic].wrong === 1, 'srcQ records first-try score ' + (sc.n - 1) + '/' + sc.n + ' and the miss');
+  assert(s.stars.balance >= srcBal, 'source quiz never costs stars');
+
+  /* v2.1 map challenge: wrong drops count, hint, tolerance, mouse + touch + tap, review of misses */
+  console.log('map challenges:');
+  await p.setViewport({ width: 1100, height: 900 });
+  await p.evaluate(() => ABRPG.runActivity('s6', 's6-geomap', ABRPG.home)); await sleep(250);
+  const sk0 = JSON.parse(JSON.stringify((await st()).skills['s6-geomap'] || { right: 0, wrong: 0 }));
+  const gLog = { wrong: [], modes: [0, 0, 0] }, nT = await p.$$eval('.geo-tray .drag-item', x => x.length);
+  await solveGeo(2, gLog);
+  assert(gLog.wrong.length === 2 && gLog.wrong.every(w => !w.includes('✅')), 'wrong drops are rejected with feedback');
+  assert(gLog.modes.every(n => n > 0), 'labels placed by tap (' + gLog.modes[0] + '), touch drag (' + gLog.modes[1] + ') and mouse drag (' + gLog.modes[2] + ')');
+  s = await st(); let sk = s.skills['s6-geomap'];
+  assert(sk && sk.right - sk0.right === nT - 1 && sk.wrong - sk0.wrong === 1 && Object.keys(sk.missed).length === 1 && s.acts['s6-geomap'].history.slice(-1)[0].mistakes === 2, 'map scoring: ' + nT + ' labels, 2 wrong drops on 1 label = ' + (nT - 1) + ' right first try, 1 missed label logged');
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.screenshot({ path: SHOTS + 'v21-map.png' });
+  assert(!!(await p.$('#a-review')), 'missed label offers mastery review');
+  await click('#a-review'); await sleep(150);
+  assert(!!(await p.$('#screen .qtype')), 'review opens the linked exam question');
+  const geoTol = await p.evaluate(() => { const a = GAME_CONTENT.sections.find(s => s.id === 's6').activities.find(a => a.type === 'geomap'); const g = GAME_CONTENT.mapGeo[a.geo]; return !!g && a.targets.every(t => typeof t.lat === 'number' && typeof t.lon === 'number' && t.q); });
+  assert(geoTol, 'every s6 map target has coordinates and a linked review question');
+
+  /* v2.1 timelines: events ordered by date, wrong gap feedback, review, cumulative Grand Timeline */
+  console.log('timelines:');
+  const tlCheck = await p.evaluate(() => GAME_CONTENT.sections.map(s => { const a = s.activities.find(a => a.type === 'timeline'); return a ? a.events.length : 0; }).concat([(GAME_CONTENT.finalActivities || [])[0] ? GAME_CONTENT.finalActivities[0].events.length : 0]));
+  assert(tlCheck.slice(0, 6).every(n => n >= 5 && n <= 8) && tlCheck[6] >= 8, 'each section timeline has 5-8 events; Grand Timeline has ' + tlCheck[6]);
+  assert(await p.evaluate(() => (GAME_CONTENT.finalActivities[0].events).every(e => e.y >= 1492 && e.y <= 1754)), 'Grand Timeline spans 1492-1754');
+  await p.evaluate(() => ABRPG.runActivity('s3', 's3-timeline', ABRPG.home)); await sleep(250);
+  const tLog = { wrong: [], modes: [0, 0, 0] };
+  await solveTL(2, tLog);
+  assert(tLog.wrong.length === 2 && tLog.wrong.every(w => /before|after/i.test(w)), 'wrong gaps explain before/after');
+  assert(tLog.modes.every(n => n > 0), 'cards placed by tap, touch drag and mouse drag');
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.screenshot({ path: SHOTS + 'v21-timeline.png' });
+  s = await st(); sk = s.skills['s3-timeline'];
+  assert(sk && sk.wrong === 1 && Object.keys(sk.missed).length === 1 && !!(await p.$('#a-review')), 'timeline mistakes logged and offered for review');
+  await click('#a-review'); await sleep(150); assert(!!(await p.$('#screen .qtype')), 'timeline review opens the linked question');
+  await p.evaluate(() => ABRPG.finalIntro()); await sleep(200); await click('#b-fa-final-timeline'); await sleep(200);
+  await p.evaluate(() => window.scrollTo(0, 0)); await p.screenshot({ path: SHOTS + 'v21-timeline-start.png' });
+  await solveTL(0); s = await st();
+  assert(s.acts['final-timeline'] && s.acts['final-timeline'].best === 3, 'Grand Timeline (final) completed perfectly before the Grand Trial');
+  await p.setViewport({ width: 1280, height: 860 });
   for (const m of ['m2', 'm3', 'm4', 'm5']) { await click('#btn-market'); await click('.mk-tab[data-mid="' + m + '"]'); await sleep(150); await p.screenshot({ path: SHOTS + 'mk-' + m + '.png', fullPage: true }); }
   assert(!(await p.$eval('.mk-tab[data-mid="m5"]', e => e.classList.contains('locked'))), 'all markets open when all lands mastered');
 
@@ -296,6 +424,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   s = await st(); assert(s.final.passed && s.stars.bySource.crown === 50, 'final passed, crown bonus 50');
   assert(errs.length === 0, 'no page errors ' + JSON.stringify(errs));
   await click('#btn-report'); await sleep(600); const rp = await p.evaluate(() => document.body.innerText + (document.querySelector('#rep-text') || {}).textContent); assert(/lesson videos/i.test(rp), 'Parent Report lists lesson videos');
+  assert(/PRIMARY-SOURCE SCROLLS/.test(rp) && /MAP & TIMELINE CHALLENGES/.test(rp), 'Parent Report has source-scroll and map & timeline sections');
+  const rs = await p.$$eval('#rep-skills tr', r => r.map(x => x.innerText));
+  assert(rs.length >= 14 && rs.some(x => /Label the Thirteen Colonies/.test(x) && /%/.test(x)) && /Weak areas[\s\S]*(Map|Timeline)/.test(rp), 'Parent Report table shows map/timeline accuracy and weak areas');
+  await p.screenshot({ path: SHOTS + 'v21-report.png', fullPage: true });
   console.log('ALL PASSED');
   await b.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

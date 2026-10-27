@@ -225,3 +225,34 @@ pre.report{white-space:pre-wrap;background:#fffdf5;border:2px solid #b08a50;bord
 .src-url{font-size:.85rem;margin:.2rem 0 .3rem}.src-url a{color:#2b5fae}
 .src-peek{margin-bottom:.8rem}.src-peek summary{cursor:pointer;font-weight:bold;color:#5b3a1a}
 .try-act.src-q{background:#fff3d0;border-color:#7a5428}
+/* v2.1 map & timeline challenges */
+.geo-tray,.tl-tray{position:sticky;top:3.9rem;z-index:4;background:#f3e2b3;border:3px solid #5b3a1a;border-radius:12px;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.geo-tray small,.tl-tray small{display:block;width:100%;color:#5b3a1a;font-weight:bold}
+.geo-stage{background:#e9dcbc;text-align:center}
+.geo-stage svg.geo-svg{display:block;margin:0 auto;width:100%;max-height:72vh;touch-action:manipulation;cursor:crosshair}
+.geo-sea{fill:#5fa4d6}
+.geo-land{fill:#b9d48c;stroke:#3d2a12;stroke-width:1.3;stroke-linejoin:round}
+.geo-lake{fill:#5fa4d6;stroke:#3d2a12;stroke-width:.7}
+.geo-river{fill:none;stroke:#2f6db0;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.geo-route{fill:none;stroke-width:3.2;stroke-dasharray:9 6;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.geo-t .hit{fill:transparent}
+.geo-t .dot{stroke:#2a1a0c;stroke-width:2.5}
+.geo-t:not(.done) .dot{animation:geo-breathe 2.4s ease-in-out infinite}
+.geo-t.hint .dot{fill:#ffd24a;animation:geo-flash .6s ease-in-out infinite alternate}
+.geo-t:focus{outline:none}.geo-t:focus .dot{stroke:#fff;stroke-width:4}
+.geo-lbl{font:bold 15px/1 "Trebuchet MS",sans-serif;fill:#2a1a0c;paint-order:stroke;stroke:#fff7d6;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+@keyframes geo-breathe{50%{stroke-width:4}}
+@keyframes geo-flash{from{stroke:#2a1a0c}to{stroke:#fff;stroke-width:6}}
+.geo-legend{display:flex;flex-wrap:wrap;gap:.3rem .9rem;font-size:.85rem;margin:.2rem 0 .5rem}
+.geo-legend i{display:inline-block;width:28px;border-top:4px dashed;margin-right:.35rem;vertical-align:middle}
+.tl-line{position:relative;margin:.6rem 0;padding-left:28px}
+.tl-line:before{content:"";position:absolute;left:11px;top:0;bottom:0;width:6px;border-radius:3px;background:linear-gradient(#8b5a2b,#5b3a1a)}
+.tl-end{font-weight:bold;color:#5b3a1a;font-size:.85rem;margin:.2rem 0}
+.tl-ev{position:relative;background:#fff7d6;border:3px solid #5b3a1a;border-radius:10px;padding:.45rem .7rem;margin:.15rem 0;box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.tl-ev:before{content:"";position:absolute;left:-25px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#d4a017;border:3px solid #2a1a0c}
+.tl-when{display:inline-block;background:#5b3a1a;color:#ffe9a8;border-radius:6px;padding:.05rem .45rem;margin-right:.45rem;font-size:.85rem;font-weight:bold}
+.tl-gap{display:block;width:100%;min-height:34px;margin:.15rem 0;border:3px dashed #8b5a2b;border-radius:10px;background:rgba(255,247,214,.45);color:#5b3a1a;font-size:1.1rem;font-weight:bold;cursor:pointer}
+.tl-gap:hover,.tl-gap.over{background:#ffe9a8;border-style:solid}
+.tl-gap.hint{animation:geo-gap 0.6s ease-in-out infinite alternate}
+@keyframes geo-gap{to{background:#ffd24a;border-color:#2a1a0c}}
+.geo-tray{max-height:34vh;overflow:auto}

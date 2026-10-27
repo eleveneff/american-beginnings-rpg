@@ -123,7 +123,7 @@
   function allDone() { return C.sections.every(function (s) { return S.sections[s.id] && S.sections[s.id].completed; }); }
 
   /* ---------------- stars economy ---------------- */
-  var SRC_LABEL = { question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)" };
+  var SRC_LABEL = { question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)", skill: "Map & timeline placements (first time right)" };
   function addStars(n, src, note) {
     n = Math.max(0, Math.floor(n || 0)); if (!n) return 0;
     S.stars.balance += n; S.stars.earned += n; S.stars.bySource[src] = (S.stars.bySource[src] || 0) + n;
@@ -359,7 +359,7 @@
   }
   function actCard(a) {
     var r = S.acts[a.id], best = r && r.best ? "⭐".repeat(r.best) + "☆".repeat(3 - r.best) : "New!";
-    var kind = { sequence: "Put in order", sort: "Sort it", map: "Map it", scenario: "Make choices", dialogue: "Talk with a person" }[a.type] || a.type;
+    var kind = { sequence: "Put in order", sort: "Sort it", map: "Map it", scenario: "Make choices", dialogue: "Talk with a person", geomap: "Label the map", timeline: "Build the timeline" }[a.type] || a.type;
     return '<button class="act-card" id="act-' + a.id + '" data-act="' + a.id + '"><span class="ic">' + a.icon + "</span><b>" + esc(a.title) + "</b><small>" + kind + " · " + best + "</small><small>" + (r && r.plays ? "Played " + r.plays + "× · earned ⭐ " + (r.earned || 0) : "Up to ⭐ " + C.stars.actPerfect) + "</small></button>";
   }
   function sectionIntro(sid) {
@@ -632,8 +632,8 @@
     setWorld({ sky: "#ffd27a", sky2: "#9fd8ff", ground: "#8bd16a", ground2: "#3f8a4a", accent: "#d4a017", snow: false, water: true });
     var p = currentPlayer(), h = '<div class="scene"><div class="who">' + C.final.icon + " " + esc(C.final.title) + "</div>";
     C.final.scene.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
-    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * C.sections.length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better (" + passNeed(C.final.questionsPerSection * C.sections.length) + " right) to win the <b>" + esc(C.final.badge.name) + "</b>.</p><button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
-    show(h); on("b-go", startFinal); on("b-map", home); renderHero();
+    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * C.sections.length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better (" + passNeed(C.final.questionsPerSection * C.sections.length) + " right) to win the <b>" + esc(C.final.badge.name) + "</b>.</p>" + ((C.finalActivities || []).length ? "<p>Warm up first? The <b>Grand Timeline</b> puts the whole unit in order, 1492 to 1754.</p>" + C.finalActivities.map(function (a) { return '<button class="btn alt" id="b-fa-' + a.id + '" data-fa="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") : "") + "<button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
+    show(h); on("b-go", startFinal); on("b-map", home); $all("[data-fa]", $screen).forEach(function (b) { b.onclick = function () { runActivity("final", b.getAttribute("data-fa")); }; }); renderHero();
   }
   function startFinal() {
     var ids = [];
@@ -765,10 +765,11 @@
   }
 
   /* ---------------- activity engine ---------------- */
-  function actById(sid, id) { var s = sectionById(sid), r = null; (s.activities || []).forEach(function (a) { if (a.id === id) r = a; }); return r; }
+  function finalSection() { return { id: "final", title: C.final.title, icon: C.final.icon, palette: { sky: "#ffd27a", sky2: "#9fd8ff", ground: "#8bd16a", ground2: "#3f8a4a", accent: "#d4a017", snow: false, water: true }, activities: C.finalActivities || [] }; }
+  function actById(sid, id) { var s = sid === "final" ? finalSection() : sectionById(sid), r = null; (s.activities || []).forEach(function (a) { if (a.id === id) r = a; }); return r; }
   function runActivity(sid, id, back) {
-    var s = sectionById(sid), a = actById(sid, id); if (!a) return;
-    back = back || function () { sectionIntro(sid); };
+    var s = sid === "final" ? finalSection() : sectionById(sid), a = actById(sid, id); if (!a) return;
+    back = back || function () { if (sid === "final") finalIntro(); else sectionIntro(sid); };
     setWorld(s.palette);
     var st = { mistakes: 0 };
     show('<div class="panel act"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + ' · 🎮 Activity</span><span id="a-mis">Mistakes: 0</span></div><h2>' + a.icon + " " + esc(a.title) + "</h2>" + (a.intro ? "<p>" + md(a.intro) + "</p>" : "") +
@@ -776,8 +777,8 @@
     on("a-quit", back);
     function miss() { st.mistakes++; document.getElementById("a-mis").textContent = "Mistakes: " + st.mistakes; }
     function fb(ok, html) { document.getElementById("a-fb").innerHTML = '<div class="feedback ' + (ok ? "ok" : "no") + '">' + html + "</div>"; }
-    var api = { body: document.getElementById("a-body"), miss: miss, fb: fb, done: function () { finishActivity(sid, a, st.mistakes, back); } };
-    ({ sequence: actSequence, sort: actSort, map: actSort, scenario: actScenario, dialogue: actScenario }[a.type] || actSequence)(a, api);
+    var api = { body: document.getElementById("a-body"), miss: miss, fb: fb, done: function (review) { finishActivity(sid, a, st.mistakes, back, review); } };
+    ({ sequence: actSequence, sort: actSort, map: actSort, scenario: actScenario, dialogue: actScenario, geomap: actGeoMap, timeline: actTimeline }[a.type] || actSequence)(a, api, sid);
     renderHero();
   }
   function actSequence(a, api) {
@@ -875,7 +876,185 @@
     }
     draw();
   }
-  function finishActivity(sid, a, mistakes, back) {
+  /* v2.1: map and timeline challenges. Both use dragCard (mouse, touch, pen:
+     drag a card, or tap a card and then tap the spot; keyboard: Enter on a
+     card, then Enter on a spot). Each item placed right on the first try
+     counts once ever toward stars and gear; a first miss is logged in
+     S.skills and links to a question that goes to mastery review. */
+  function skillRec(a) { return S.skills[a.id] || (S.skills[a.id] = { right: 0, wrong: 0, plays: 0, missed: {}, credited: {}, lastAt: null }); }
+  function skillSid(sid, item) { var x = item.q && qById(item.q); return sid !== "final" ? sid : (x ? x.s.id : null); }
+  function skillFirstMiss(sid, a, item, review) {
+    var r = skillRec(a); r.wrong++; r.missed[item.label] = (r.missed[item.label] || 0) + 1;
+    var x = item.q && qById(item.q);
+    if (x) { var st = sec(x.s.id); st.missed[x.q.id] = (st.missed[x.q.id] || 0) + 1; if (review.indexOf(x.q.id) < 0) review.push(x.q.id); }
+    save();
+  }
+  function skillRight(sid, a, item, key) {
+    var r = skillRec(a); r.right++;
+    if (!r.credited[key]) {
+      r.credited[key] = now(); addStars(C.stars.perQuestion, "skill", a.id + ":" + key);
+      var gs = skillSid(sid, item), g = gs ? awardGear(gs) : null;
+      if (g) toast(g.icon + " <b>New gear: " + esc(g.name) + "!</b> It's on your hero now.");
+      save(); renderHero(); return '<span class="star-pop">+' + C.stars.perQuestion + " ⭐</span> ";
+    }
+    save(); return "";
+  }
+  function dragCard(el, o) {
+    el.style.touchAction = "none";
+    el.addEventListener("click", function (e) { if (e.detail === 0) o.tap(); });
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button > 0) return;
+      var sx = e.clientX, sy = e.clientY, ghost = null, moved = false;
+      function mv(ev) {
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 8) return;
+        if (!moved) { moved = true; ghost = el.cloneNode(true); ghost.className = "drag-item ghost"; document.body.appendChild(ghost); if (o.start) o.start(); }
+        ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+        if (o.over) o.over(ev);
+      }
+      function up(ev) {
+        document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+        if (ghost) ghost.remove();
+        if (moved) o.drop(ev); else o.tap();
+      }
+      document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+      e.preventDefault();
+    });
+  }
+  function geoXY(g, lat, lon) { return [(lon - g.lon0) * g.kx, (g.lat1 - lat) * g.ky]; }
+  function shortLabel(t) { return t.replace(/\s*\(.*\)\s*$/, ""); }
+  var REGION_FILL = { ne: "#2b5fae", mid: "#1e8449", south: "#c0392b" };
+  function geoSVG(a, items, hint) {
+    var g = C.mapGeo[a.geo], f = function (v) { return Math.round(v * 10) / 10; };
+    var o = ['<svg class="geo-svg" viewBox="0 0 ' + f(g.w) + " " + f(g.h) + '" role="img" aria-label="Map: ' + esc(a.title) + '"><defs><clipPath id="geo-clip"><rect width="' + f(g.w) + '" height="' + f(g.h) + '"/></clipPath></defs>',
+      '<rect class="geo-sea" width="' + f(g.w) + '" height="' + f(g.h) + '"/>', '<g clip-path="url(#geo-clip)"><path class="geo-land" d="' + g.land + '"/>'];
+    if (g.lakes) o.push('<path class="geo-lake" d="' + g.lakes + '"/>');
+    if (g.rivers) o.push('<path class="geo-river" d="' + g.rivers + '"/>');
+    (a.routes || []).forEach(function (r) {
+      [0, 360, -360].forEach(function (off) {
+        var d = r.pts.map(function (p, i) { var xy = geoXY(g, p[0], p[1] + off); return (i ? "L" : "M") + f(xy[0]) + " " + f(xy[1]); }).join("");
+        o.push('<path class="geo-route" d="' + d + '" stroke="' + r.color + '"/>');
+      });
+    });
+    o.push("</g>");
+    items.forEach(function (it, ii) {
+      var xy = geoXY(g, it.lat, it.lon), x = f(xy[0]), y = f(xy[1]), col = it.placed ? (REGION_FILL[it.region] || "#1e8449") : "#fff7d6";
+      o.push('<g class="geo-t' + (it.placed ? " done" : "") + (hint === ii ? " hint" : "") + '" data-ti="' + ii + '" tabindex="0" role="button" aria-label="Map spot ' + (ii + 1) + '"><circle class="hit" cx="' + x + '" cy="' + y + '" r="16"/><circle class="dot" cx="' + x + '" cy="' + y + '" r="7" fill="' + col + '"/></g>');
+    });
+    items.forEach(function (it) {
+      if (!it.placed) return; var xy = geoXY(g, it.lat, it.lon), pos = it.lpos || (xy[0] > g.w * 0.72 ? "l" : "r");
+      var lx = pos === "l" ? -11 : pos === "r" ? 11 : 0, ly = pos === "t" ? -12 : pos === "b" ? 22 : 5;
+      o.push('<text class="geo-lbl" x="' + f(xy[0] + lx) + '" y="' + f(xy[1] + ly) + '" text-anchor="' + (pos === "l" ? "end" : pos === "r" ? "start" : "middle") + '">' + esc(shortLabel(it.label)) + "</text>");
+    });
+    o.push("</svg>");
+    return o.join("");
+  }
+  function actGeoMap(a, api, sid) {
+    var items = a.targets.map(function (t, i) { return { label: t.label, lat: t.lat, lon: t.lon, fact: t.fact, q: t.q, region: t.region, lpos: t.lpos, key: t.id || String(i), tries: 0, placed: false }; });
+    var order = shuffle(items.map(function (x, i) { return i; })), sel = null, hint = null, review = [], left = items.length, g = C.mapGeo[a.geo];
+    skillRec(a).plays++; skillRec(a).lastAt = now(); save();
+    function draw() {
+      var h = '<div class="tray geo-tray">' + (left ? "<small>" + (sel === null ? "Drag a label to its dot, or tap a label and then tap the map." : "Now tap the right dot on the map.") + "</small>" : "<i>All labeled!</i>");
+      order.forEach(function (ii) { var it = items[ii]; if (!it.placed) h += '<button class="drag-item' + (sel === ii ? " sel" : "") + '" data-ii="' + ii + '">' + esc(it.label) + "</button>"; });
+      h += '</div><div class="map-stage geo-stage">' + geoSVG(a, items, hint) + "</div>";
+      if ((a.routes || []).length) h += '<div class="geo-legend">' + a.routes.map(function (r) { return '<span><i style="border-color:' + r.color + '"></i>' + esc(r.name) + "</span>"; }).join("") + "</div>";
+      api.body.innerHTML = h;
+      var svg = api.body.querySelector(".geo-svg");
+      $all(".drag-item", api.body).forEach(function (b) {
+        var ii = +b.getAttribute("data-ii");
+        dragCard(b, { tap: function () { sel = sel === ii ? null : ii; draw(); }, drop: function (ev) { dropAt(ii, ev.clientX, ev.clientY); } });
+      });
+      svg.addEventListener("click", function (ev) { if (sel === null) { toast("First tap a label, then tap where it belongs."); return; } dropAt(sel, ev.clientX, ev.clientY); });
+      $all(".geo-t", api.body).forEach(function (t) { t.addEventListener("keydown", function (ev) { if ((ev.key === "Enter" || ev.key === " ") && sel !== null) { ev.preventDefault(); var it = items[+t.getAttribute("data-ti")], xy = geoXY(g, it.lat, it.lon); placeXY(sel, xy[0], xy[1]); } }); });
+    }
+    function dropAt(ii, cx, cy) {
+      var svg = api.body.querySelector(".geo-svg"), r = svg.getBoundingClientRect();
+      if (cx < r.left || cx > r.right || cy < r.top || cy > r.bottom) { draw(); return; }
+      var pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      placeXY(ii, p.x, p.y, 1 / (svg.getScreenCTM().a || 1));
+    }
+    function placeXY(ii, x, y, scale) {
+      var it = items[ii]; if (!it || it.placed) return;
+      var best = -1, bd = 1e9;
+      items.forEach(function (t, k) { var xy = geoXY(g, t.lat, t.lon), d = Math.hypot(xy[0] - x, xy[1] - y); if (d < bd) { bd = d; best = k; } });
+      var tol = Math.max(40, 30 * (scale || 1));
+      if (bd > tol * 2.2) { api.fb(false, "🧭 That's not near any dot. Drop the label right on one of the dots."); sel = null; draw(); return; }
+      sel = null;
+      if (best === ii && bd <= tol) {
+        it.placed = true; left--; if (hint === ii) hint = null;
+        var star = it.tries === 0 ? skillRight(sid, a, it, it.key) : "";
+        api.fb(true, "✅ " + star + "<b>" + esc(it.label) + "</b>. " + md(it.fact || "")); draw();
+        if (!left) setTimeout(function () { api.done(review); }, 1200);
+      } else if (best === ii) {
+        api.fb(false, "🧭 So close! Drop it right on the dot."); draw();
+      } else {
+        it.tries++; api.miss(); if (it.tries === 1) skillFirstMiss(sid, a, it, review);
+        if (it.tries >= 2) hint = ii;
+        api.fb(false, "❌ <b>" + esc(it.label) + "</b> doesn't go there." + (it.tries >= 2 ? " Hint: look for the <b>flashing dot</b>." : " Think about the lesson clues and try again!")); draw();
+      }
+    }
+    draw();
+  }
+  function actTimeline(a, api, sid) {
+    var evs = a.events.map(function (e, i) { return { label: e.t, when: e.when, y: e.y, q: e.q, fact: e.fact, key: String(i), tries: 0 }; });
+    var anchor = Math.floor(Math.random() * evs.length), line = [evs[anchor]], tray = shuffle(evs.filter(function (e, i) { return i !== anchor; })), sel = null, review = [], hint = null;
+    skillRec(a).plays++; skillRec(a).lastAt = now(); save();
+    function draw() {
+      var h = '<div class="tray tl-tray">' + (tray.length ? "<small>" + (sel === null ? "Drag a card onto a ＋ gap, or tap a card and then tap a gap." : "Now tap the gap where it belongs.") + "</small>" : "<i>Timeline complete!</i>");
+      tray.forEach(function (e, ti) { h += '<button class="drag-item tl-card' + (sel === ti ? " sel" : "") + '" data-ti="' + ti + '">' + esc(e.label) + "</button>"; });
+      h += '</div><div class="tl-line"><div class="tl-end">⬆ Earlier</div>';
+      for (var gi = 0; gi <= line.length; gi++) {
+        if (tray.length) h += '<button class="tl-gap' + (hint === gi ? " hint" : "") + '" data-gap="' + gi + '">＋</button>';
+        if (gi < line.length) h += '<div class="tl-ev"><span class="tl-when">' + esc(line[gi].when) + "</span><b>" + esc(line[gi].label) + "</b></div>";
+      }
+      h += '<div class="tl-end">⬇ Later</div></div>';
+      api.body.innerHTML = h;
+      $all(".tl-card", api.body).forEach(function (b) {
+        var ti = +b.getAttribute("data-ti");
+        dragCard(b, {
+          tap: function () { sel = sel === ti ? null : ti; hint = null; draw(); },
+          over: function (ev) { $all(".tl-gap.over", api.body).forEach(function (x) { x.classList.remove("over"); }); var t = document.elementFromPoint(ev.clientX, ev.clientY), gp = t && t.closest ? t.closest("[data-gap]") : null; if (gp) gp.classList.add("over"); },
+          drop: function (ev) { var t = document.elementFromPoint(ev.clientX, ev.clientY), gp = t && t.closest ? t.closest("[data-gap]") : null; if (gp) place(ti, +gp.getAttribute("data-gap")); else draw(); }
+        });
+      });
+      $all(".tl-gap", api.body).forEach(function (b) { b.onclick = function () { if (sel === null) { toast("First tap a card, then tap the gap where it belongs."); return; } place(sel, +b.getAttribute("data-gap")); }; });
+    }
+    function rightGap(e) { var k = 0; while (k < line.length && line[k].y < e.y) k++; return k; }
+    function place(ti, gap) {
+      var e = tray[ti]; if (!e) return; sel = null;
+      var want = rightGap(e);
+      if (gap === want) {
+        tray.splice(ti, 1); line.splice(gap, 0, e); hint = null;
+        var star = e.tries === 0 ? skillRight(sid, a, e, e.key) : "";
+        api.fb(true, "✅ " + star + "<b>" + esc(e.when) + ":</b> " + esc(e.label) + "." + (e.fact ? " " + md(e.fact) : "")); draw();
+        if (!tray.length) setTimeout(function () { api.done(review); }, 1200);
+      } else {
+        e.tries++; api.miss(); if (e.tries === 1) skillFirstMiss(sid, a, e, review);
+        var nb = gap < want ? line[want - 1] : line[want];
+        if (e.tries >= 2) hint = want;
+        api.fb(false, "❌ Not there: <b>" + esc(e.label) + "</b> happened " + (gap < want ? "<b>after</b> " : "<b>before</b> ") + esc(nb.label) + " (" + esc(nb.when) + ")." + (e.tries >= 2 ? " Hint: try the <b>flashing gap</b>." : ""));
+        draw();
+      }
+    }
+    draw();
+  }
+  /* Mastery review after a map or timeline: the questions linked to missed
+     items. A wrong answer goes to the back of the line until it is right. */
+  function skillReview(ids, back) {
+    var queue = ids.slice(), first = {}, n = ids.length;
+    function step() {
+      if (!queue.length) {
+        show('<div class="panel big-reward"><div class="ic">🧠</div><h1>Review complete!</h1><p>Every missed fact was answered right. Nice work!</p><button class="btn" id="b-rv-back">◀ Back</button></div>');
+        on("b-rv-back", back); renderHero(); return;
+      }
+      var x = qById(queue[0]), q = x.q, again = first[q.id] !== undefined;
+      show('<div class="panel">' + askHTML(q, "🧠 Mastery review · " + (again ? '<span class="review-tag">TRY AGAIN</span>' : "Question " + (Object.keys(first).length + 1) + " of " + n)) + '</div><div class="panel" style="padding:.6rem 1rem"><button class="btn alt" id="b-rv-quit">◀ Stop review</button></div>');
+      on("b-rv-quit", back);
+      wireAnswer(q, function (ok) { if (!again) first[q.id] = ok; queue.shift(); if (!ok) queue.push(q.id); afterAnswer(x.s.id, q, ok, step); });
+      renderHero();
+    }
+    step();
+  }
+  function finishActivity(sid, a, mistakes, back, review) {
     var SC = C.stars, rating = mistakes === 0 ? 3 : (mistakes <= 2 ? 2 : 1), value = [0, SC.actDone, SC.actGood, SC.actPerfect][rating];
     var r = S.acts[a.id] || (S.acts[a.id] = { best: 0, bestStars: 0, plays: 0, firstAt: now(), lastAt: null, earned: 0, practiceDay: "", practiceCount: 0, history: [] });
     var n = 0, why;
@@ -889,8 +1068,8 @@
     r.history.push({ at: now(), mistakes: mistakes, rating: rating, stars: n }); if (r.history.length > 20) r.history = r.history.slice(-20);
     save(); renderHero();
     show('<div class="panel big-reward act-done"><div class="ic">' + a.icon + "</div><h1>" + esc(a.title) + ' complete!</h1><div class="rating">' + "⭐".repeat(rating) + '<span class="dim">' + "☆".repeat(3 - rating) + "</span></div><p>Mistakes: <b>" + mistakes + "</b> · " + (n ? '<span class="star-pop">+' + n + " ⭐ stars</span>" : "no new stars") + "</p><p>" + esc(why) + "</p><p>Your balance: <b>⭐ " + S.stars.balance + "</b></p>" +
-      '<button class="btn" id="a-again">🔁 Play again</button><button class="btn alt" id="a-back">◀ Back</button><button class="btn gold" id="a-market">🏪 Marketplace</button></div>');
-    on("a-again", function () { runActivity(sid, a.id, back); }); on("a-back", back); on("a-market", function () { market(); });
+      (review && review.length ? '<p>🧠 You missed ' + review.length + ' fact' + (review.length > 1 ? "s" : "") + '. They are in mastery review now, and they will come up first in the Trial.</p><button class="btn gold" id="a-review">🧠 Review what I missed (' + review.length + ')</button>' : "") + '<button class="btn" id="a-again">🔁 Play again</button><button class="btn alt" id="a-back">◀ Back</button><button class="btn gold" id="a-market">🏪 Marketplace</button></div>');
+    on("a-again", function () { runActivity(sid, a.id, back); }); on("a-review", function () { skillReview(review, function () { runActivity(sid, a.id, back); }); }); on("a-back", back); on("a-market", function () { market(); });
   }
 
   /* ---------------- character screen ---------------- */
@@ -1000,7 +1179,15 @@
     save(); renderHero(); return true;
   }
   /* ---------------- parent report ---------------- */
-  function allActs() { var o = []; C.sections.forEach(function (s) { (s.activities || []).forEach(function (a) { o.push({ s: s, a: a }); }); }); return o; }
+  function allActs() { var o = []; C.sections.forEach(function (s) { (s.activities || []).forEach(function (a) { o.push({ s: s, a: a }); }); }); (C.finalActivities || []).forEach(function (a) { o.push({ s: finalSection(), a: a }); }); return o; }
+  function skillActs() { return allActs().filter(function (x) { return x.a.type === "geomap" || x.a.type === "timeline"; }); }
+  function skillStat(x) { var r = S.skills[x.a.id] || { right: 0, wrong: 0, plays: 0, missed: {} }, tot = r.right + r.wrong, n = (x.a.targets || x.a.events).length; return { r: r, tot: tot, n: n, p: pct(r.right, tot), top: Object.keys(r.missed).sort(function (a, b) { return r.missed[b] - r.missed[a]; }).slice(0, 3) }; }
+  function skillReportLines() {
+    var L = [], list = skillActs();
+    L.push("MAP & TIMELINE CHALLENGES (" + list.filter(function (x) { return S.skills[x.a.id] && S.skills[x.a.id].plays; }).length + " of " + list.length + " tried; accuracy = placements right on the first try):");
+    list.forEach(function (x) { var k = skillStat(x); L.push(" - [" + x.s.title + "] " + x.a.title + ": " + (k.tot ? k.r.right + "/" + k.tot + " right (" + k.p + "%), played " + k.r.plays + "x" + (k.top.length ? " | most missed: " + k.top.map(function (t) { return t + " (" + k.r.missed[t] + "x)"; }).join("; ") : "") : "not tried yet")); });
+    return L;
+  }
   function weakAreas() {
     var out = [];
     C.sections.forEach(function (s) {
@@ -1010,6 +1197,7 @@
         if (x.wrong >= 2 || (tot >= 2 && pct(x.right, tot) < C.passPercent)) out.push({ s: s, topic: t, right: x.right, wrong: x.wrong, p: pct(x.right, tot) });
       });
     });
+    skillActs().forEach(function (x) { var k = skillStat(x); if (k.r.wrong >= 2 || (k.tot >= 2 && k.p < C.passPercent)) out.push({ s: x.s, label: (x.a.type === "geomap" ? "Map: " : "Timeline: ") + x.a.title, right: k.r.right, wrong: k.r.wrong, p: k.p }); });
     return out.sort(function (a, b) { return a.p - b.p; });
   }
   function srcList() { var o = []; C.sections.forEach(function (s) { s.lessons.forEach(function (l) { if (l.source) o.push({ s: s, l: l }); }); }); return o; }
@@ -1043,7 +1231,7 @@
     L.push("");
     var w = weakAreas();
     L.push("WEAK AREAS TO REVIEW: " + (w.length ? "" : "none flagged yet"));
-    w.forEach(function (x) { L.push(" - " + x.s.title + " › " + topicTitle(x.s, x.topic) + " (" + x.p + "%, missed " + x.wrong + "x)"); });
+    w.forEach(function (x) { L.push(" - " + x.s.title + " › " + (x.label || topicTitle(x.s, x.topic)) + " (" + x.p + "%, missed " + x.wrong + "x)"); });
     var miss = [];
     C.sections.forEach(function (s) { var st = S.sections[s.id]; if (!st) return; Object.keys(st.missed).forEach(function (id) { if (st.missed[id] >= 2) { var q = qById(id); if (q) miss.push(" - [" + s.title + "] " + (q.q.type === "vocab" ? "Define: " + q.q.term : q.q.q) + " (missed " + st.missed[id] + "x)"); } }); });
     if (miss.length) { L.push(""); L.push("QUESTIONS MISSED MORE THAN ONCE:"); L.push.apply(L, miss); }
@@ -1059,6 +1247,8 @@
     vk.forEach(function (k) { var r = S.videos[k]; if (r && (r.views || r.checked)) L.push(" - " + C.videos[k].title + ": watched " + r.views + "x, finished " + r.ended + "x, check best " + r.best + "/" + C.videos[k].check.length + " (" + r.right + " right, " + r.wrong + " missed), stars " + r.stars); });
     L.push("");
     L.push.apply(L, srcReportLines());
+    L.push("");
+    L.push.apply(L, skillReportLines());
     L.push("");
     L.push("MARKETPLACE PURCHASES: " + (S.purchases.length ? "" : "none yet"));
     S.purchases.forEach(function (x) { var m = marketById(x.market); L.push(" - " + x.name + " (" + x.price + " stars) at " + (m ? m.name : x.market) + ", " + fmtDate(x.at)); });
@@ -1083,8 +1273,9 @@
       "<h3>🎮 Activities</h3>" + '<table class="rep"><tr><th>Activity</th><th>Plays</th><th>Best</th><th>Stars</th></tr>' + allActs().map(function (x) { var r = S.acts[x.a.id] || {}; return "<tr><td>" + x.a.icon + " " + esc(x.a.title) + "</td><td>" + (r.plays || 0) + "</td><td>" + (r.best ? "⭐".repeat(r.best) : "—") + "</td><td>" + (r.earned || 0) + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🎬 Lesson Videos</h3>" + '<table class="rep"><tr><th>Video</th><th>Watched</th><th>Check best</th><th>Stars</th></tr>' + Object.keys(C.videos || {}).map(function (k) { var r = S.videos[k] || {}; return "<tr><td>" + esc(C.videos[k].title) + "</td><td>" + (r.views || 0) + "</td><td>" + (r.checked ? r.best + "/" + C.videos[k].check.length : "–") + "</td><td>" + (r.stars || 0) + "</td></tr>"; }).join("") + "</table>" +
       "<h3>📜 Primary-Source Scrolls</h3>" + '<table class="rep" id="rep-src"><tr><th>Source</th><th>Accuracy</th><th>Quiz best</th></tr>' + srcList().map(function (x) { var k = srcStat(x), tot = k.right + k.wrong; return "<tr><td>" + x.s.icon + " " + esc(topicTitle(x.s, x.l.topic)) + "</td><td>" + (tot ? pct(k.right, tot) + "% (" + k.right + "/" + tot + ")" : "—") + "</td><td>" + (k.quiz && k.quiz.plays ? k.quiz.best + "/" + k.n : "—") + "</td></tr>"; }).join("") + "</table>" +
+      "<h3>🗺️ Map &amp; Timeline Challenges</h3>" + '<table class="rep" id="rep-skills"><tr><th>Challenge</th><th>Accuracy</th><th>Plays</th><th>Most missed</th></tr>' + skillActs().map(function (x) { var k = skillStat(x); return "<tr><td>" + x.a.icon + " " + esc(x.a.title) + "</td><td>" + (k.tot ? k.p + "% (" + k.r.right + "/" + k.tot + ")" : "—") + "</td><td>" + (k.r.plays || 0) + "</td><td>" + (k.top.length ? esc(k.top.join("; ")) : "—") + "</td></tr>"; }).join("") + "</table>" +
       "<h3>🏪 Purchases</h3>" + (S.purchases.length ? "<ul>" + S.purchases.map(function (x) { return "<li>" + esc(x.name) + " · ⭐ " + x.price + " · " + fmtDate(x.at) + "</li>"; }).join("") + "</ul>" : "<p>None yet.</p>") +
-      "<h3>Weak areas</h3>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + x.s.icon + " " + esc(topicTitle(x.s, x.topic)) + ": " + x.p + "% (missed " + x.wrong + "×)</li>"; }).join("") + "</ul>" : "<p>None flagged yet.</p>") +
+      "<h3>Weak areas</h3>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + x.s.icon + " " + esc(x.label || topicTitle(x.s, x.topic)) + ": " + x.p + "% (missed " + x.wrong + "×)</li>"; }).join("") + "</ul>" : "<p>None flagged yet.</p>") +
       '<h3>Full text report</h3><pre class="report" id="rep-text">' + esc(reportText()) + "</pre>" +
       '<button class="btn gold" id="b-copy">📋 Copy report to clipboard</button><button class="btn alt" id="b-close">Close</button><button class="btn warn" id="b-reset">Reset all progress</button></div>';
     modal(h);
@@ -1107,6 +1298,6 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz };
+  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY };
   home();
 })();

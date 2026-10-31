@@ -1,4 +1,4 @@
-/* American Beginnings RPG v2.2–v2.3 walkable-world test (Section 1: Beringia).
+/* American Beginnings RPG v2.2–v2.4 walkable-world test (Section 1: Beringia; v2.4 adds Section 2: Native Nations).
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/wshots/ node tests/world-test.js
    Run it on its own (not in parallel with smoke-test.js): SwiftShader is slow and the timings below assume one suite at a time. */
 const puppeteer = require('puppeteer-core');
@@ -28,12 +28,12 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.3' && (await p.evaluate(() => ABRPG.version)) === 'v2.3', 'version marker v2.3');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.4' && (await p.evaluate(() => ABRPG.version)) === 'v2.4', 'version marker v2.4');
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
-  assert(!(await p.$eval('#w-banner', e => e.hidden)), '"New in v2.3" banner shows on the map (non-blocking)');
+  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.4/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.4" banner shows on the map (non-blocking)');
 
   console.log('enter Beringia + movement:');
   const before = await p.evaluate(k => localStorage.getItem(k), KEY);
@@ -213,6 +213,136 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const nf = await p2.evaluate(() => ({ map: !!document.querySelector('#screen .map'), w: window.__world ? __world.mode : 'none' }));
   assert(nf.map && (nf.w === 'classic' || nf.w === 'none'), 'no WebGL2: the game still boots to the 2D map (' + nf.w + ')');
   await p2.close();
+
+  console.log('v2.4 Section 2: Native Nations level:');
+  { const s2base = () => base({ players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'girl', name: 'Abigail' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } } });
+    const enterS2 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s2"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
+    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
+    await seed(s2base(), null);
+    const before2 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    await enterS2(); w = await W();
+    assert((await p.evaluate(() => __world.level)) === 's2' && w.phase === 'active' && Math.abs(w.pos.x) < 0.01 && Math.abs(w.pos.z + 8) < 0.01, 'tapping Section 2 opens the Native Nations level south of the council fire (0, -8)');
+    assert(/Section 2 · Native Nations/.test(await p.$eval('#w-era', e => e.textContent)), 'era label names Section 2');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 1 · Council fire: /.test(bn), 'at the start the banner names a Marker 1 ring at the council fire ("' + bn + '")'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v24-hub.png');
+    await hold('KeyW', 1000); w = await W(); assert(w.pos.z > -6.5, 'W walks her north toward the fire (z ' + w.pos.z.toFixed(2) + ')');
+    // geography drawn in code: north = +z, WEST = +x; the hide map faces south so a reader facing north has west on her left
+    { const g = await p.evaluate(() => { const S = __world.stations(), { L, THREE } = __world._dbg(), hm = L.lvl.scene.getObjectByName('hide-map'), n = new THREE.Vector3(0, 0, 1).applyQuaternion(hm.getWorldQuaternion(new THREE.Quaternion()));
+      return { S, nz: n.z, hz: hm.getWorldPosition(new THREE.Vector3()).z }; });
+      const S = g.S; assert(S.nw.z > 30 && S.nw.x > 20 && S.plains.x > 40 && S.sw.z < -30 && S.sw.x > 20 && S.ew.x < -20 && S.ew.z > 30 && S.mound.x < -20 && S.mound.z < -30 && S.plaza.x < -40, 'stations sit in their real directions (Northwest Coast north-west, Plains west, Southwest south-west, Woodlands north-east, mound town south-east)');
+      const gm = await ringAt('s2-geomap'); assert(g.nz < -0.99 && gm.z < g.hz, 'the painted hide map faces south and its ring is on its south side (she reads it facing north, west on her left)'); }
+    // rings: on (or right beside) the roads, standable, never in the sea
+    { const rs = await p.evaluate(() => { const S = __world.stations(); return __world.rings().map(r => ({ id: r.id, d: __world.pathDist(r.x, r.z), w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })); });
+      const off = rs.filter(r => !(r.d <= 3.2) || !r.w || r.s); assert(rs.length === 17 && !off.length, 'all 17 rings are standable and within 3.2 m of a road (' + JSON.stringify(off) + ')'); }
+    console.log('  walls, shore and camera:');
+    { await tp(-42, 48 + 17.5); await p.evaluate(() => __world.faceCam(Math.PI)); await hold('KeyW', 2500); w = await W();
+      assert(Math.hypot(w.pos.x + 42, w.pos.z - 48) > 15 + 0.25, 'the palisade stops her from the north side (' + Math.hypot(w.pos.x + 42, w.pos.z - 48).toFixed(2) + ' m from the centre)');
+      const ga = await p.evaluate(() => __world._dbg().L.mods.B.PALISADE.gapA); await tp(-42 + Math.cos(ga) * 19, 48 + Math.sin(ga) * 19); await p.evaluate(a => __world.faceCam(a), Math.atan2(-Math.cos(ga), -Math.sin(ga))); await hold('KeyW', 2600); w = await W();
+      assert(Math.hypot(w.pos.x + 42, w.pos.z - 48) < 14, 'she walks in through the palisade gap (' + Math.hypot(w.pos.x + 42, w.pos.z - 48).toFixed(2) + ' m from the centre)');
+      await tp(38, 60); await p.evaluate(() => __world.faceCam(0)); await hold('KeyW', 3000); w = await W();
+      assert(!(await p.evaluate((x, z) => __world.solid(x, z), w.pos.x, w.pos.z)) && w.pos.z < 66, 'the sea north of the Northwest Coast beach stops her at the shore (z ' + w.pos.z.toFixed(2) + ')'); }
+    { let bad = [], n = 0;
+      for (const id of ['s2-l0', 's2-l1', 's2-l2', 's2-l3', 'kiva', 's2-l4', 's2-clanmother', 's2-l6', 's2-l5', 'moundinfo', 's2-clues', 'market', 'chunkey', 'trial']) { await tpRing(id);
+        for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(160); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
+      assert(n === 56 && !bad.length, 'camera never inside a house, tree, wall or the mound at 14 rings × 4 views (' + bad.join(', ') + ')'); }
+    { await tp(-36, 30); await p.evaluate(() => __world.faceCam(0)); await sleep(300); await closeCards(); await p.keyboard.down('KeyW'); let bad = 0, n = 0; const t0 = Date.now();
+      while (Date.now() - t0 < 3000) { const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad++; await sleep(80); }
+      await p.keyboard.up('KeyW'); assert(n > 8 && bad === 0, 'walking into the palisade gap and between the longhouses the camera stays clear (' + n + ' samples)'); }
+    { await tp(0, -4); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2000); const c = await p.evaluate(() => __world.cam);
+      assert(Math.abs(c.yaw - y0) < 0.05, 'strafing does not swing the camera around her here either (yaw drift ' + Math.abs(c.yaw - y0).toFixed(3) + ')'); }
+    const after2 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    assert(after2 === before2, 'progress save byte-identical after walking the Native Nations level');
+    const keys2 = Object.keys(JSON.parse(before2)).sort().join(',');
+    console.log('  banner:');
+    { await tp(52, -1); await sleep(400); const bn = await p.evaluate(() => __world.banner);
+      assert(/^Marker 3 · Great Plains/.test(bn) && (await p.evaluate(() => __world.target)) === 's2-l2', 'standing in the Plains camp the banner names its unread scroll, not Marker 1 ("' + bn + '")');
+      await tp(20, -22); await sleep(400);
+      const exp = await p.evaluate(() => { const pos = __world.pos; let best = null, bd = 1e9; for (const r of __world.rings()) if (/^s2-/.test(r.id) && r.state === 'new') { const d = Math.hypot(r.x - pos.x, r.z - pos.z); if (d < bd) { bd = d; best = r.id; } } return best; });
+      assert((await p.evaluate(() => __world.target)) === exp, 'between camps the banner points to the nearest unfinished marker (' + exp + ')'); }
+    console.log('  rings open the existing panels:');
+    { await tpRing('s2-l0'); w = await W(); assert(w.near === 's2-l0' && /Scroll 1/.test(await p.$eval('#w-prompt', e => e.textContent)), 'council fire ring = Scroll 1 (prompt names it)');
+      await p.keyboard.press('KeyE'); await sleep(500);
+      assert((await W()).phase === 'panel' && /Land Shapes Life/.test(await p.$eval('#screen', e => e.textContent)), 'E opens the unchanged Scroll 1 panel');
+      assert(!(await p.$eval('#w-back', e => e.hidden)) && /Back to the Council Fire/.test(await p.$eval('#w-back', e => e.textContent)), '"Back to the Council Fire" chip shows while a Section 2 panel is open');
+      assert((await p.evaluate(() => __world.readS2())).includes(0), 'Scroll 1 marked read for Section 2 (world key)');
+      await click('#w-back'); await waitPhase('active'); }
+    await tpRing('s2-geomap'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel' && /Find the Homelands/.test(await p.$eval('#screen', e => e.textContent)), 'the hide-map ring opens Find the Homelands');
+    { const lb = await p.evaluate(() => [...document.querySelectorAll('#screen #b-map')].map(b => b.textContent)); assert(lb.every(t => /Back to the Council Fire/.test(t)), 'its map buttons say where they go (' + lb.join('|') + ')'); }
+    await p.keyboard.press('Escape'); await waitPhase('active');
+    for (const [id, re] of [['s2-l1', /Pacific Northwest/], ['s2-l2', /Great Plains/], ['s2-l3', /Southwest/], ['s2-l4', /Iroquois/], ['s2-l5', /Southeast/], ['s2-l6', /Hiawatha/]]) {
+      await tpRing(id); w = await W(); await p.evaluate(() => __world.use()); await sleep(400);
+      assert(w.near === id && (await W()).phase === 'panel' && re.test(await p.$eval('#screen', e => e.textContent)), id + ' ring opens its scroll');
+      if (id === 's2-l3') await shot('v24-pueblo.png');
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+    await tpRing('s2-clanmother'); await p.evaluate(() => __world.use()); await sleep(400);
+    assert((await W()).phase === 'panel' && /Clan Mother/.test(await p.$eval('#screen', e => e.textContent)), 'inside the palisade the Clan Mother ring opens her council');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    await tpRing('kiva'); await p.evaluate(() => __world.use()); await sleep(300);
+    assert(/seen from outside/.test((await W()).card || '') && /Visitors stay outside/.test((await W()).card || '') && (await p.evaluate(() => __world.seen())).kiva, 'the kiva is shown from outside only, with a respectful card');
+    await closeCards(); await tpRing('moundinfo'); await p.evaluate(() => __world.use()); await sleep(300);
+    { const cd = (await W()).card || ''; assert(/largest city north of Mexico/.test(cd) && /about 1100/.test(cd) && /near present-day St\. Louis/.test(cd), 'mound card uses the same Cahokia wording as the scrolls'); }
+    await closeCards(); await tp(-44, -37); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(500); await shot('v24-mound.png');
+    { const cs = await p.evaluate(() => { const out = []; const walk = o => { if (typeof o === 'string') { if (/Cahokia/.test(o) && /largest/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k]); }; walk(GAME_CONTENT.sections.find(s => s.id === 's2')); return out; });
+      const tp2 = await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's2')).match(/\b(teepee|tipi)s?\b/gi));
+      assert(cs.length >= 1 && cs.every(t => /north of Mexico/.test(t)) && !tp2, 'wording: every "largest" Cahokia line says north of Mexico; "tepee" spelled one way (' + cs.length + ' lines)'); }
+    console.log('  v2.4 plaza puzzle (Culture Clues Sort on the mats):');
+    { const clues = await p.evaluate(() => GAME_CONTENT.sections.find(s => s.id === 's2').activities.find(a => a.id === 's2-clues'));
+      const binOf = t => clues.items.find(i => i.t === t).bin;
+      await tpRing('s2-clues'); await p.evaluate(() => __world.use()); await sleep(300);
+      assert(/Carry the clue bundles/.test((await W()).card || '') && /Card version/.test((await W()).card || ''), 'the plaza ring offers the bundles on the mats or the card version');
+      await p.evaluate(() => document.querySelector('#w-card [data-wb="0"]').click()); await sleep(300);
+      let s = await p.evaluate(() => __world.sort()); assert(s.active && s.left === clues.items.length && s.mats.length === 6, 'carrying starts: ' + s.left + ' bundles, 6 region mats');
+      const ring = await ringAt('s2-clues'), off = async () => { await tp(ring.x, ring.z); await sleep(250); };
+      const onMat = async bin => { const m = (await p.evaluate(() => __world.sort())).mats.find(q => q.bin === bin); await tp(m.x, m.z); await sleep(1000); };
+      const right = binOf(s.cur), wrong = s.mats.map(m => m.bin).find(b => b !== right);
+      await onMat(wrong); s = await p.evaluate(() => __world.sort()); assert(s.mistakes === 1 && s.left === clues.items.length && !s.hint, 'a wrong mat: "doesn’t belong", counted as a mistake');
+      await off(); await onMat(wrong); s = await p.evaluate(() => __world.sort()); assert(s.mistakes === 2 && s.hint === right && s.mats.find(m => m.bin === right).glow, 'second miss: the right mat glows as a hint');
+      await off(); await onMat(right); await sleep(1100); s = await p.evaluate(() => __world.sort()); assert(s.left === clues.items.length - 1 && s.mats.find(m => m.bin === right).bundles === 1, 'the right mat takes the bundle (it stays on the mat)');
+      await shot('v24-plaza-puzzle.png');
+      while ((s = await p.evaluate(() => __world.sort())).left > 0 && s.cur) { await off(); await onMat(binOf(s.cur)); await sleep(1000); }
+      await waitPhase('panel', 8000);
+      const S = await p.evaluate(() => ABRPG.state()), a = S.acts['s2-clues'];
+      assert(/Culture Clues Sort complete/.test(await p.$eval('#screen', e => e.textContent)) && a.plays === 1 && a.history[0].mistakes === 2 && a.history[0].rating === 2, 'all bundles placed → the normal results panel, 2 mistakes = 2 stars (scored by the card version’s code)');
+      assert(Object.keys(S).sort().join(',') === keys2 && !/bundle|mats/i.test(JSON.stringify(S)), 'no new save fields from the puzzle');
+      await p.evaluate(() => document.querySelector('#a-back') ? document.querySelector('#a-back').click() : ABRPG.home()); await waitPhase('active'); }
+    await tpRing('market'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel' && /Cahokia Trade Gathering/.test(await p.$eval('#screen', e => e.textContent)), 'the trade blanket ring opens the Cahokia Trade Gathering market');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    console.log('  meeting ground + Trial:');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(300);
+    assert(/all 7 scrolls/.test((await W()).card || '') && (await W()).phase === 'active', 'the meeting-ground Trial ring stays locked until all 7 scrolls are read');
+    await closeCards();
+    for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s2', i, false), i); await sleep(80); }
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    assert(await p.evaluate(() => __world.meetOpen()) && (await p.evaluate(() => __world.target)) === 'trial', 'with every scroll read and nothing else new the banner points to the Trial ring');
+    await tp(-60, 9); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v24-meeting-ground.png');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel', 'the Trial opens as the real Section 2 trial panel');
+    if (await p.$('#b-trial')) await click('#b-trial');
+    for (let i = 0; i < 3; i++) await answer(true);
+    await go(); await enterS2(); w = await W(); const tr = await ringAt('trial');
+    assert((await p.evaluate(() => __world.level)) === 's2' && Math.hypot(w.pos.x - tr.x, w.pos.z - tr.z) < 5, 'reload mid-trial: entering Section 2 puts her at the meeting ground');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500); if (await p.$('#b-resume')) await click('#b-resume');
+    assert((await p.evaluate(() => ABRPG.state().run.idx)) === 3, 'the Section 2 Trial resumes at question 4');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    console.log('  two levels, one world key:');
+    await tp(10, 20); await sleep(2300);
+    await p.evaluate(() => { __world._dbg(); }); await click('#btn-home'); await sleep(500);
+    assert((await W()).phase === 'off' && !!(await p.$('#screen .map')), 'the top-bar Map leaves the level');
+    await enterS1(); w = await W();
+    assert((await p.evaluate(() => __world.level)) === 's1' && /Back to Beringia/.test(await p.$eval('#w-back', e => e.textContent)), 'Section 1 still opens Beringia with its own labels');
+    { const wk = await p.evaluate(k => JSON.parse(localStorage.getItem(k)), WKEY); assert(wk.at && wk.at.s2 && Math.abs(wk.at.s2.x - 10) < 0.5 && Math.abs(wk.at.s2.z - 20) < 0.5 && wk.read.s2.length === 7, 'Section 2 position and scrolls live in the world key (at.s2, read.s2)'); }
+    await seed(s2base(), { ver: 1, mode: 'walk', at: { s2: { x: 1e9, z: 3, yaw: 'q' } }, read: { s1: [1], s2: [0, 7, 'a', 3, 3] }, seen: { help2: true, kiva: 'yes' } });
+    await enterS2(); w = await W();
+    assert(Math.abs(w.pos.z + 8) < 0.01 && JSON.stringify(await p.evaluate(() => __world.readS2())) === '[0,3]' && !(await p.evaluate(() => __world.seen())).kiva, 'junk Section 2 world data is cleaned (start spot, only valid scroll ids)');
+    await seed(s2base(), { ver: 1, mode: 'walk', at: { s2: { x: 52, z: -6, yaw: 1 } }, seen: { help2: true } });
+    await enterS2(); w = await W();
+    assert(Math.abs(w.pos.x - 52) < 0.01 && Math.abs(w.pos.z + 6) < 0.01, 'a saved Section 2 spot is restored');
+    await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'boy', name: 'Sam' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 24, totalAnswered: 25 }, null);
+    await enterS2(); assert((await p.evaluate(() => __world.level)) === 's2' && (await p.evaluate(() => ABRPG.state().version)) === 3, 'a v1 save with Section 1 mastered walks into Section 2');
+  }
 
   console.log('old saves + world key safety:');
   await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' } }, sections: { s1: { attempts: 1, history: [{ pct: 90 }], bestPct: 90, completed: false, correctCount: 5, gearEarned: 1, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 5, totalAnswered: 6 }, null);

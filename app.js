@@ -1324,6 +1324,28 @@
         finish: function () { finishActivity(sid, a, mistakes, back, review); }
       };
     },
+    /* v2.4: the trade plaza's clue bundles play the same sort activity in 3D (carry each bundle to its region's mat).
+       Same items and bins, a wrong mat is a mistake exactly like a wrong bin (hint after 2 tries), and the same
+       finishActivity results and stars as the card version: no new save fields. */
+    worldSort: function (sid, id, back) {
+      var a = actById(sid, id); if (!a || (a.type !== "sort" && a.type !== "map")) return null;
+      var items = a.items.map(function (x, i) { return { t: x.t, bin: x.bin, fact: x.fact, key: String(i), tries: 0, placed: false }; }), mistakes = 0, byKey = {};
+      items.forEach(function (it) { byKey[it.key] = it; });
+      function binLabel(b) { var r = b; a.bins.forEach(function (x) { if (x.id === b) r = (x.icon ? x.icon + " " : "") + x.label; }); return r; }
+      return {
+        title: a.title, icon: a.icon,
+        bins: a.bins.map(function (b) { return { id: b.id, label: b.label, icon: b.icon }; }),
+        items: shuffle(items.map(function (it) { return { key: it.key, t: it.t }; })),
+        place: function (key, bin) {
+          var it = byKey[key]; if (!it || it.placed) return null;
+          if (it.bin === bin) { it.placed = true; return { ok: true, fact: it.fact || "", bin: binLabel(bin) }; }
+          it.tries++; mistakes++; return { ok: false, tries: it.tries, bin: binLabel(bin), hint: it.tries >= 2 ? it.bin : null, hintLabel: it.tries >= 2 ? binLabel(it.bin) : null };
+        },
+        left: function () { return items.filter(function (it) { return !it.placed; }).length; },
+        mistakes: function () { return mistakes; },
+        finish: function () { finishActivity(sid, a, mistakes, back); }
+      };
+    },
     trial: function (sid) { if (S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) enterSection(sid, true); else startTrial(sid); } };
   home();
 })();

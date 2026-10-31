@@ -1,6 +1,8 @@
-// world.js — v2.2–v2.3 3D layer for American Beginnings RPG.
+// world.js — v2.2–v2.4 3D layer for American Beginnings RPG.
 // (1) Classic: the low-poly N64-style background behind the screens (paused while panels / videos cover it).
-// (2) Walk: the walkable Section 1 level, Beringia (world/beringia.js, loaded on first use).
+// (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js) and, new in v2.4,
+//     Section 2 Native Nations (world/nations.js). Each level keeps its own scene, rings, graphics and sparks (LV);
+//     useLevel() swaps them in, so the Beringia code paths below run exactly as in v2.3.
 // three.js is vendored (vendor/, mapped by the import map in index.html). If anything here fails, the CSS
 // gradient fallback is shown and the game plays exactly as before (Classic screens).
 // The progress save (americanBeginningsRPG_v1) is never written here except through the game's own functions;
@@ -89,10 +91,11 @@ function bgFrame(dt) {
   renderer.render(scene, camera); bgDirty = false; bgStats.frames++;
 }
 
-/* ============================ (2) Walk mode: Beringia ============================ */
+/* ============================ (2) Walk mode: Beringia + Native Nations ============================ */
 const W = loadW();
 function loadW() {
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [] }, seen: {} };
+  // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -102,23 +105,30 @@ function loadW() {
   d.seenIntro = w.seenIntro === true;
   if (w.season && Array.isArray(w.season.tracks)) d.season.tracks = [...new Set(w.season.tracks.filter(t => ["t1", "t2", "t3"].includes(t)))];
   if (w.read && Array.isArray(w.read.s1)) d.read.s1 = [...new Set(w.read.s1.filter(i => Number.isInteger(i) && i >= 0 && i < 8))].sort();
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help"]) if (w.seen[k] === true) d.seen[k] = true;
+  if (w.read && Array.isArray(w.read.s2)) d.read.s2 = [...new Set(w.read.s2.filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey"]) if (w.seen[k] === true) d.seen[k] = true;
+  const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
+  if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
 let failed = !webgl2 ? "no-webgl2" : null;
 const mode = () => (failed ? "classic" : (W.mode || "walk"));
-window.addEventListener("ab:lesson", e => { const d = e.detail || {}; if (d.sid === "s1" && Number.isInteger(d.i) && !W.read.s1.includes(d.i)) { W.read.s1.push(d.i); W.read.s1.sort(); saveW(); } });
+window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read[d.sid]; if (r && Number.isInteger(d.i) && !r.includes(d.i)) { r.push(d.i); r.sort(); saveW(); } });
 
-const L = { phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
+const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
+const WALK = ["s1", "s2"];                                        // sections with a walkable level
+const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-function lessonRing(id, i, x, z, station) { return { id, x, z, station, icon: "📜", label: () => S1().lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson("s1", i, false)), state: () => (W.read.s1.includes(i) || (i === 7 && ST().srcQ && ST().srcQ.src1 && ST().srcQ.src1.plays > 0)) ? "done" : "new" }; }
-function actRing(id, actId, icon, title, x, z, station) { return { id, x, z, station, icon, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity("s1", actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
+const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"] };      // the primary-source scroll also counts once its questions were played
+const scrollRead = (sid, i) => W.read[sid].includes(i) || (i === SRC_LESSON[sid][0] && !!(ST().srcQ && ST().srcQ[SRC_LESSON[sid][1]] && ST().srcQ[SRC_LESSON[sid][1]].plays > 0));
+function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
+function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
 let RINGS = null;
 function ringDefs(B) {
   return [
@@ -138,13 +148,102 @@ function ringDefs(B) {
     { id: "cave-exit", zone: "cave", x: B.CAVE_X, z: 7.3, station: "cave", icon: "☀️", label: () => "Leave the cave", act: () => teleport("out"), state: () => "done" }
   ];
 }
-const sec = () => (ST().sections && ST().sections.s1) || {};
+const sec = (sid = "s1") => (ST().sections && ST().sections[sid]) || {};
 const hasCloak = () => (ST().owned || []).includes("fur-cloak");
-const trialActive = () => { const r = ST().run; return !!(r && r.sid === "s1" && (r.phase === "trial" || r.phase === "review")); };
+const trialActive = (sid = "s1") => { const r = ST().run; return !!(r && r.sid === sid && (r.phase === "trial" || r.phase === "review")); };
 const missingScrolls = () => [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !(W.read.s1.includes(i) || (i === 7 && ST().srcQ && ST().srcQ.src1 && ST().srcQ.src1.plays > 0)));
 const caveOpen = () => missingScrolls().length === 0 || (sec().attempts || 0) > 0 || !!sec().completed || trialActive();
 const journeyDone = () => [3, 4, 5, 6].every(i => W.read.s1.includes(i)) && ["s1-garden", "s1-maya"].every(a => ST().acts && ST().acts[a] && ST().acts[a].plays);
-function trialLabel() { const st = sec(); if (trialActive()) return "Resume the Elders’ Trial"; if (st.completed) return "The Elders’ Trial (mastered " + st.bestPct + "%) — try again"; return "Take the Elders’ Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function trialLabel(sid = "s1") { const st = sec(sid); if (trialActive(sid)) return "Resume the Elders’ Trial"; if (st.completed) return "The Elders’ Trial (mastered " + st.bestPct + "%) — try again"; return "Take the Elders’ Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+
+// ---- v2.4 Section 2: Native Nations (world/nations.js) ----
+// Marker order: council fire → Northwest Coast → Plains → Southwest → Eastern Woodlands → mound town → trade plaza →
+// tree-ring meeting ground. Rings open the very same lesson / activity / trial panels as the Classic screens.
+function ringDefsS2(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, key, station, icon, title, cardFn) => at(id, { id, station, icon, label: () => title, act: () => { W.seen[key] = true; saveW(); card(cardFn()); }, state: () => W.seen[key] ? "done" : "new" });
+  const L2 = (id, i, st) => lessonRing("s2-" + id, i, A[id][0], A[id][1], st, "s2");
+  const A2 = (id, icon, title, st) => actRing("s2-" + id, "s2-" + id, icon, title, A[id][0], A[id][1], st, "s2");
+  return [
+    L2("l0", 0, "fire"), A2("geomap", "🧭", "Find the Homelands (painted hide map)", "fire"), A2("map", "🗺️", "Map the Native Nations", "fire"),
+    L2("l1", 1, "nw"),
+    L2("l2", 2, "plains"),
+    L2("l3", 3, "sw"), info("kiva", "kiva", "sw", "🪜", "A kiva (seen from outside)", kivaCard),
+    L2("l4", 4, "ew"), A2("clanmother", "🪶", "Council with a Clan Mother", "ew"), L2("l6", 6, "ew"),
+    L2("l5", 5, "mound"), info("moundinfo", "mound", "mound", "⛰️", "The great platform mound", moundCard),
+    { ...A2("clues", "🧺", "Culture Clues: carry the bundles to their mats", "plaza"), act: () => card(cluesCard()) },
+    at("market", { id: "market", station: "plaza", icon: "🛍️", label: () => "Trade blanket: Cahokia Trade Gathering", act: () => openPanel(() => window.ABRPG.market("m1")), state: () => "done" }),
+    info("chunkey", "chunkey", "plaza", "🥏", "The chunkey yard", chunkeyCard),
+    A2("timeline", "📓", "Game review: Timeline of the Nations", "council"),
+    at("trial", { id: "trial", station: "council", icon: "⚔️", label: () => trialLabel("s2"), act: () => meetOpen() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s2"); } finally { L.bypass = false; } }) : card(meetLockedCard()), state: () => !meetOpen() ? "locked" : (sec("s2").completed ? "star" : "new") })
+  ];
+}
+const missingS2 = () => [0, 1, 2, 3, 4, 5, 6].filter(i => !scrollRead("s2", i));
+const meetOpen = () => missingS2().length === 0 || (sec("s2").attempts || 0) > 0 || !!sec("s2").completed || trialActive("s2");
+const lessonBtnS = (sid, i) => ({ t: "📜 " + esc(window.ABRPG.sectionById(sid).lessons[i].title), f: () => { closeCard(); openPanel(() => window.ABRPG.lesson(sid, i, false)); } });
+function meetLockedCard() { return { title: "🌳 The tree-ring meeting ground", body: "<p>The Elders will hear what you have learned once you have read <b>all 7 scrolls</b> of this land. Still to read:</p>", btns: missingS2().map(i => lessonBtnS("s2", i)) }; }
+function kivaCard() { return { title: "🪜 A kiva, seen from outside", body: "<p>A <b>kiva</b> is a round room, built partly underground, where Pueblo people meet and hold ceremonies. People climb down a ladder through the opening in the roof.</p><p>Kivas are sacred places, and Pueblo communities still use them today. Visitors stay outside, so you will not go in. You can see the ladder poking out of the roof.</p>" }; }
+function moundCard() { return { title: "⛰️ A Mississippian platform mound", body: "<p>Mississippian people built huge flat-topped mounds out of earth, carried up basket by basket. A temple or a leader’s house stood on top, looking over a big open plaza.</p><p>The greatest mound city was <b>Cahokia</b>, near present-day St. Louis. At its peak (about 1100) it was the <b>largest city north of Mexico</b>. Its biggest mound, Monks Mound, is about 100 feet tall.</p><p>Cahokia was empty long before Europeans came, but when Spanish explorers arrived in the 1500s, many towns in the Southeast still had mounds and plazas.</p>" }; }
+function chunkeyCard() { return { title: "🥏 The chunkey yard", body: "<p><b>Chunkey</b> was a favourite game in Mississippian towns. One player rolled a smooth stone disc across the yard. Players threw long poles at the spot where they thought the stone would stop, and the closest pole won.</p><p>Crowds came to watch, and chunkey stones have been found at Cahokia. People across the Southeast kept playing for hundreds of years.</p>" }; }
+function helpCardS2() {
+  card({ title: "❔ How to explore the Native Nations", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the homelands of Native nations of North America, about 1000 to the 1500s. In real life these regions are hundreds or thousands of miles apart. Here they sit around one council fire so you can walk to each, but the directions are true: <b>north is ahead</b> when you start, so <b>west is on your left</b>, just like on a map. The painted compass by the fire shows it.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch). <b>Look:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, grey rings are locked.</li><li>The banner at the top points to the nearest marker you still need. The Elders’ Trial is at the <b>tree-ring meeting ground</b> once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
+  W.seen.help2 = true; saveW();
+}
+
+// v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
+// ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
+const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null };
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+function cluesCard() {
+  const a = ST().acts && ST().acts["s2-clues"], played = !!(a && a.plays);
+  const body = (played ? "<p>You have sorted these bundles before. Want to practise? Carry them again, or use the card version.</p>" : "<p>Traders brought these bundles from all over the continent. Each one has a <b>clue</b> on its tag.</p>") +
+    "<p>Carry each bundle to the mat of the <b>region it comes from</b>: stand on the mat for a moment to set it down. The mats are laid out like a map: the northern regions are on the row nearer the market (<b>north</b>), and <b>west is on your left</b> when you face north.</p>";
+  return { title: "🧺 Culture Clues: carry the bundles", body, btns: [{ t: "🧺 " + (played ? "Carry the bundles again" : "Carry the clue bundles"), f: () => { closeCard(); sortStart(); } }, actBtn2("s2-clues", "🗂️ Card version")] };
+}
+const actBtn2 = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s2", id, resume)); } });
+function sortStart() {
+  const h = window.ABRPG.worldSort && window.ABRPG.worldSort("s2", "s2-clues", resume); if (!h) { openPanel(() => window.ABRPG.runActivity("s2", "s2-clues", resume)); return; }
+  L.lvl.clearBundles(); for (const m of L.lvl.mats) m.glowOn = false;
+  Object.assign(SP, { active: true, h, queue: h.items.slice(), cur: null, onMat: null, hintBin: null });
+  const m = L.lvl.mats.find(q => Math.abs(L.pos.x - q.x) < L.mods.B.MAT_HALF && Math.abs(L.pos.z - q.z) < L.mods.B.MAT_HALF); SP.onMat = m ? m.bin : null;   // standing on a mat: not a drop
+  nextClue(true);
+}
+function carryLabel(text) {
+  if (SP.carry) { L.lvl.scene.remove(SP.carry.lab); SP.carry.lab.material.map.dispose(); }
+  const lab = L.mods.B.labelSprite(text, 4.6, "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
+  if (!SP.carry) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: "#b08a5c", flatShading: true })); b.scale.set(1.2, 0.8, 1); b.userData.noMerge = true; L.lvl.scene.add(b); SP.carry = { lab, b }; }
+  else SP.carry.lab = lab;
+}
+function carryHide() { if (!SP.carry) return; L.lvl.scene.remove(SP.carry.lab); L.lvl.scene.remove(SP.carry.b); SP.carry = null; }
+function nextClue(first) {
+  for (const m of L.lvl.mats) m.glowOn = false; SP.hintBin = null;
+  SP.cur = SP.queue.shift() || null; if (!SP.cur) return;
+  carryLabel("📦 " + SP.cur.t);
+  toast((first ? "🧺 First bundle: " : "📦 Next bundle: ") + "<b>" + esc(SP.cur.t) + "</b>. Stand on the mat for its region.");
+}
+function sortStep(dt) {
+  SP.dt = dt;
+  if (!SP.active || L.sid !== "s2") return;
+  if (SP.carry) { SP.carry.lab.position.set(L.pos.x, L.pos.y + 2.75, L.pos.z); SP.carry.b.position.set(L.pos.x + Math.sin(L.yaw) * 0.32, L.pos.y + 0.95, L.pos.z + Math.cos(L.yaw) * 0.32); SP.carry.b.visible = SP.carry.lab.visible = true; }
+  if (L.cardOpen || L.frozen || !SP.cur) return;
+  const B = L.mods.B, m = L.lvl.mats.find(q => Math.abs(L.pos.x - q.x) < B.MAT_HALF && Math.abs(L.pos.z - q.z) < B.MAT_HALF);
+  // she sets a bundle down by standing on a mat for a moment, so just walking across one is not a guess
+  if (!m) { SP.onMat = null; SP.dwell = 0; return; }
+  if (SP.onMat === m.bin) return;
+  SP.dwell = (SP.dwell || 0) + SP.dt; if (SP.dwell < 0.6) return; SP.dwell = 0; SP.onMat = m.bin;
+  const cur = SP.cur, r = SP.h.place(cur.key, m.bin); if (!r) return;
+  if (r.ok) {
+    L.lvl.dropBundle(m.bin); L.sparks && L.sparks.emit(new THREE.Vector3(m.x, L.pos.y + 0.4, m.z), 40, ["#ffd84a", "#fff2b0", "#ffffff"], { speed: 0.5, life: 0.9, up: 0.9 });
+    toast("✅ <b>" + esc(cur.t) + "</b> belongs to " + esc(r.bin) + ". " + md(r.fact || ""));
+    if (SP.h.left() === 0) { SP.active = false; SP.cur = null; carryHide(); const h = SP.h; setTimeout(() => { if (L.phase === "active") openPanel(() => h.finish()); }, 1400); }
+    else setTimeout(() => { if (SP.active) nextClue(false); }, 900);
+    SP.cur = null;
+  } else {
+    if (r.hint) { SP.hintBin = r.hint; for (const q of L.lvl.mats) q.glowOn = q.bin === r.hint; }
+    toast("🤔 <b>" + esc(cur.t) + "</b> doesn’t belong on the " + esc(r.bin) + " mat." + (r.hint ? " Hint: try the glowing mat, <b>" + esc(r.hintLabel || r.hint) + "</b>." : " Think about what that region is like and try another mat."));
+  }
+}
+function sortStop() { if (!SP.active) return; SP.active = false; SP.cur = null; carryHide(); for (const m of L.lvl.mats) m.glowOn = false; }
 
 // ---- v2.3 ford timeline: the stepping stones ARE the Section 1 timeline activity ----
 // Each row of stones is one step in time, oldest on the south bank. One stone in a row is the right event and the
@@ -200,6 +299,7 @@ function fordSplash(s, html) {
   setTimeout(() => { L.fordFall = false; teleport("out", B.FORD_RESPAWN); }, 420);
 }
 function fordStep() {
+  if (L.sid !== "s1") return;
   const B = L.mods.B; if (L.zone !== "out" || !F.vis && Math.hypot(L.pos.x + 5, L.pos.z - B.riverZ(-5)) > 30) return;
   const v = fordVisuals(), zc = B.riverZ(-5), near = Math.abs(L.pos.x + 5) < 12 && Math.abs(L.pos.z - zc) < 14;
   // arm on the south bank (she meets the oldest event first); coming back from the north the stones are just stones
@@ -273,7 +373,7 @@ function caveLockedCard() { const m = missingScrolls(); return { title: "🔥 Th
 function ui() {
   if (document.getElementById("w-hud")) return;
   const tb = document.getElementById("topbar");
-  const back = document.createElement("button"); back.id = "w-back"; back.className = "chip w-back"; back.hidden = true; back.textContent = "🏕️ Back to Beringia"; back.title = "Return to the 3D world"; back.onclick = () => { back.blur(); resumeOrEnter(); };
+  const back = document.createElement("button"); back.id = "w-back"; back.className = "chip w-back"; back.hidden = true; back.textContent = BACK.s1; back.title = "Return to the 3D world"; back.onclick = () => { back.blur(); resumeOrEnter(); };
   const mb = document.createElement("button"); mb.id = "w-mode"; mb.className = "chip"; mb.title = "Switch between walking the 3D world and the classic screens"; mb.onclick = () => { mb.blur(); setMode(mode() === "walk" ? "classic" : "walk", true); };
   tb.insertBefore(back, document.getElementById("btn-inv")); tb.appendChild(mb);
   const h = document.createElement("div"); h.id = "w-hud"; h.hidden = true;
@@ -292,24 +392,26 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-function helpCard() { card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Grey rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
-function heroName() { const p = ST() && ST().players && ST().players.s1; return (p && p.name) || "Abigail"; }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Grey rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 function syncChips() {
   const mb = document.getElementById("w-mode"), back = document.getElementById("w-back"); if (!mb) return;
-  mb.hidden = !!failed; mb.textContent = mode() === "walk" ? "🗂️ Classic screens" : "🚶 Walk Beringia";
-  back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isS1Screen()));
+  mb.hidden = !!failed; mb.textContent = mode() === "walk" ? "🗂️ Classic screens" : WALKNAME[L.sid];
+  if (back.textContent !== BACK[L.sid]) back.textContent = BACK[L.sid];
+  back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.3:</b> walk Beringia in 3D, now with real glacier walls and a river-stone timeline! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.4:</b> walk Section 2, the Native Nations, in 3D (plus Beringia, with its glacier walls and river-stone timeline)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
-const isS1Screen = () => window.CURRENT_PALETTE && S1() && window.CURRENT_PALETTE === S1().palette;
+const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
 
 function setMode(m, enterNow) {
   if (failed && m === "walk") { toast("Walk mode isn’t available on this device, so the classic screens are on."); return; }
   W.mode = m; W.seenIntro = true; saveW();
-  if (m === "classic") { if (L.phase !== "off") exitLevel(true); toast("🗂️ Classic screens are on. Tap 🚶 Walk Beringia at the top any time."); }
-  else if (enterNow) window.ABRPG.enterSection("s1");
+  if (m === "classic") { if (L.phase !== "off") exitLevel(true); toast("🗂️ Classic screens are on. Tap " + WALKNAME[L.sid] + " at the top any time."); }
+  else if (enterNow) window.ABRPG.enterSection(L.sid);
   syncChips();
 }
 
@@ -322,11 +424,18 @@ window.ABWorld = {
         if (L.userMap || L.phase === "off") { L.userMap = false; if (L.phase !== "off") exitLevel(false); return false; }
         resume(); return true;
       }
-      if (sid !== "s1") { if (L.phase !== "off") exitLevel(false); return false; }
-      if (kind === "enter") { const p = ST().players && ST().players.s1; if (!p) return false; enterLevel(); return true; }
-      if (kind === "intro") { enterLevel(); return true; }
+      if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
+      if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
+      if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s2") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s2") { enterLevel("s2"); return true; }
+        resume(); if (meetOpen()) setTimeout(() => toast("🌳 The Elders hear the Trial at the <b>tree-ring meeting ground</b>, marker 8. Follow the arrow!"), 50); else setTimeout(() => card(meetLockedCard()), 50);
+        return true;
+      }
       if (kind === "trial") {
         if (L.bypass || L.zone === "cave" || L.phase === "off") return false;
+        if (L.sid !== "s1") { enterLevel("s1"); return true; }
         resume(); if (caveOpen()) { setTimeout(() => toast("🔥 The Elders give the Trial in the <b>Trial Cave</b> at the end of the corridor. Follow the arrow!"), 50); } else setTimeout(() => card(caveLockedCard()), 50);
         return true;
       }
@@ -339,45 +448,65 @@ window.ABWorld = {
 document.addEventListener("click", e => { if (e.target && e.target.closest && e.target.closest("#btn-home")) { L.userMap = true; setTimeout(() => { L.userMap = false; }, 0); } }, true);
 // v2.3: inside a world panel, the results' own "🗺️ Map" buttons return to Beringia (the top-bar 🗺️ Map is the real map), so say so
 const relabelMap = () => { if (failed || mode() !== "walk" || L.phase !== "panel") return;
-  document.querySelectorAll("#screen #b-map").forEach(b => { if (b.dataset.wmap) return; b.dataset.wmap = "1"; b.textContent = "🏕️ Back to Beringia"; b.title = "Back into the walkable world. The 🗺️ Map button at the top opens the world map."; }); };
+  document.querySelectorAll("#screen #b-map").forEach(b => { if (b.dataset.wmap) return; b.dataset.wmap = "1"; b.textContent = BACK[L.sid]; b.title = "Back into the walkable world. The 🗺️ Map button at the top opens the world map."; }); };
 { const sc = document.getElementById("screen"); if (sc) new MutationObserver(relabelMap).observe(sc, { childList: true }); }
 window.addEventListener("palette", e => {
   const p = e.detail; bgPal = p || DEFAULT;
-  if (L.phase !== "off" && !(S1() && p === S1().palette)) exitLevel(false);
+  if (L.phase !== "off" && !(CUR() && p === CUR().palette)) exitLevel(false);
   setTimeout(syncChips, 0);
 });
 
 // ---- enter / exit / panels ----
-async function ensureBuilt() {
-  if (L.built) return true;
-  if (!L.building) L.building = (async () => {
-    const [B, H, G, T, SP, MA] = await Promise.all([import("./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
-    L.mods = { B, H, G };
-    RINGS = ringDefs(B);
+// v2.4: each level is built once on first visit and kept (LV[sid]); useLevel() swaps its scene, rings, module,
+// graphics and sparks into L, so every function below works on whichever level she is in.
+const LV = {}, LVBUILD = {};
+function useLevel(sid) {
+  const v = LV[sid]; if (!v) return;
+  if (L.sid !== sid && SP.active) sortStop();
+  L.sid = sid; L.mods.B = v.B; L.lvl = v.lvl; L.cave = v.cave; L.sparks = v.sparks; L.gfx = v.gfx; RINGS = v.rings;
+  const m = L.mods.G.readGfxMode ? L.mods.G.readGfxMode() : null; if (m && v.gfx.st.mode !== m) v.gfx.st.mode = m;   // one graphics setting for all levels
+  syncChips();
+}
+async function ensureBuilt(sid = L.sid) {
+  if (LV[sid]) { useLevel(sid); return true; }
+  if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    if (!L.mods) L.mods = { B, H, G };
+    const rings = sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
-    const lvl = B.buildBeringia({ mergeAO, rings: RINGS });
+    let lvl, cave;
+    if (sid === "s2") {
+      const S2 = window.ABRPG.sectionById("s2"), clues = S2 && (S2.activities || []).find(a => a.id === "s2-clues"), matLabels = {};
+      if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
+      lvl = B.buildNations({ mergeAO, rings, matLabels });
+      cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
+    } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
-    const cave = B.buildCave({ rings: RINGS });
-    L.lvl = lvl; L.cave = cave;
-    L.cam = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.3, 420);
-    L.toon = T.createToon ? T.createToon(THREE) : null;
-    L.sparks = SP.createSparks(THREE, lvl.scene, renderer, 400, L.cam);
-    L.dz = makeDeadzoneYaw({ enter: 0.4, exit: 0.06, maxRate: 1.9 }); L.th = makeTravelHeading(3.5);
+    if (!L.cam) {
+      L.cam = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.3, 420);
+      L.toon = T.createToon ? T.createToon(THREE) : null;
+      L.dz = makeDeadzoneYaw({ enter: 0.4, exit: 0.06, maxRate: 1.9 }); L.th = makeTravelHeading(3.5);
+    }
+    const sparks = SPK.createSparks(THREE, lvl.scene, renderer, 400, L.cam);
+    const gfx = G.createGfx({ THREE, renderer, scene: lvl.scene, sun: lvl.sun, hemi: lvl.hemi, getFocus: () => L.pos, isTouch: () => L.touch, toon: L.toon, chars: () => [L.hero && L.hero.root], sparks, onSlow: fps => offerClassic(fps), onApply: () => { L.dirty = true; } });
+    LV[sid] = { B, lvl, cave, sparks, gfx, rings };
+    useLevel(sid);
     buildHero();
-    L.gfx = G.createGfx({ THREE, renderer, scene: lvl.scene, sun: lvl.sun, hemi: lvl.hemi, getFocus: () => L.pos, isTouch: () => L.touch, toon: L.toon, chars: () => [L.hero && L.hero.root], sparks: L.sparks, onSlow: fps => offerClassic(fps), onApply: () => { L.dirty = true; } });
     L.built = true;
   })();
-  try { await L.building; return true; } catch (e) { console.error("[world] build failed", e); fail("build", e); return false; }
+  try { await LVBUILD[sid]; useLevel(sid); return true; } catch (e) { console.error("[world] build failed", e); LVBUILD[sid] = null; fail("build", e); return false; }
 }
 function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
-  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && i.section === "s1" && i.art) out.push({ art: i.art, color: i.color }); }   // Ice Age gear only
+  // era gear only: Ice Age gear in Beringia; in later levels the gear of that era and the eras before it (v2.4)
+  const ok = L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
   return out;
 }
 function buildHero() {
-  const p = ST().players && ST().players.s1, art = gearArt(), key = JSON.stringify([p && p.gender, art]);
-  if (L.hero && L.heroKey === key) return;
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), key = JSON.stringify([p && p.gender, art]);
+  if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art }); L.heroKey = key;
   L.hero.root.position.copy(L.pos); L.hero.root.rotation.y = L.yaw;
@@ -386,14 +515,23 @@ function buildHero() {
 }
 function placeStart(zone) {
   const B = L.mods.B;
+  if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
   if (zone === "cave") { L.zone = "cave"; L.pos.set(B.CAVE_X, 0, 5); L.yaw = Math.PI; }
   else { L.zone = "out"; L.pos.set(0, B.groundH(0, -4), -4); L.yaw = 0; }
 }
-async function enterLevel() {
-  if (!(await ensureBuilt())) { window.ABRPG.enterSection("s1", true); return; }
+async function enterLevel(sid = L.sid) {
+  const from = L.sid; if (L.phase !== "off" && from !== sid) saveWorldPos();
+  if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if (L.phase === "off") {
+  if (sid === "s2" && (L.phase === "off" || from !== sid)) {
+    // spawn: a Trial in progress → the meeting ground; else her saved spot (if valid) or the council fire
+    const a = W.at.s2, t = B.RING_AT.trial;
+    if (trialActive("s2")) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
+    else if (a && walkable(a.x, a.z)) { L.zone = "out"; L.pos.set(a.x, 0, a.z); L.yaw = a.yaw; }
+    else placeStart("out");
+    L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
+  } else if (L.phase === "off" || from !== sid) {
     // spawn: a Trial in progress → the cave; else the saved spot (if valid) or camp start
     if (trialActive()) { placeStart("cave"); setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring to resume."), 300); }
     else if (W.x != null && (W.zone === "cave" || (W.x > B.BOUNDS.x0 && W.x < B.BOUNDS.x1 && W.z > B.BOUNDS.z0 && W.z < B.BOUNDS.z1))) { L.zone = W.zone; L.pos.set(W.x, 0, W.z); L.yaw = W.yaw; if (!walkable(L.pos.x, L.pos.z)) placeStart(W.zone); }
@@ -401,15 +539,15 @@ async function enterLevel() {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen.help) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
-function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection("s1"); }
+function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
 function openPanel(fn) {
   closeCard(); saveWorldPos();
-  window.ABRPG.touchSection("s1");      // same "lessons" bookkeeping a Classic section visit does (never touches a running Trial)
+  window.ABRPG.touchSection(L.sid);      // same "lessons" bookkeeping a Classic section visit does (never touches a running Trial)
   setPhase("panel"); fn(); window.scrollTo(0, 0);
 }
 function exitLevel(toClassic) {
@@ -430,11 +568,11 @@ function setPhase(p) {
 }
 function offerClassic(fps) { if (L.phase !== "active" || window.__world.quiet) return; card({ title: "🐢 The 3D world is running slowly", body: "<p>This device is drawing about " + Math.round(fps) + " frames a second. Would you like the classic screens instead? Your progress is the same in both.</p>", btns: [{ t: "🗂️ Switch to Classic", f: () => { closeCard(); setMode("classic"); } }], close: "Keep walking" }); }
 function fail(why, e) {
-  failed = why; if (L.phase !== "off") { setPhase("off"); try { window.ABRPG.enterSection("s1", true); } catch (x) { } }
+  failed = why; if (L.phase !== "off") { setPhase("off"); try { window.ABRPG.enterSection(L.sid, true); } catch (x) { } }
   toast("🗂️ The 3D world couldn’t start here, so the classic screens are on."); syncChips();
 }
 canvas.addEventListener("webglcontextlost", ev => { ev.preventDefault(); L.ctxLost++; if (L.ctxLost >= 2) fail("context-lost"); });
-function saveWorldPos() { if (!L.built) return; W.zone = L.zone; W.x = Math.round(L.pos.x * 100) / 100; W.z = Math.round(L.pos.z * 100) / 100; W.yaw = Math.round(L.yaw * 1000) / 1000; saveW(); }
+function saveWorldPos() { if (!L.built) return; if (L.sid !== "s1") { W.at[L.sid] = { x: Math.round(L.pos.x * 100) / 100, z: Math.round(L.pos.z * 100) / 100, yaw: Math.round(L.yaw * 1000) / 1000 }; saveW(); return; } W.zone = L.zone; W.x = Math.round(L.pos.x * 100) / 100; W.z = Math.round(L.pos.z * 100) / 100; W.yaw = Math.round(L.yaw * 1000) / 1000; saveW(); }
 window.addEventListener("pagehide", () => { if (L.phase !== "off") saveWorldPos(); });
 
 // ---- teleport (fade) between the steppe and the Trial Cave ----
@@ -463,15 +601,21 @@ function resolve(p) {
   const B = L.mods.B;
   for (let it = 0; it < 3; it++) for (const c of zoneColliders()) {
     if (c.disabled) continue;
+    if (c.type === "arc") {   // v2.4 palisade: a ring wall with one gap (gapA = direction of the gap from the centre)
+      const dx = p.x - c.x, dz = p.z - c.z, d = Math.hypot(dx, dz) || 1e-6, off = d - c.r, m = c.w + PR;
+      if (Math.abs(off) < m && Math.abs(wrapA(Math.atan2(dz, dx) - c.gapA)) > c.gapHalf) { const to = off >= 0 ? c.r + m : c.r - m; p.x = c.x + dx / d * to; p.z = c.z + dz / d * to; p.blocked = c; }
+      continue;
+    }
     if (c.type === "c") { const dx = p.x - c.x, dz = p.z - c.z, d = Math.hypot(dx, dz), m = c.r + PR; if (d < m) { if (d < 1e-6) { p.x += m; continue; } p.x = c.x + dx / d * m; p.z = c.z + dz / d * m; } }
     else { const dx = p.x - c.x, dz = p.z - c.z, ox = c.hx + PR - Math.abs(dx), oz = c.hz + PR - Math.abs(dz); if (ox > 0 && oz > 0) { if (ox < oz) p.x += Math.sign(dx || 1) * ox; else p.z += Math.sign(dz || 1) * oz; p.blocked = c; } }
   }
   if (L.zone === "cave") { const dx = p.x - B.CAVE_X, d = Math.hypot(dx, p.z), R = L.cave.radius; if (d > R) { p.x = B.CAVE_X + dx / d * R; p.z = p.z / d * R; } }
   else { p.x = Math.max(B.BOUNDS.x0, Math.min(B.BOUNDS.x1, p.x)); p.z = Math.max(B.BOUNDS.z0, Math.min(B.BOUNDS.z1, p.z)); }
 }
-function walkable(x, z) { const p = { x, z }; resolve(p); return Math.hypot(p.x - x, p.z - z) < 0.05; }
+function walkable(x, z) { const p = { x, z }; resolve(p); return Math.hypot(p.x - x, p.z - z) < 0.05 && !solidAt(x, z); }
+const solidAt = (x, z) => L.zone === "out" && !!L.mods.B.solid && L.mods.B.solid(x, z);   // v2.4: the sea off the Northwest Coast
 function supportY(x, z) { const B = L.mods.B; if (L.zone === "cave") return 0; const s = B.onStone(x, z); return s ? s.top : B.groundH(x, z); }
-function inWater(x, z) { const B = L.mods.B; return L.zone === "out" && !B.onStone(x, z, 0.05) && B.groundH(x, z) < B.WATER_Y - 0.12; }
+function inWater(x, z) { const B = L.mods.B; return L.sid === "s1" && L.zone === "out" && !B.onStone(x, z, 0.05) && B.groundH(x, z) < B.WATER_Y - 0.12; }
 
 // ---- input ----
 const keys = new Set();
@@ -517,7 +661,22 @@ function routeS(x, z) {
     if (d < best) { best = d; bs = acc + t * len; } acc += len; }
   return bs;
 }
+// v2.4 Native Nations: the regions sit around the fire, not along one trail, so the banner names the unfinished
+// marker in the station she is standing in, else the nearest unfinished one; with none left, the Trial ring.
+// While she carries a clue bundle it points at the plaza (or at the hint mat).
+function nextTargetS2() {
+  const rings = L.lvl.rings, S = L.mods.B.STATIONS, trial = rings.find(r => r.def.id === "trial");
+  if (SP.active) { const hm = SP.hintBin && L.lvl.mats.find(m => m.bin === SP.hintBin), cl = rings.find(r => r.def.id === "s2-clues");
+    return { def: { id: "s2-clues", station: "plaza", x: hm ? hm.x : cl.def.x, z: hm ? hm.z : cl.def.z, text: "Marker 7 · Trade plaza: carry the bundle to its region mat" + (hm ? " (hint: the glowing mat)" : "") } }; }
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  if (!todo.length) return trial;
+  const here = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3);
+  const pool = here && todo.some(r => r.def.station === here) ? todo.filter(r => r.def.station === here) : todo;
+  let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } }
+  return best;
+}
 function nextTarget() {
+  if (L.sid === "s2") return nextTargetS2();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
   if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
@@ -537,10 +696,13 @@ function camBlocked(x, y, z) {
   const B = L.mods.B;
   if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 || y > 4.2;
   if (y < B.groundH(x, z) + 0.35) return true;
-  if (z > B.BOUNDS.iceZ - 0.35 && (x < B.BOUNDS.cx0 + 0.5 || x > B.BOUNDS.cx1 - 0.5)) return true;
-  if (z > 189.8) return true;
+  if (L.sid === "s1") {
+    if (z > B.BOUNDS.iceZ - 0.35 && (x < B.BOUNDS.cx0 + 0.5 || x > B.BOUNDS.cx1 - 0.5)) return true;
+    if (z > 189.8) return true;
+  }
   for (const o of L.lvl.camOcc || []) {
     if (y <= o.y0 || y >= o.y1) continue;
+    if (o.arc) { const d = Math.hypot(x - o.x, z - o.z); if (Math.abs(d - o.r) < o.w && Math.abs(wrapA(Math.atan2(z - o.z, x - o.x) - o.gapA)) > o.gapHalf) return true; continue; }
     if (o.r ? Math.hypot(x - o.x, z - o.z) < o.r : (Math.abs(x - o.x) < o.hx && Math.abs(z - o.z) < o.hz)) return true;
   }
   return false;
@@ -549,7 +711,7 @@ function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
   const cp = new THREE.Vector3(tgt.x - Math.sin(yaw) * Math.cos(pitch) * dist, tgt.y + Math.sin(pitch) * dist, tgt.z - Math.cos(yaw) * Math.cos(pitch) * dist);
-  if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (cp.z > B.BOUNDS.iceZ - 0.5 && L.pos.z > B.BOUNDS.iceZ - 2) { cp.x = Math.max(B.BOUNDS.cx0 + 0.6, Math.min(B.BOUNDS.cx1 - 0.6, cp.x)); cp.z = Math.min(189.4, cp.z); } }
+  if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (L.sid === "s1" && cp.z > B.BOUNDS.iceZ - 0.5 && L.pos.z > B.BOUNDS.iceZ - 2) { cp.x = Math.max(B.BOUNDS.cx0 + 0.6, Math.min(B.BOUNDS.cx1 - 0.6, cp.x)); cp.z = Math.min(189.4, cp.z); } }
   else cp.y = Math.min(cp.y, 4.0);
   if (snap || !L.camPos) L.camPos = cp.clone(); else L.camPos.lerp(cp, Math.min(1, dt * 8));
   // march from her head to the camera; stop 0.3 m before the first solid point
@@ -575,7 +737,10 @@ function step(dt, raw) {
   }
   const { n, h } = subSteps(dt);
   const p = { x: L.pos.x, z: L.pos.z, blocked: null };
-  for (let i = 0; i < n; i++) { p.x += vx * h; p.z += vz * h; resolve(p); }
+  for (let i = 0; i < n; i++) {
+    const ox = p.x, oz = p.z; p.x += vx * h; p.z += vz * h; resolve(p);
+    if (solidAt(p.x, p.z)) { if (!solidAt(p.x, oz)) p.z = oz; else if (!solidAt(ox, p.z)) p.x = ox; else { p.x = ox; p.z = oz; } }   // slide along the shore
+  }
   if (!Number.isFinite(p.x) || !Number.isFinite(p.z)) { placeStart(L.zone); p.x = L.pos.x; p.z = L.pos.z; }   // stuck / NaN watchdog
   const moved = Math.hypot(p.x - L.pos.x, p.z - L.pos.z);
   L.pos.x = p.x; L.pos.z = p.z; L.pos.y += (supportY(p.x, p.z) - L.pos.y) * Math.min(1, dt * 14);
@@ -590,7 +755,7 @@ function step(dt, raw) {
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
   if (L.fordFall) L.pos.y = L.mods.B.WATER_Y - 0.35;
   if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold and fast. Hop across on the <b>stepping stones</b>."); teleport("out", B.FORD_RESPAWN); } } else L.wade = 0;
-  fordStep();
+  fordStep(); sortStep(dt);
   // the glacier pass: bumping the closed gate shows a hint
   L.hintT = Math.max(0, L.hintT - dt);
   if (p.blocked && p.blocked.tag === "gate" && L.hintT <= 0) { L.hintT = 8; card(gateCard()); }
@@ -609,7 +774,7 @@ function step(dt, raw) {
   if (tg) {
     const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
     document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
-    const st = L.mods.B.STATIONS[tg.def.station]; const txt = (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : ("Marker " + st.n + " · " + st.label + ": " + tg.def.label());
+    const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : ("Marker " + st.n + " · " + st.label + ": " + tg.def.label());
     const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) el.textContent = txt;
   }
   L.saveT -= dt; if (L.saveT <= 0) { L.saveT = 2; saveWorldPos(); }
@@ -649,6 +814,10 @@ window.__world = {
   faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },
   ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0 }),
   use: () => useRing(), card: () => (L.cardOpen ? document.getElementById("w-card").textContent : null), closeCard: () => closeCard(),
+  get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
+  sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
+  stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
+  pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),
   _dbg: () => ({ L, renderer, THREE }),

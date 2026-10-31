@@ -102,6 +102,23 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert(w.pos.z < 125 && n > 8 && bad === 0, 'walking south under the gate cross-pole the camera never sits inside the poles, hides or ice (' + n + ' samples, pulled in ' + pulled + ', z ' + w.pos.z.toFixed(1) + ')'); }
   { await tp(-5, 150); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2500); const c = await p.evaluate(() => __world.cam); w = await W();
     assert(Math.abs(c.yaw - y0) < 0.05 && Math.abs(w.pos.x + 5) > 1.5, 'strafing sideways does not swing the camera around her (yaw drift ' + Math.abs(c.yaw - y0).toFixed(3) + ', x ' + w.pos.x.toFixed(1) + ')'); }
+  console.log('v2.3 glacier pass:');
+  { await tp(-5, 150); await sleep(300);
+    const g = await p.evaluate(() => { const { L, THREE } = __world._dbg(), sc = L.lvl.scene, rc = new THREE.Raycaster(), hits = [], hy = L.hero.root.position.y, notHero = o => { let q = o.object; while (q) { if (q === L.hero.root) return false; q = q.parent; } return o.object.isMesh && o.object.visible; }, objs = []; sc.traverse(o => { if (o.isMesh && !o.isSprite) objs.push(o); });
+      const by = n => sc.getObjectByName(n);
+      for (const [z, dir] of [[135, -1], [158, -1], [172, -1], [135, 1], [158, 1], [166, 1]]) { rc.set(new THREE.Vector3(-5, hy + 1.0, z), new THREE.Vector3(dir, 0, 0)); rc.far = 20;
+        const h = rc.intersectObjects(objs, false).find(o => notHero(o) && !(o.object.parent && o.object.parent.name.startsWith('ring')) && o.object.name !== 'hide-flags'); hits.push(h ? +h.point.x.toFixed(2) : null); }
+      // tallness: from the corridor the ice reaches above 9 m on both sides
+      rc.far = 20; rc.set(new THREE.Vector3(-5, hy + 9.5, 150), new THREE.Vector3(-1, 0, 0)); const tl = rc.intersectObjects(objs, false).find(notHero); rc.set(new THREE.Vector3(-5, hy + 9.5, 150), new THREE.Vector3(1, 0, 0)); const tr = rc.intersectObjects(objs, false).find(notHero);
+      const f = by('hide-flags'), a0 = Array.from(f.geometry.attributes.position.array);
+      return { hits, tall: !!(tl && tr), floor: !!by('corridor-floor'), melt: !!by('meltwater'), flags: !!f, a0 }; });
+    assert(g.hits.every((x, i) => x !== null && (i < 3 ? Math.abs(x + 12) < 0.6 : Math.abs(x - 2) < 0.6)), 'the ice faces she sees sit on the wall colliders (hits at 1 m: ' + g.hits.join(', ') + ')');
+    assert(g.tall, 'the ice walls stand taller than 9 m on both sides of the corridor');
+    assert(g.floor && g.melt, 'the corridor has its gravel/tundra floor and a meltwater runnel');
+    await tp(-5, 132); await sleep(900);
+    const a1 = await p.evaluate(() => Array.from(__world._dbg().L.lvl.scene.getObjectByName('hide-flags').geometry.attributes.position.array));
+    const moved = a1.reduce((m, v, i) => Math.max(m, Math.abs(v - g.a0[i])), 0);
+    assert(g.flags && moved > 0.01, 'the hide flags on the gate move like cloth when she is near (max vertex move ' + moved.toFixed(3) + ' m)'); }
   await p.evaluate(() => { const S = ABRPG.state(); S.owned = S.owned.filter(k => k !== 'fur-cloak'); });
 
   const keysNow = Object.keys(JSON.parse(await p.evaluate(k => localStorage.getItem(k), KEY))).sort().join(','), keys0 = Object.keys(JSON.parse(before)).sort().join(',');

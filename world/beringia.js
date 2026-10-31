@@ -175,22 +175,29 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
 
   // terrain (vertex coloured: steppe tan → grass → snow patches; the trail is worn darker earth, no planks)
   // v2.2 perf: built as 5 × 6 tiles (same 2 m grid) so the camera culls the ones out of view; normals come from groundH so tile seams match
+  // terrain colour and normals as functions, so the corridor floor can blend into the ground seamlessly
+  const TAN = new THREE.Color('#b8a468'), GR = new THREE.Color('#9aa25e'), SNOW = new THREE.Color('#e9eef3'), BLUE = new THREE.Color('#c4d2e0'), PATHC = new THREE.Color('#8b7652'), BED = new THREE.Color('#6d6a5e'), MUD = new THREE.Color('#857b5e');
+  const terrColor = (x, z, c) => { const nz = Math.sin(x * 0.21) * Math.cos(z * 0.17) + Math.sin(x * 0.07 + z * 0.09);
+    c.copy(TAN).lerp(GR, 0.5 + 0.35 * Math.sin(x * 0.11 + z * 0.05));
+    const snowAmt = Math.max(smooth(0.9, 1.6, nz + (z - 40) * 0.012), smooth(108, 121, z), smooth(3, 14, Math.max(BOUNDS.x0 - x, x - BOUNDS.x1, BOUNDS.z0 - z)));
+    c.lerp(nz > 1.3 ? BLUE : SNOW, snowAmt);
+    const pd = pathDist(x, z); c.lerp(z > 114 ? BLUE : PATHC, (1 - smooth(1.0, 2.6, pd)) * 0.75);
+    const s = Math.abs(z - riverZ(x)); c.lerp(MUD, smooth(6, 4.4, s) * 0.8); c.lerp(BED, smooth(4.4, 3.4, s)); return c; };
+  const terrNormals = geo => { const p = geo.attributes.position, n = p.count, nrm = new Float32Array(n * 3), e = 0.5, v = new THREE.Vector3();
+    for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i); v.set(groundH(x - e, z) - groundH(x + e, z), 2 * e, groundH(x, z - e) - groundH(x, z + e)).normalize(); nrm.set([v.x, v.y, v.z], i * 3); }
+    geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3)); };
   const terrain = new THREE.Group(); terrain.name = 'terrain'; scene.add(terrain);
   for (let tx = 0; tx < 5; tx++) for (let tz = 0; tz < 6; tz++) { const W = 50, D = 45, geo = new THREE.PlaneGeometry(W, D, 25, 23); geo.rotateX(-Math.PI / 2); geo.translate(10 - 125 + W * (tx + 0.5), 0, 92 - 135 + D * (tz + 0.5));
     const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 3), c = new THREE.Color();
-    const TAN = new THREE.Color('#b8a468'), GR = new THREE.Color('#9aa25e'), SNOW = new THREE.Color('#e9eef3'), BLUE = new THREE.Color('#c4d2e0'), PATHC = new THREE.Color('#8b7652'), BED = new THREE.Color('#6d6a5e'), MUD = new THREE.Color('#857b5e');
     for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i), h = groundH(x, z); p.setY(i, h);
-      const nz = Math.sin(x * 0.21) * Math.cos(z * 0.17) + Math.sin(x * 0.07 + z * 0.09);
-      c.copy(TAN).lerp(GR, 0.5 + 0.35 * Math.sin(x * 0.11 + z * 0.05));
-      const snowAmt = Math.max(smooth(0.9, 1.6, nz + (z - 40) * 0.012), smooth(108, 121, z), smooth(3, 14, Math.max(BOUNDS.x0 - x, x - BOUNDS.x1, BOUNDS.z0 - z)));
-      c.lerp(nz > 1.3 ? BLUE : SNOW, snowAmt);
-      const pd = pathDist(x, z); c.lerp(z > 114 ? BLUE : PATHC, (1 - smooth(1.0, 2.6, pd)) * 0.75);
-      const s = Math.abs(z - riverZ(x)); c.lerp(MUD, smooth(6, 4.4, s) * 0.8); c.lerp(BED, smooth(4.4, 3.4, s));
-      col.set([c.r, c.g, c.b], i * 3); }
+      terrColor(x, z, c); col.set([c.r, c.g, c.b], i * 3); }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const nrm = new Float32Array(n * 3), e = 0.5, v = new THREE.Vector3();
-    for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i); v.set(groundH(x - e, z) - groundH(x + e, z), 2 * e, groundH(x, z - e) - groundH(x, z + e)).normalize(); nrm.set([v.x, v.y, v.z], i * 3); }
-    geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3)); geo.computeBoundingSphere();
+    terrNormals(geo);
+    { // the corridor floor (below) replaces the ground between the ice walls: drop those triangles so nothing is drawn twice
+      const ix = geo.index.array, keep = [], inF = k => { const x = p.getX(k), z = p.getZ(k); return x > -11.9 && x < 1.9 && z > 124.5 && z < 188.5; };
+      for (let i = 0; i < ix.length; i += 3) if (!(inF(ix[i]) && inF(ix[i + 1]) && inF(ix[i + 2]))) keep.push(ix[i], ix[i + 1], ix[i + 2]);
+      if (keep.length < ix.length) geo.setIndex(keep); }
+    geo.computeBoundingSphere();
     const t = new THREE.Mesh(geo, lam); t.receiveShadow = true; t.name = 'terrain-tile'; t.userData.noMerge = true; terrain.add(t); }
   // river water (gently animated), ice-cold blue-grey
   const water = new THREE.Mesh(new THREE.PlaneGeometry(250, 10, 125, 1), new THREE.MeshLambertMaterial({ color: '#7fa6bf', transparent: true, opacity: 0.82, depthWrite: false }));
@@ -213,12 +220,23 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
   add(boneToolsGeo(rnd), -19.5, 87.5, 1.2); circ(-19.5, 87.5, 0.6);
   add(tent, -22, 80, 1.4); circ(-22, 80, 1.85); mergeAO.addAO({ x: -22, z: 80 }, 2.3, 1.1);
   add(rackGeo(), -9.5, 89.5, -0.6); box(-10.7, -8.3, 88.9, 90.1);
+  let flagMesh = null;
   // 6 · pole gate in the glacier pass (wooden poles, lashed cross-pole, hide flags; no planks)
   { const W = '#6b4f30', g = [];
     for (const x of [-11.2, 1.2]) { g.push(P(new THREE.CylinderGeometry(0.11, 0.14, 4.4, 6), W, x, 2.2, 126)); g.push(cairnGeo(rnd).translate(x, 0, 126.9)); }
     g.push(P(new THREE.CylinderGeometry(0.08, 0.08, 13.2, 6), W, -5, 4.0, 126, 0, 0, Math.PI / 2));
-    for (let i = 0; i < 6; i++) g.push(P(new THREE.PlaneGeometry(0.7, 1.0 + (i % 2) * 0.3), ['#b08a5c', '#c3a072', '#8f6a40'][i % 3], -9.4 + i * 1.75 + (i > 2 ? 1.4 : 0), 3.35, 126, 0, 0, (i % 2 ? 0.08 : -0.06)));
-    const gate = new THREE.Mesh(M(g), new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide })); gate.position.y = groundH(-5, 126); gate.castShadow = true; statics.add(gate);
+    // v2.3: the six hide flags are real cloth now (own mesh, moved on the CPU every frame near the gate): tied at
+    // both top corners to the cross-pole with sinew, sagging between the ties and billowing in the glacier wind
+    const FX = [], gateMat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    for (let i = 0; i < 6; i++) { const x = -9.4 + i * 1.75 + (i > 2 ? 1.4 : 0), h = 1.0 + (i % 2) * 0.3; FX.push({ x, h, col: ['#b08a5c', '#c3a072', '#8f6a40'][i % 3] });
+      for (const dx of [-0.33, 0.33]) g.push(P(new THREE.CylinderGeometry(0.018, 0.018, 0.12, 4), '#d9c9a6', x + dx, 3.92, 126)); }
+    const gate = new THREE.Mesh(M(g), gateMat); gate.position.y = groundH(-5, 126); gate.castShadow = true; statics.add(gate);
+    { const parts = FX.map(f => { const q = vc(new THREE.PlaneGeometry(0.7, f.h, 4, 6), f.col, 0.08, rnd); q.translate(f.x, 3.87 - f.h / 2, 126); return q; });
+      const geo = M(parts), base = geo.attributes.position.array.slice(), info = [];
+      for (let k = 0; k < base.length / 3; k++) { const x = base[k * 3], y = base[k * 3 + 1]; let f = FX[0]; for (const q of FX) if (Math.abs(q.x - x) < 0.36) f = q;
+        info.push({ v: (3.87 - y) / f.h, u: (x - f.x) / 0.35, ph: f.x * 1.7 }); }
+      flagMesh = new THREE.Mesh(geo, gateMat); flagMesh.position.y = gate.position.y; flagMesh.castShadow = true; flagMesh.userData.noMerge = true; flagMesh.name = 'hide-flags'; geo.computeBoundingSphere(); geo.boundingSphere.radius += 0.6; scene.add(flagMesh);
+      flagMesh.userData.cloth = { base, info }; }
     circ(-11.2, 126, 0.3); circ(1.2, 126, 0.3); }
   // wind-snow curtain shown while the pass is closed (this is what the invisible barrier looks like)
   const windTexC = document.createElement('canvas'); windTexC.width = 128; windTexC.height = 64; { const x = windTexC.getContext('2d'); for (let i = 0; i < 260; i++) { x.fillStyle = `rgba(255,255,255,${0.2 + Math.random() * 0.6})`; x.fillRect(Math.random() * 128, Math.random() * 64, 6 + Math.random() * 18, 1 + Math.random() * 1.5); } }
@@ -230,16 +248,96 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
   add(P(new THREE.BoxGeometry(1.4, 2.0, 0.35), '#8b8781', 0, 1.0, 0, 0.05, 0, 0.03, 1, 1, 1, 0.1, rnd), -9.6, 150, 0.35); circ(-9.6, 150, 0.85);
   add(P(new THREE.CircleGeometry(0.28, 10), '#a5452c', 0, 1.25, 0.18), -9.6, 150, 0.35, 1, false);   // red-ochre mark painted on the stone
   add(cairnGeo(rnd, 6), -0.5, 172, 0); circ(-0.5, 172, 0.55);
-  // glacier ice: inner faces exactly at x = -12 and x = 2 (corridor), south face at z = 120 — matches the colliders
-  { const g = [], ICE = ['#e6eef6', '#d6e4f0', '#c7dbee', '#f3f7fb'];
-    const block = (x0, x1, z0, z1, h) => g.push(P(new THREE.BoxGeometry(x1 - x0, h, z1 - z0, 2, 3, 2), ICE[Math.floor(rnd() * 4)], (x0 + x1) / 2, h / 2 - 0.5, (z0 + z1) / 2, 0, 0, 0, 1, 1, 1, 0.06, rnd));
-    for (let z = 120; z < 200; z += 8) { block(-30, -12, z, z + 8, 9 + rnd() * 7); block(2, 20, z, z + 8, 9 + rnd() * 7); }
-    for (let x = -110; x < -12; x += 12) block(x, Math.min(-12, x + 12), 120, 140, 12 + rnd() * 10);   // v2.2 fix: the last block used to overhang into the corridor (x -14…-2)
-    for (let x = 2; x < 130; x += 12) block(x, Math.min(130, x + 12), 120, 140, 12 + rnd() * 10);
+  // v2.3 glacier: the ice faces are displaced grids whose inner face sits exactly on the collider planes
+  // (x = -12 / x = 2 in the corridor, z = 120 on the south face) and only bulges outward, into the ice. Irregular
+  // tops with serac teeth, deep-blue crevasses, dirty debris bands near the foot, a snow cap on top. Built in
+  // ~20 m segments (each mesh centred on its segment) so the camera culls the ones out of view.
+  { const grnd = rng(1200), lamIce = lam;
+    const C = { dirt: new THREE.Color('#8e9aa3'), ice: new THREE.Color('#bcd6ea'), pale: new THREE.Color('#dbe9f4'), blue: new THREE.Color('#6fa8d8'), deep: new THREE.Color('#2f6aa3'), band: new THREE.Color('#9aa3a6'), snow: new THREE.Color('#f1f5f9') };
+    const n1 = (u, s) => Math.sin(u * 0.11 + s) * 0.5 + Math.sin(u * 0.27 + s * 2.1) * 0.3 + Math.sin(u * 0.63 + s * 0.7) * 0.2;
+    function wall({ a0, a1, along, face, out, hMin, hMax, capW, step, seed, cornerA, segLen = 20 }) {
+      const crev = []; for (let a = a0 + 2 + grnd() * 4; a < a1 - 1; a += 4 + grnd() * 6) crev.push({ a, w: 0.35 + grnd() * 0.25, d: 1.2 + grnd() * 1.4, h: 0.55 + grnd() * 0.4 });
+      const near = a => cornerA == null ? 1 : smooth(0, 3, Math.abs(a - cornerA));
+      const top = a => { const k = near(a); return (hMin + (hMax - hMin) * (0.5 + 0.5 * n1(a, seed)) + 2.2 * Math.pow(Math.max(0, Math.sin(a * 0.83 + seed)), 8) + 1.2 * Math.pow(Math.max(0, Math.sin(a * 2.3 + seed * 3)), 12)) * k + 13 * (1 - k); };
+      const R = 11, CAP = 5, meshes = [];
+      for (let s0 = a0; s0 < a1 - 0.01; s0 += segLen) { const s1 = Math.min(a1, s0 + segLen), nu = Math.max(2, Math.round((s1 - s0) / step));
+        const pos = [], col = [], idx = [], c = new THREE.Color(), mid = (s0 + s1) / 2;
+        for (let i = 0; i <= nu; i++) { const a = s0 + (s1 - s0) * i / nu, k = near(a);
+          let cg = 0, ch = 0; for (const q of crev) { const g = Math.exp(-Math.pow((a - q.a) / q.w, 2)); if (g > cg) { cg = g; ch = q.h; } }
+          const T = top(a) - 1.8 * cg * k;   // crevasses notch the top edge too
+          for (let v = 0; v <= R + CAP; v++) { let y, d;
+            if (v <= R) { const f = v / R; y = -0.9 + (T + 0.9) * Math.pow(f, 0.92);
+              const cgy = cg * (f < ch ? 1 : Math.max(0, 1 - (f - ch) * 6)), bump = 0.2 + 0.8 * smooth(0.1, 0.45, f), foot = 0.3 + 0.7 * smooth(0.08, 0.4, f);   // flat-ish foot: the face meets the ground on the collider line
+              d = (0.08 + bump * (0.45 * (0.5 + 0.5 * Math.sin(a * 0.37 + seed)) + 0.3 * Math.pow(Math.sin(a * 1.7 + y * 0.35 + seed), 2)) + 0.06 * Math.max(0, y) + 0.5 * Math.pow(f, 3) + bump * 0.45 * Math.max(0, Math.sin(y * 0.75 + 3 * n1(a, seed + 3)))) * k + 1.6 * cgy * k * foot - 0.12;   // the foot sits a hand's width inside the collider line, so she never stands off the visible ice
+              const rf = Math.max(0, Math.min(1, (d - 0.35) / 1.1));
+              c.copy(C.dirt).lerp(C.ice, smooth(0.6, 2.6, y)).lerp(C.pale, smooth(0.5, 1, f) * 0.6 * (0.5 + 0.5 * Math.sin(a * 0.5 + y * 0.2)));
+              c.lerp(C.blue, rf * 0.75); c.lerp(C.deep, cgy * 0.9);
+              const bandF = ((y * 0.21 + Math.sin(a * 0.05 + seed) * 0.4) % 1 + 1) % 1; if (y > 1.5 && bandF < 0.08) c.lerp(C.band, 0.35);
+              c.lerp(C.snow, smooth(T - 1.0, T - 0.1, y) * 0.9);
+            } else { const e = (v - R) / CAP; y = T + 0.35 * Math.sin(e * 3.1) + 0.25 * Math.sin(a * 0.9 + e * 4) * e; d = 0.6 * k + 0.6 + capW * e; c.copy(C.snow).lerp(C.pale, 0.25 * Math.sin(a * 0.7 + e * 5) ** 2); }
+            const w = face + out * d;
+            if (along === 'z') pos.push(w, y, a - mid); else pos.push(a - mid, y, w);
+            col.push(c.r, c.g, c.b); }
+        }
+        const NV = R + CAP + 1; for (let i = 0; i < nu; i++) for (let v = 0; v < R + CAP; v++) { const p00 = i * NV + v, p10 = (i + 1) * NV + v, p01 = p00 + 1, p11 = p10 + 1; idx.push(p00, p10, p01, p10, p11, p01); }
+        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx);
+        // winding: the wall must face the open side (away from the ice)
+        { const P0 = new THREE.Vector3().fromArray(pos, 0), P1 = new THREE.Vector3().fromArray(pos, NV * 3), P2 = new THREE.Vector3().fromArray(pos, 3), nrm = P1.sub(P0).cross(P2.sub(P0));
+          const want = along === 'z' ? new THREE.Vector3(-out, 0, 0) : new THREE.Vector3(0, 0, -out); if (nrm.dot(want) < 0) { for (let q = 0; q < idx.length; q += 3) { const t = idx[q + 1]; idx[q + 1] = idx[q + 2]; idx[q + 2] = t; } geo.setIndex(idx); } }
+        const ng = geo.toNonIndexed(); ng.computeVertexNormals(); ng.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(ng.attributes.position.count * 2), 2)); ng.computeBoundingSphere();
+        const m = new THREE.Mesh(ng, lamIce); if (along === 'z') m.position.set(0, 0, mid); else m.position.set(mid, 0, 0); m.castShadow = true; m.receiveShadow = true; m.name = 'glacier-wall'; statics.add(m); meshes.push(m); }
+      return { top, meshes };
+    }
+    const wl = wall({ a0: 120, a1: 200, along: 'z', face: -12, out: -1, hMin: 10, hMax: 16, capW: 18, step: 0.65, seed: 1.3, cornerA: 120 });
+    const wr = wall({ a0: 120, a1: 200, along: 'z', face: 2, out: 1, hMin: 10, hMax: 15, capW: 18, step: 0.65, seed: 4.1, cornerA: 120 });
+    wall({ a0: -110, a1: -12, along: 'x', face: 120, out: 1, hMin: 13, hMax: 21, capW: 20, step: 1.3, seed: 2.2, cornerA: -12 });
+    wall({ a0: 2, a1: 130, along: 'x', face: 120, out: 1, hMin: 13, hMax: 21, capW: 20, step: 1.3, seed: 5.7, cornerA: 2 });
+    // seracs: leaning blocks of ice standing on the cap, set back from the edge (never over the corridor)
+    { const SG = new THREE.BoxGeometry(1, 1, 1, 1, 2, 1);
+      for (let i = 0; i < 30; i++) { const left = i % 2 === 0, z = 124 + grnd() * 70, W = left ? wl : wr, T = W.top(z), back = 2.2 + grnd() * 7, x = left ? -12 - back : 2 + back;
+        const g = P(SG, grnd() < 0.5 ? '#d8e8f5' : '#a9cbe8', 0, 0, 0, (grnd() - 0.5) * 0.5, grnd() * 3, (grnd() - 0.5) * 0.5, 1.2 + grnd() * 1.8, 2 + grnd() * 3.2, 1.2 + grnd() * 1.6, 0.08, grnd);
+        const m = new THREE.Mesh(g, lam); m.position.set(x, T + 0.6, z); m.castShadow = true; m.receiveShadow = true; m.name = 'serac'; statics.add(m); } }
+    // the old massive ice behind the faces (seen from far off) stays: the high inland ice sheet
+    const g = [], ICE = ['#e6eef6', '#d6e4f0', '#c7dbee', '#f3f7fb'];
+    const block = (x0, x1, z0, z1, h) => g.push(P(new THREE.BoxGeometry(x1 - x0, h, z1 - z0, 2, 3, 2), ICE[Math.floor(grnd() * 4)], (x0 + x1) / 2, h / 2 - 0.5, (z0 + z1) / 2, 0, 0, 0, 1, 1, 1, 0.06, grnd));
     block(-110, -30, 140, 240, 26); block(20, 130, 140, 240, 26); block(-30, -12, 200, 240, 22); block(2, 20, 200, 240, 22);
-    for (let i = 0; i < 26; i++) { const left = i % 2 === 0, x = left ? -12.6 - rnd() * 6 : 2.6 + rnd() * 6; g.push(P(new THREE.DodecahedronGeometry(1.4 + rnd() * 1.6, 0), ICE[i % 4], x, 9 + rnd() * 4, 122 + rnd() * 74, rnd(), rnd(), 0, 1, 0.8, 1, 0.08, rnd)); }
     const ice = new THREE.Mesh(M(g), lam); ice.castShadow = true; ice.receiveShadow = true; ice.name = 'glacier'; statics.add(ice);
     box(-200, -12, 120, 300); box(2, 200, 120, 300); }
+  // v2.3 corridor floor: outwash gravel with tundra (moss / sedge) patches and drifted snow along the ice foot, a
+  // pebble texture on a fine grid laid just above the terrain; plus a meltwater runnel flowing south out of the ice
+  let melt = null;
+  { const tc = document.createElement('canvas'); tc.width = tc.height = 256; const x = tc.getContext('2d'); const gr = rng(77);
+    x.fillStyle = '#b9b1a4'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 1400; i++) { const r = 1.5 + gr() * 5.5, px = gr() * 256, py = gr() * 256, l = 120 + gr() * 110 | 0, w = gr() * 30 | 0;
+      x.fillStyle = `rgb(${l + w * 0.4 | 0},${l | 0},${l - w * 0.5 | 0})`; x.beginPath(); x.ellipse(px, py, r, r * (0.6 + gr() * 0.4), gr() * 3, 0, Math.PI * 2); x.fill();
+      x.fillStyle = 'rgba(40,34,28,0.25)'; x.beginPath(); x.ellipse(px + r * 0.25, py + r * 0.3, r, r * 0.5, 0, 0, Math.PI); x.fill(); }
+    const tex = new THREE.CanvasTexture(tc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(14 / 3, 70 / 3); tex.colorSpace = THREE.SRGBColorSpace;
+    const geo = new THREE.PlaneGeometry(14.6, 70, 15, 70); geo.rotateX(-Math.PI / 2); geo.translate(-5, 0, 155);
+    const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 4), c = new THREE.Color(), GRV = new THREE.Color('#a49a8a'), TUN = new THREE.Color('#7f8254'), MOSS = new THREE.Color('#6d7a4a'), SN = new THREE.Color('#f4f7fa'), WET = new THREE.Color('#7d776d'), TC = new THREE.Color();
+    for (let i = 0; i < n; i++) { const X = p.getX(i), Z = p.getZ(i); p.setY(i, groundH(X, Z) + 0.06);
+      const nz = Math.sin(X * 0.9 + Z * 0.31) * Math.cos(Z * 0.23 - X * 0.4) + 0.5 * Math.sin(Z * 0.71 + X * 1.7);
+      c.copy(GRV).lerp(nz > 0.6 ? MOSS : TUN, smooth(0.35, 0.9, nz) * 0.85);
+      c.lerp(WET, (1 - smooth(1.0, 2.2, Math.abs(X + 5))) * 0.35);                                  // the trodden line of the trail
+      const mx = 0.9 + 0.35 * Math.sin(Z * 0.13); c.lerp(WET, (1 - smooth(0.4, 1.1, Math.abs(X - mx))) * 0.5);   // damp gravel by the runnel
+      const wd = Math.min(X + 12, 2 - X); c.lerp(SN, smooth(1.6, 0.3, wd + 0.25 * Math.sin(Z * 0.8)) * 0.95);  // drifted snow at the ice foot
+      // at both ends the floor turns into exactly the terrain colour with no pebble texture (alpha = texture amount), so it is opaque yet seamless
+      const a = smooth(120, 124, Z) * smooth(190.5, 188.5, Z); c.lerp(terrColor(X, Z, TC), 1 - a);
+      col.set([c.r, c.g, c.b, a], i * 4); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 4)); terrNormals(geo); geo.computeBoundingSphere();
+    const fm = new THREE.MeshLambertMaterial({ map: tex, vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
+    fm.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#ifdef USE_MAP\n diffuseColor.rgb *= mix(vec3(1.0), texture2D(map, vMapUv).rgb, vColor.a);\n#endif'); };
+    fm.customProgramCacheKey = () => 'corridor-floor';
+    // opaque and drawn before the terrain so the ground under it is depth-rejected (no double fill)
+    const floor = new THREE.Mesh(geo, fm); floor.receiveShadow = true; floor.userData.noMerge = true; floor.name = 'corridor-floor'; floor.renderOrder = -1; scene.add(floor);
+    // meltwater runnel (about 60 cm wide, a few cm deep) along the east side of the corridor
+    const mc = document.createElement('canvas'); mc.width = 32; mc.height = 128; { const y = mc.getContext('2d'); y.fillStyle = '#ffffff'; y.fillRect(0, 0, 32, 128); for (let i = 0; i < 40; i++) { y.fillStyle = `rgba(150,190,220,${0.3 + gr() * 0.5})`; y.fillRect(gr() * 32, gr() * 128, 2 + gr() * 6, 6 + gr() * 18); } }
+    const mt = new THREE.CanvasTexture(mc); mt.wrapS = mt.wrapT = THREE.RepeatWrapping; mt.repeat.set(1, 18);
+    const pts = []; for (let z = 188; z >= 121; z -= 0.8) pts.push(z);
+    const pos = [], uv = [], idx = [];
+    pts.forEach((z, i) => { const mx = 0.9 + 0.35 * Math.sin(z * 0.13), w = 0.32 * smooth(121, 126, z) + 0.08 * Math.sin(z * 0.5); for (const sd of [-1, 1]) { pos.push(mx + sd * w, groundH(mx + sd * w, z) + 0.05, z); uv.push(sd < 0 ? 0 : 1, i / (pts.length - 1)); } if (i) { const q = (i - 1) * 2; idx.push(q, q + 2, q + 1, q + 1, q + 2, q + 3); } });
+    const mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); mg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); mg.setIndex(idx); mg.computeVertexNormals(); if (mg.attributes.normal.getY(0) < 0) { idx.reverse(); mg.setIndex(idx); mg.computeVertexNormals(); }
+    melt = new THREE.Mesh(mg, new THREE.MeshLambertMaterial({ color: '#8fc1e2', map: mt, transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }));
+    melt.userData.noMerge = true; melt.name = 'meltwater'; melt.renderOrder = 2; scene.add(melt); }
   // 8 · Trial Cave hill with a dark entrance at the corridor's end
   { const g = [];
     for (let i = 0; i < 9; i++) g.push(P(new THREE.DodecahedronGeometry(3 + rnd() * 2.5, 1), '#7b7266', -5 + (i - 4) * 2.6, 2.5 + rnd() * 2, 194 + rnd() * 4, rnd(), rnd(), 0, 1, 0.9, 1, 0.12, rnd));
@@ -301,6 +399,19 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     for (const f of flames) f.children.forEach((c, i) => { c.scale.y = 0.85 + 0.25 * Math.sin(t * (9 + i * 3) + i); c.scale.x = c.scale.z = 0.9 + 0.12 * Math.sin(t * 7 + i * 2); });
     for (const r of rings) { r.beam.material.opacity = (r.state === 'locked' ? 0.22 : r.state === 'new' ? 0.5 : 0.35) + 0.12 * Math.sin(t * 2.4 + r.def.x); r.icon.position.y = 2.9 + 0.12 * Math.sin(t * 1.8 + r.def.z); }
     water.position.y = WATER_Y + Math.sin(t * 1.3) * 0.015;
+    if (melt) melt.material.map.offset.y = (melt.material.map.offset.y + dt * 0.35) % 1;
+    if (flagMesh && hero && Math.abs(hero.z - 126) < 45) clothStep(t);
+  }
+  let clothN = 0;
+  function clothStep(t) {      // tied at both top corners: the top edge sags, the free bottom billows south with the wind off the ice
+    const { base, info } = flagMesh.userData.cloth, a = flagMesh.geometry.attributes.position.array;
+    for (let k = 0; k < info.length; k++) { const { v, u, ph } = info[k], sag = 0.06 * (1 - u * u) * (0.4 + 0.6 * Math.min(1, v * 3 + 0.3));
+      const gust = 0.55 + 0.45 * Math.sin(t * 0.9 + ph * 0.3) * Math.sin(t * 0.37 + 1.3), bill = Math.pow(v, 1.4) * (0.26 * gust + 0.1 * Math.sin(t * 4.2 + ph + v * 3.5));
+      a[k * 3] = base[k * 3] + 0.06 * v * Math.sin(t * 3.1 + ph + v * 5);
+      a[k * 3 + 1] = base[k * 3 + 1] - sag - 0.05 * bill;
+      a[k * 3 + 2] = base[k * 3 + 2] - bill - 0.03 * (1 - u * u) * v * Math.sin(t * 5 + ph); }
+    flagMesh.geometry.attributes.position.needsUpdate = true;
+    if ((clothN++ & 1) === 0) flagMesh.geometry.computeVertexNormals();
   }
   function setGateOpen(open) { gateWall.disabled = !!open; wind.visible = !open; }
   // v2.3: camera occluders (the follow camera pulls in front of these instead of clipping through them)

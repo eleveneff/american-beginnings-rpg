@@ -1,4 +1,6 @@
-/* American Beginnings RPG v2.1 headless smoke test.
+/* American Beginnings RPG headless smoke test (v2.1 screens; still the Classic-mode suite in v2.2+).
+   v2.2: the walkable 3D world has its own suite (tests/world-test.js). This suite seeds the world key to Classic mode
+   before every page load so the 2D screens are tested exactly as before.
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/shots/ node tests/smoke-test.js */
 const puppeteer = require('puppeteer-core') /* executablePath below: adjust to your Chrome */;
 const SHOTS = process.env.SHOTS || '/tmp/smoke/';
@@ -9,6 +11,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 (async () => {
   const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const p = await b.newPage(); await p.setViewport({ width: 1280, height: 860 });
+  await p.evaluateOnNewDocument(() => { try { if (!localStorage.getItem('americanBeginningsRPG_world')) localStorage.setItem('americanBeginningsRPG_world', JSON.stringify({ ver: 1, mode: 'classic', seenIntro: true })); } catch (e) { } });
+  const verAtLeast = (v, min) => { const n = s => String(s).replace(/^v/, '').split('.').map(Number); const a = n(v), m = n(min); for (let i = 0; i < Math.max(a.length, m.length); i++) { if ((a[i] || 0) !== (m[i] || 0)) return (a[i] || 0) > (m[i] || 0); } return true; };
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text()) && !/assets\/video\//.test((m.location() || {}).url || '')) errs.push(m.text()); });
   const url = BASE + (BASE.includes('?') ? '&' : '?') + 'cb=' + Date.now();
   const go = async () => { await p.goto(url, { waitUntil: 'domcontentloaded' }); await sleep(1500); };
@@ -48,7 +52,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   /* 2. fresh game */
   await p.evaluate(k => localStorage.removeItem(k), KEY); await go();
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.1' && (await p.evaluate(() => ABRPG.version)) === 'v2.1', 'version marker v2.1');
+  { const mk = await p.$eval('#game-version', e => e.textContent), jv = await p.evaluate(() => ABRPG.version); assert(mk === jv && verAtLeast(jv, 'v2.1'), 'version marker ' + jv + ' (>= v2.1, page and code agree)'); }
   await p.screenshot({ path: SHOTS + '1-map.png' });
   await click('.node[data-sid="s1"]');
   await click('#pg button[data-g="boy"]'); await click('#pn button'); await p.screenshot({ path: SHOTS + '2-char.png' });

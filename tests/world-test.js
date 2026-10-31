@@ -246,7 +246,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       for (const id of ['s2-l0', 's2-l1', 's2-l2', 's2-l3', 'kiva', 's2-l4', 's2-clanmother', 's2-l6', 's2-l5', 'moundinfo', 's2-clues', 'market', 'chunkey', 'trial']) { await tpRing(id);
         for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(160); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
       assert(n === 56 && !bad.length, 'camera never inside a house, tree, wall or the mound at 14 rings × 4 views (' + bad.join(', ') + ')'); }
-    { await tp(-36, 30); await p.evaluate(() => __world.faceCam(0)); await sleep(300); await closeCards(); await p.keyboard.down('KeyW'); let bad = 0, n = 0; const t0 = Date.now();
+    { const ga = await p.evaluate(() => __world._dbg().L.mods.B.PALISADE.gapA); await tp(-42 + Math.cos(ga) * 21, 48 + Math.sin(ga) * 21); await p.evaluate(a => __world.faceCam(a), Math.atan2(-Math.cos(ga), -Math.sin(ga))); await sleep(300); await closeCards(); await p.keyboard.down('KeyW'); let bad = 0, n = 0; const t0 = Date.now();
       while (Date.now() - t0 < 3000) { const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad++; await sleep(80); }
       await p.keyboard.up('KeyW'); assert(n > 8 && bad === 0, 'walking into the palisade gap and between the longhouses the camera stays clear (' + n + ' samples)'); }
     { await tp(0, -4); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2000); const c = await p.evaluate(() => __world.cam);
@@ -316,7 +316,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await closeCards();
     for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s2', i, false), i); await sleep(80); }
     await p.evaluate(() => ABRPG.home()); await waitPhase('active');
-    assert(await p.evaluate(() => __world.meetOpen()) && (await p.evaluate(() => __world.target)) === 'trial', 'with every scroll read and nothing else new the banner points to the Trial ring');
+    assert(await p.evaluate(() => __world.meetOpen()) && (await ringAt('trial')).state === 'new', 'with all 7 scrolls read the meeting-ground Trial ring opens');
     await tp(-60, 9); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v24-meeting-ground.png');
     await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
     assert((await W()).phase === 'panel', 'the Trial opens as the real Section 2 trial panel');
@@ -337,9 +337,9 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await seed(s2base(), { ver: 1, mode: 'walk', at: { s2: { x: 1e9, z: 3, yaw: 'q' } }, read: { s1: [1], s2: [0, 7, 'a', 3, 3] }, seen: { help2: true, kiva: 'yes' } });
     await enterS2(); w = await W();
     assert(Math.abs(w.pos.z + 8) < 0.01 && JSON.stringify(await p.evaluate(() => __world.readS2())) === '[0,3]' && !(await p.evaluate(() => __world.seen())).kiva, 'junk Section 2 world data is cleaned (start spot, only valid scroll ids)');
-    await seed(s2base(), { ver: 1, mode: 'walk', at: { s2: { x: 52, z: -6, yaw: 1 } }, seen: { help2: true } });
+    await seed(s2base(), { ver: 1, mode: 'walk', at: { s2: { x: 46, z: 2.2, yaw: 1 } }, seen: { help2: true } });
     await enterS2(); w = await W();
-    assert(Math.abs(w.pos.x - 52) < 0.01 && Math.abs(w.pos.z + 6) < 0.01, 'a saved Section 2 spot is restored');
+    assert(Math.abs(w.pos.x - 46) < 0.01 && Math.abs(w.pos.z - 2.2) < 0.01, 'a saved Section 2 spot is restored');
     await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'boy', name: 'Sam' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 24, totalAnswered: 25 }, null);
     await enterS2(); assert((await p.evaluate(() => __world.level)) === 's2' && (await p.evaluate(() => ABRPG.state().version)) === 3, 'a v1 save with Section 1 mastered walks into Section 2');
   }

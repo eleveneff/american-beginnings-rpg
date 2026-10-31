@@ -274,8 +274,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     for (const [id, re] of [['s2-l1', /Pacific Northwest/], ['s2-l2', /Great Plains/], ['s2-l3', /Southwest/], ['s2-l4', /Iroquois/], ['s2-l5', /Southeast/], ['s2-l6', /Hiawatha/]]) {
       await tpRing(id); w = await W(); await p.evaluate(() => __world.use()); await sleep(400);
       assert(w.near === id && (await W()).phase === 'panel' && re.test(await p.$eval('#screen', e => e.textContent)), id + ' ring opens its scroll');
-      if (id === 's2-l3') await shot('v24-pueblo.png');
-      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+      if (id === 's2-l3') { await p.evaluate(() => __world.faceCam(Math.atan2(44 - 34, -52 + 42.5))); await sleep(500); await shot('v24-pueblo.png'); } }   // the pueblo itself, not the scroll panel
     await tpRing('s2-clanmother'); await p.evaluate(() => __world.use()); await sleep(400);
     assert((await W()).phase === 'panel' && /Clan Mother/.test(await p.$eval('#screen', e => e.textContent)), 'inside the palisade the Clan Mother ring opens her council');
     await p.evaluate(() => ABRPG.home()); await waitPhase('active');

@@ -28,9 +28,9 @@ Commands:
     npm i puppeteer-core@22
     BASE=http://localhost:8765/ SHOTS=/tmp/ node tests/smoke-test.js
 
-## v2.2 walkable world test
+## v2.2–v2.3 walkable world test
 
-`tests/world-test.js` checks the Section 1 Beringia level: v2.2 marker, walking (keys), camp-fire collider, caribou tracks, ford respawn, the progress save staying byte-identical after walking, rings opening the existing panels (Scroll 1, Traveler's Journal map), the glacier pass blocked until the Fur Cloak, corridor walls, the Trial Cave (locked until all 8 scrolls are read, real 24-question trial, resume after reload, 95% pass + mastery review), Classic toggle and automatic fallback (no WebGL2), v1 / v2 saves and a corrupt world key, Reset clearing the world key, no page errors.
+`tests/world-test.js` checks the Section 1 Beringia level: v2.3 marker, walking (keys), camp-fire collider, caribou tracks, ford respawn, the v2.3 ford timeline puzzle (stones in time order, splash + respawn on a later stone, same stars / mastery review / results as the card timeline, no new save fields), the progress save staying byte-identical after walking, rings opening the existing panels (Scroll 1, Traveler's Journal map), the glacier pass blocked until the Fur Cloak, corridor walls, v2.3 glacier walls (ice faces on the colliders, >9 m tall, corridor floor, meltwater, moving hide flags), objective banner and camera collision / no orbit while strafing, results "Back to Beringia" label, the Trial Cave (locked until all 8 scrolls are read, real 24-question trial, resume after reload, 95% pass + mastery review), Classic toggle and automatic fallback (no WebGL2), v1 / v2 saves and a corrupt world key, Reset clearing the world key, no page errors.
 
     BASE=http://localhost:8765/ SHOTS=/tmp/wshots/ node tests/world-test.js
 

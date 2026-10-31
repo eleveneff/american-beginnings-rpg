@@ -1,4 +1,4 @@
-/* American Beginnings RPG v2.2 walkable-world test (Section 1: Beringia).
+/* American Beginnings RPG v2.2–v2.3 walkable-world test (Section 1: Beringia).
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/wshots/ node tests/world-test.js
    Run it on its own (not in parallel with smoke-test.js): SwiftShader is slow and the timings below assume one suite at a time. */
 const puppeteer = require('puppeteer-core');
@@ -28,10 +28,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.2' && (await p.evaluate(() => ABRPG.version)) === 'v2.2', 'version marker v2.2');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.3' && (await p.evaluate(() => ABRPG.version)) === 'v2.3', 'version marker v2.3');
   let w = await W();
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
-  assert(!(await p.$eval('#w-banner', e => e.hidden)), '"New in v2.2" banner shows on the map (non-blocking)');
+  assert(!(await p.$eval('#w-banner', e => e.hidden)), '"New in v2.3" banner shows on the map (non-blocking)');
 
   console.log('enter Beringia + movement:');
   const before = await p.evaluate(k => localStorage.getItem(k), KEY);

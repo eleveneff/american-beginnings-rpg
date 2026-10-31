@@ -1,8 +1,8 @@
 // world/hero3d.js — Abigail in 3D (American Beginnings RPG v2.2).
 // Built from smooth primitives (lathe / capsule / sphere), ~1.5 m tall: a 7th-grade girl at real scale.
 // Parts are merged per moving limb with vertex colours, so the whole hero is ~7 draw calls before outlines.
-// Gear comes from the save's S.equip, but ONLY Section 1 (Ice Age) art is drawn here — later-era items
-// (metal, cloth, hats…) are ignored so nothing anachronistic ever appears in Beringia.
+// Gear comes from the save's S.equip; world.js passes only art from the level's era (Section 1 in Beringia; Sections
+// 1–2 in the Native Nations level), so later-era items (metal, cloth, hats…) never appear anachronistically.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/BufferGeometryUtils.js';
 
@@ -52,8 +52,30 @@ const GEAR = {
     const tip = part(new THREE.ConeGeometry(0.018, 0.06, 6), '#3a2a22', 0.04, 1.62, -0.155, -0.35, 0, 0.15, 1, 1, 0.3);
     return { body: [band, f, tip] };
   }
+  // ---- v2.4: Section 2 (Native Nations, about 1000 to 1500s) art keys from content/v2-s2.js; drawn only in Level 2 ----
+  'wampum-belt': (col) => {           // belt slot: a woven band of purple and white shell beads at the waist
+    const out = [];
+    for (let i = 0; i < 20; i++) { const a = i / 20 * Math.PI * 2; out.push(part(new THREE.BoxGeometry(0.05, 0.05, 0.02), i % 4 < 2 ? (col || '#5a3ea8') : '#f1ead8', Math.sin(a) * 0.162, 0.95, Math.cos(a) * 0.162, 0, a, 0)); }
+    return { body: out };
+  },
+  'paddle': (col) => {                // back slot: a carved cedar canoe paddle slung diagonally across her back
+    const c = col || '#a0522d';
+    return { body: [part(new THREE.CylinderGeometry(0.018, 0.02, 1.0, 6), c, 0, 0.98, -0.2, 0, 0, 0.55), part(new THREE.SphereGeometry(0.1, 10, 8), c, -0.3, 0.55, -0.205, 0, 0, 0.55, 0.65, 1.7, 0.16), part(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 6), c, 0.27, 1.4, -0.2, 0, 0, 0.55)] };
+  },
+  'buffalo-robe': (col) => {          // cloak slot: a painted bison-hide robe over the shoulders (painted bands)
+    const back = new THREE.CylinderGeometry(0.2, 0.3, 0.68, 18, 1, true, Math.PI * 0.3, Math.PI * 1.4);
+    const out = [part(back, col || '#9c6b3c', 0, 0.9, -0.006)];
+    for (const [y, c] of [[1.02, '#b8452c'], [0.86, '#2f4f6a'], [0.74, '#e0c48a']]) out.push(part(new THREE.CylinderGeometry(0.2 + (1.22 - y) * 0.15 + 0.004, 0.2 + (1.22 - y) * 0.15 + 0.006, 0.03, 18, 1, true, Math.PI * 0.75, Math.PI * 0.5), c, 0, y, -0.006));
+    return { body: out };
+  },
+  'turquoise': (col) => {             // neck slot: a cord with one turquoise pendant
+    const out = []; for (let i = 0; i < 11; i++) { const a = Math.PI * (0.15 + 0.7 * i / 10); out.push(part(new THREE.SphereGeometry(0.008, 4, 3), '#3a2a1a', Math.cos(a) * 0.1, 1.16 - Math.sin(a) * 0.05, Math.sin(a) * 0.12 + 0.02)); }
+    out.push(part(new THREE.OctahedronGeometry(0.03, 0), col || '#2ec4b6', 0, 1.09, 0.145, 0, 0, 0, 0.9, 1.2, 0.5));
+    return { body: out };
+  }
 };
-export const S1_ART = Object.keys(GEAR);
+export const S1_ART = ['fur-cloak', 'spear', 'basket', 'shell-necklace', 'feather-band'];
+export const S2_ART = ['wampum-belt', 'paddle', 'buffalo-robe', 'turquoise'];
 
 export function createHero({ gender = 'girl', gearArt = [] } = {}) {
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
@@ -80,7 +102,7 @@ export function createHero({ gender = 'girl', gearArt = [] } = {}) {
   }
   // eyes are their own mesh (blink)
   const eyeGeo = merge([-1, 1].flatMap(s => [part(new THREE.SphereGeometry(0.019, 10, 8), '#ffffff', s * 0.044, 1.385, 0.1, 0, 0, 0, 1, 1.15, 0.6), part(new THREE.SphereGeometry(0.012, 8, 6), '#2a1a12', s * 0.044, 1.385, 0.112)]));
-  // gear (Section 1 art only)
+  // gear (only the era art world.js passes in)
   for (const g of gearArt) { const b = GEAR[g.art]; if (!b) continue; const o = b(g.color); if (o.body) body.push(...o.body); if (o.rhand) rhand.push(...o.rhand); }
 
   const torso = new THREE.Group(); root.add(torso);

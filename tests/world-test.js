@@ -30,6 +30,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await seed(base(), null);
   assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.3' && (await p.evaluate(() => ABRPG.version)) === 'v2.3', 'version marker v2.3');
   let w = await W();
+  { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
+    assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
   assert(!(await p.$eval('#w-banner', e => e.hidden)), '"New in v2.3" banner shows on the map (non-blocking)');
 

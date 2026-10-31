@@ -24,7 +24,7 @@ GAME_CONTENT.extend("s1", {
         "\"Blackwater Draw Locality 1 is the type site of the Clovis Culture, the oldest positively defined cultural group in North America. It was discovered in 1929, and excavations began in 1932.\"",
         "\"The Clovis point is the oldest and most widely distributed single artifact type in North America.\""
       ],
-      note: "Artifacts are primary sources, but people have to interpret them. Newer finds, such as Monte Verde in Chile and the White Sands footprints, show that people were in the Americas even before Clovis.",
+      note: "Artifacts are primary sources, but people have to interpret them. Newer finds changed that view: Monte Verde, an early site in southern Chile dated to about 14,500 years ago, is widely accepted by archaeologists as older than Clovis, and finds such as the White Sands footprints also point to people here before Clovis.",
       url: "https://www.bwdarchaeology.com/bwdnationalhistoriclandmark"
     },
     text: [
@@ -37,7 +37,7 @@ GAME_CONTENT.extend("s1", {
     { id: "s1src2", type: "mc", topic: "src1", q: "Clovis spear points were found mixed in with mammoth bones. What does that evidence best show?", choices: ["People lived in the same time as Ice Age animals and hunted them", "Mammoths made stone tools", "The Clovis people kept mammoths as pets", "The points were made by Europeans"], explain: "Tools found together with the bones show that people hunted mammoths and other Ice Age animals." },
     { id: "s1src3", type: "fill", topic: "src1", q: "Blackwater Draw, the type site of the Clovis culture, is in the present-day state of ____.", accept: ["New Mexico", "NM"], display: "New Mexico", explain: "It is near Clovis and Portales, New Mexico. It was found in 1929, and digging began in 1932." },
     { id: "s1src4", type: "mc", topic: "src1", q: "The Clovis people left no writing. What kind of primary source do historians use to learn about them?", choices: ["Artifacts, such as stone points and bones found at sites", "Their diaries", "Letters they sent to Spain", "Newspapers from the time"], explain: "Artifacts are objects people made or used. For people who left no writing, artifacts are the main evidence." },
-    { id: "s1src5", type: "mc", topic: "src1", q: "Why do scientists no longer say for certain that the Clovis people were the very first Americans?", choices: ["Older sites, such as Monte Verde and the White Sands footprints, were found", "Clovis points were proven fake", "The Clovis people left records saying others came first", "Mammoths never lived in North America"], explain: "New evidence can change what historians conclude. Some sites appear to be thousands of years older than Clovis." }
+    { id: "s1src5", type: "mc", topic: "src1", q: "Why do scientists no longer say for certain that the Clovis people were the very first Americans?", choices: ["Older sites, such as Monte Verde and the White Sands footprints, were found", "Clovis points were proven fake", "The Clovis people left records saying others came first", "Mammoths never lived in North America"], explain: "New evidence can change what historians conclude. Monte Verde in southern Chile, about 14,500 years old, is widely accepted by archaeologists as older than Clovis." }
   ]
 });
 

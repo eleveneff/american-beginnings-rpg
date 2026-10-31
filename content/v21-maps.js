@@ -16,7 +16,7 @@ GAME_CONTENT.extend("s1", {
     targets: [
       { id: "beringia", label: "Beringia (land bridge)", lat: 65.5, lon: -169, fact: "During the Ice Age, Beringia joined **Siberia (Asia)** and **Alaska (North America)**. Today the Bering Strait covers it.", q: "s1mp5" },
       { id: "blackwater", label: "Blackwater Draw (Clovis points)", lat: 34.28, lon: -103.33, fact: "Near **Clovis, New Mexico**. Clovis points were found here with mammoth bones.", q: "s1q12" },
-      { id: "monteverde", label: "Monte Verde (14,000+ year-old camp)", lat: -41.5, lon: -73.2, fact: "Monte Verde in **Chile** shows people reached far into South America very early.", q: "s1mp2" },
+      { id: "monteverde", label: "Monte Verde (about 14,500 years ago)", lat: -41.5, lon: -73.2, fact: "Monte Verde, an early site in **southern Chile**, is dated to about **14,500 years ago**. Archaeologists widely accept it as older than Clovis, so people reached far into South America very early.", q: "s1mp2" },
       { id: "cahokia", label: "Cahokia (Mississippian city)", lat: 38.66, lon: -90.06, fact: "Cahokia stood near the **Mississippi River**, close to present-day St. Louis.", q: "s1mp3" },
       { id: "tenochtitlan", lpos: "t", label: "Tenochtitlán (Aztec capital)", lat: 19.43, lon: -99.13, fact: "Built on an island in Lake Texcoco in 1325. Mexico City stands there today.", q: "s1q21" },
       { id: "tikal", label: "Tikal (Maya city)", lat: 17.22, lon: -89.62, fact: "A great **Maya** city of the Classic Age, in the rain forest of present-day Guatemala.", q: "s1mp1" },
@@ -25,7 +25,7 @@ GAME_CONTENT.extend("s1", {
   }],
   questions: [
     { id: "s1mp1", topic: "meso", type: "mc", q: "Tikal was a great city built by which people?", choices: ["The Maya", "The Inca", "The Aztec", "The Haudenosaunee"], explain: "Tikal, in present-day Guatemala, flourished during the Maya Classic Age (about 250–900 CE)." },
-    { id: "s1mp2", topic: "paleo", type: "mc", q: "Monte Verde, a camp more than 14,000 years old, is in which country?", choices: ["Chile", "Canada", "Mexico", "The United States"], explain: "Monte Verde is in southern Chile. It shows people reached far into South America very early." },
+    { id: "s1mp2", topic: "paleo", type: "mc", q: "Monte Verde, an early site dated to about 14,500 years ago, is in which country?", choices: ["Chile", "Canada", "Mexico", "The United States"], explain: "Monte Verde is in southern Chile. It is widely accepted by archaeologists as older than Clovis, so people reached far into South America very early." },
     { id: "s1mp3", topic: "mounds", type: "mc", q: "The Mississippian city of Cahokia was built near which river?", choices: ["The Mississippi River", "The Amazon River", "The Rio Grande", "The Hudson River"], explain: "Cahokia stood on the Mississippi River floodplain, near present-day St. Louis." },
     { id: "s1mp4", topic: "inca", type: "mc", q: "Cusco, the capital of the Inca Empire, is in which mountains?", choices: ["The Andes", "The Rocky Mountains", "The Appalachian Mountains", "The Alps"], explain: "The Inca Empire stretched along the Andes Mountains of South America." },
     { id: "s1mp5", topic: "beringia", type: "mc", q: "During the Ice Age, Beringia connected which two places?", choices: ["Siberia (Asia) and Alaska (North America)", "Europe and Greenland", "Africa and South America", "Florida and Cuba"], explain: "Low sea levels uncovered a wide land bridge between Siberia and Alaska." }

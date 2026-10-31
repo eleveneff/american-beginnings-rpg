@@ -9,7 +9,7 @@ GAME_CONTENT.extend("s1", {
     id: "s1-timeline", type: "timeline", icon: "📜", title: "Timeline of the First Americans", topic: "meso",
     intro: "Put each event in the right place on the timeline. Older events go at the **top**. Dates this old are estimates from archaeology.",
     events: [
-      { t: "People camp at Monte Verde, Chile", when: "more than 14,000 years ago", y: -12100, q: "s1tl1" },
+      { t: "People camp at Monte Verde, Chile", when: "about 14,500 years ago", y: -12500, q: "s1tl1" },
       { t: "Clovis hunters make fluted spear points", when: "about 13,000 years ago", y: -11000, q: "s1tl2" },
       { t: "Farmers in Mexico begin growing maize (corn) from a wild grass", when: "about 9,000 years ago", y: -7000, q: "s1q15" },
       { t: "The Olmec carve giant stone heads", when: "about 3,000 years ago", y: -1000, q: "s1q19" },
@@ -20,7 +20,7 @@ GAME_CONTENT.extend("s1", {
     ]
   }],
   questions: [
-    { id: "s1tl1", topic: "paleo", type: "mc", q: "Which came first?", choices: ["People camping at Monte Verde, Chile", "The Maya Classic Age", "Cahokia at its peak", "The founding of Tenochtitlán"], explain: "Monte Verde is more than 14,000 years old, thousands of years before the others." },
+    { id: "s1tl1", topic: "paleo", type: "mc", q: "Which came first?", choices: ["People camping at Monte Verde, Chile", "The Maya Classic Age", "Cahokia at its peak", "The founding of Tenochtitlán"], explain: "Monte Verde, an early site in southern Chile, is dated to about 14,500 years ago, thousands of years before the others. Archaeologists widely accept it as older than Clovis." },
     { id: "s1tl2", topic: "clovis", type: "mc", q: "Which came first: Clovis spear points or the Maya Classic Age?", choices: ["Clovis spear points (about 13,000 years ago)", "The Maya Classic Age (about 250–900 CE)"], explain: "Clovis points are about 13,000 years old. The Maya Classic Age began about 250 CE." },
     { id: "s1tl3", topic: "meso", type: "fill", q: "The Aztec founded their capital, Tenochtitlán, in the year ____.", accept: ["1325"], display: "1325", explain: "Tenochtitlán was founded in 1325 on an island in Lake Texcoco." },
     { id: "s1tl4", topic: "meso", type: "fill", q: "The Maya Classic Age lasted from about 250 to ____ CE.", accept: ["900", "900 ce", "900ce"], display: "900", explain: "The Maya Classic Age ran from about 250 to 900 CE." },

@@ -23,14 +23,15 @@ GAME_CONTENT.sections.push({
         "The first Americans are called **Paleo-Indians** (\"paleo\" means ancient). They were **nomads**: people who move from place to place instead of living in one permanent home.",
         "Paleo-Indians hunted giant Ice Age animals such as **woolly mammoths and mastodons**, along with bison. They also gathered nuts, berries, and roots.",
         "We learn about them from **archaeologists**, scientists who study the past by examining **artifacts**: objects people made, such as tools, pottery, and beads.",
-        "At **Monte Verde in Chile**, archaeologists found a camp more than 14,000 years old. It shows that people had reached far into South America very early."
+        "At **Monte Verde**, an early site in **southern Chile**, archaeologists found a camp dated to about **14,500 years ago**. It is widely accepted by archaeologists as **older than Clovis** (Scroll 3), so people had reached far into South America very early."
       ] },
     { topic: "clovis", title: "Scroll 3: Clovis Points — Ice Age Science",
       videoCaption: "A toolmaker shapes a stone point, then early farmers tend fields of maize, beans, and squash.",
       text: [
         "Around 13,000 years ago, skilled toolmakers chipped stone into sharp, leaf-shaped spear points with a groove (a \"flute\") at the base. The groove helped attach the point to a wooden spear shaft.",
         "These are called **Clovis points**, named after **Clovis, New Mexico**, where they were first found in the 1930s. Clovis points have since been found across much of North America.",
-        "Making one took real skill: crafters struck the stone with harder stones and pressed off tiny flakes with bone or antler tools. It was science and art at the same time!"
+        "Making one took real skill: crafters struck the stone with harder stones and pressed off tiny flakes with bone or antler tools. It was science and art at the same time!",
+        "**Were the Clovis people the first Americans?** For years many scientists thought so. Then **Monte Verde**, an early site in southern Chile dated to about **14,500 years ago**, became widely accepted by archaeologists as **older than Clovis**. New evidence changed the story, and scientists keep testing it."
       ] },
     { topic: "agriculture", title: "Scroll 4: The Gift of Farming",
       videoCaption: "(Same clip as Scroll 3: watch for the maize fields at the end.)",
@@ -100,8 +101,8 @@ GAME_CONTENT.sections.push({
     { id: "s1q10", topic: "paleo", type: "fill", q: "An object made by people long ago, such as a tool, pot, or bead, is called an ____.",
       accept: ["artifact", "artefact", "artifacts"], display: "artifact", explain: "Artifacts are clues to how people lived." },
     { id: "s1q11", topic: "paleo", type: "mc", q: "Why is the Monte Verde site in Chile important?",
-      choices: ["It shows people had reached far into South America more than 14,000 years ago", "It is where Columbus first landed", "It was the capital of the Aztec Empire", "It is where the first maize was grown"],
-      explain: "Monte Verde is one of the oldest known camps in the Americas." },
+      choices: ["It is an early site, about 14,500 years old, showing people reached far into South America before Clovis", "It is where Columbus first landed", "It was the capital of the Aztec Empire", "It is where the first maize was grown"],
+      explain: "Monte Verde, an early site in southern Chile, is dated to about 14,500 years ago. It is widely accepted by archaeologists as older than Clovis." },
     { id: "s1q12", topic: "clovis", type: "mc", q: "Clovis spear points are named after a site in which present-day U.S. state?",
       choices: ["New Mexico", "Virginia", "Alaska", "Massachusetts"],
       explain: "They were first found near Clovis, New Mexico." },

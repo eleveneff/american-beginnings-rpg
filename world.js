@@ -408,30 +408,55 @@ function activeRings() { const zr = L.zone === "cave" ? L.cave.rings : L.lvl.rin
 function findNear() { let best = null, bd = 1.6; for (const r of activeRings()) { const d = Math.hypot(L.pos.x - r.def.x, L.pos.z - r.def.z); if (d < bd) { bd = d; best = r; } } return best; }
 function useRing() { if (L.phase !== "active" || L.cardOpen || L.frozen) return; const r = findNear(); if (r) r.def.act(); }
 function refreshRings() { const { setRingState } = L.mods.B; for (const r of L.lvl.rings.concat(L.cave.rings)) setRingState(r, r.def.state()); L.lvl.setGateOpen(hasCloak()); }
+// v2.3: the objective names the next unfinished marker along the trail at or ahead of her (projected onto the PATH
+// polyline), not the first unfinished one from camp. Gate first while she has no cloak; the cave door when nothing is left ahead.
+function routeS(x, z) {
+  const P = L.mods.B.PATH; let best = 1e9, bs = 0, acc = 0;
+  for (let i = 1; i < P.length; i++) { const ax = P[i - 1][0], az = P[i - 1][1], dx = P[i][0] - ax, dz = P[i][1] - az, len = Math.hypot(dx, dz) || 1;
+    let t = ((x - ax) * dx + (z - az) * dz) / (len * len); t = Math.max(0, Math.min(1, t)); const d = Math.hypot(x - ax - dx * t, z - az - dz * t);
+    if (d < best) { best = d; bs = acc + t * len; } acc += len; }
+  return bs;
+}
 function nextTarget() {
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
-  const order = L.lvl.rings;
-  for (const r of order) { if (r.def.id === "gate") { if (!hasCloak()) return r; continue; } if (r.def.id === "cave-door") return r; if (r.state === "new" || (r.def.id === "tracks" && r.state !== "done")) return r; }
-  return order[order.length - 1];
+  const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
+  const gate = rings.find(r => r.def.id === "gate"), door = rings.find(r => r.def.id === "cave-door");
+  const unfinished = r => r.def.id !== "gate" && r.def.id !== "cave-door" && (r.state === "new" || (r.def.id === "tracks" && r.state !== "done"));
+  let best = null, bs = 1e9;
+  for (const r of rings) { if (!unfinished(r)) continue; const rs = r._s != null ? r._s : (r._s = routeS(r.def.x, r.def.z)); if (rs >= hs - 6 && rs < bs) { bs = rs; best = r; } }
+  if (!hasCloak()) { const gs = gate._s != null ? gate._s : (gate._s = routeS(gate.def.x, gate.def.z)); if (!best || bs > gs) return gate; }
+  return best || door;
 }
-
 // ---- per-frame ----
 const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
-function placeCamera(dt, snap) {
-  const B = L.mods.B, pitch = 0.5, dist = 7;
-  let d = dist; const yaw = L.camYaw;
-  tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
-  const cp = new THREE.Vector3();
-  for (let i = 0; i < 6; i++) {
-    cp.set(tgt.x - Math.sin(yaw) * Math.cos(pitch) * d, tgt.y + Math.sin(pitch) * d, tgt.z - Math.cos(yaw) * Math.cos(pitch) * d);
-    let ok = true;
-    if (L.zone === "cave") { if (Math.hypot(cp.x - B.CAVE_X, cp.z) > 8.6 || cp.y > 4.2) ok = false; }
-    else if (cp.z > B.BOUNDS.iceZ - 0.5 && (cp.x < B.BOUNDS.cx0 + 0.6 || cp.x > B.BOUNDS.cx1 - 0.6 || cp.z > 189.6)) ok = false;
-    if (ok || d <= 3.2) break; d = Math.max(3.2, d * 0.8);
+// v2.3: camera collision. The camera eases toward its spot behind her, then a short march from her head toward the
+// camera pulls it in front of anything solid it would pass through (ice walls, the gate cross-pole and flags, poles,
+// tents, the cave hill, the ground), so it never ends up inside geometry.
+function camBlocked(x, y, z) {
+  const B = L.mods.B;
+  if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 || y > 4.2;
+  if (y < B.groundH(x, z) + 0.35) return true;
+  if (z > B.BOUNDS.iceZ - 0.35 && (x < B.BOUNDS.cx0 + 0.5 || x > B.BOUNDS.cx1 - 0.5)) return true;
+  if (z > 189.8) return true;
+  for (const o of L.lvl.camOcc || []) {
+    if (y <= o.y0 || y >= o.y1) continue;
+    if (o.r ? Math.hypot(x - o.x, z - o.z) < o.r : (Math.abs(x - o.x) < o.hx && Math.abs(z - o.z) < o.hz)) return true;
   }
-  if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (cp.z > B.BOUNDS.iceZ - 0.5) { cp.x = Math.max(B.BOUNDS.cx0 + 0.5, Math.min(B.BOUNDS.cx1 - 0.5, cp.x)); cp.z = Math.min(189.6, cp.z); } }
-  else { cp.y = Math.min(cp.y, 4.0); }
+  return false;
+}
+function placeCamera(dt, snap) {
+  const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
+  tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
+  const cp = new THREE.Vector3(tgt.x - Math.sin(yaw) * Math.cos(pitch) * dist, tgt.y + Math.sin(pitch) * dist, tgt.z - Math.cos(yaw) * Math.cos(pitch) * dist);
+  if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (cp.z > B.BOUNDS.iceZ - 0.5 && L.pos.z > B.BOUNDS.iceZ - 2) { cp.x = Math.max(B.BOUNDS.cx0 + 0.6, Math.min(B.BOUNDS.cx1 - 0.6, cp.x)); cp.z = Math.min(189.4, cp.z); } }
+  else cp.y = Math.min(cp.y, 4.0);
   if (snap || !L.camPos) L.camPos = cp.clone(); else L.camPos.lerp(cp, Math.min(1, dt * 8));
+  // march from her head to the camera; stop 0.3 m before the first solid point
+  const dx = L.camPos.x - tgt.x, dy = L.camPos.y - tgt.y, dz = L.camPos.z - tgt.z, len = Math.hypot(dx, dy, dz) || 1;
+  L.camPulled = false;
+  for (let t = 0.4; t <= len + 0.001; t += 0.2) {
+    if (camBlocked(tgt.x + dx / len * t, tgt.y + dy / len * t, tgt.z + dz / len * t)) { const k = Math.max(0.9, t - 0.3) / len; L.camPos.set(tgt.x + dx * k, tgt.y + dy * k, tgt.z + dz * k); L.camPulled = true; break; }
+  }
   L.cam.position.copy(L.camPos); L.cam.lookAt(tgt);
 }
 function step(dt, raw) {
@@ -458,7 +483,9 @@ function step(dt, raw) {
   L.manualT = Math.max(0, (L.manualT || 0) - dt);
   const th = L.th.step(L.pos.x, L.pos.z, dt, L.camYaw);
   // never swing the camera round when she walks back toward it (backing up keeps the view steady)
-  if (L.manualT <= 0 && L.vel > 0.8 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
+  // v2.3: only while she is mostly walking forward. Strafing (A / D alone) used to drag the camera after her sideways
+  // travel, so she walked in a circle round it; now sideways steps keep the view still.
+  if (L.manualT <= 0 && L.vel > 0.8 && sf > 0.25 && Math.abs(sx) < sf * 0.75 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
   if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold and fast. Hop across on the <b>stepping stones</b>."); teleport("out", B.FORD_RESPAWN); } } else L.wade = 0;
   // the glacier pass: bumping the closed gate shows a hint
@@ -510,7 +537,10 @@ setInterval(syncChips, 1000);
 // ---- debug / test hook ----
 window.__world = {
   get mode() { return mode(); }, get phase() { return L.phase; }, get zone() { return L.zone; }, get failed() { return failed; },
-  get pos() { return { x: L.pos.x, y: L.pos.y, z: L.pos.z, yaw: L.yaw }; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
+  get pos() { return { x: L.pos.x, y: L.pos.y, z: L.pos.z, yaw: L.yaw }; },
+  get cam() { const c = L.camPos || { x: 0, y: 0, z: 0 }; return { yaw: L.camYaw, x: c.x, y: c.y, z: c.z, pulled: !!L.camPulled, blocked: !!(L.built && L.camPos && camBlocked(c.x, c.y, c.z)) }; },
+  camBlocked: (x, y, z) => camBlocked(x, y, z),
+  get banner() { const e = document.getElementById("w-obj-t"); return e ? e.textContent : ""; }, get target() { return L.target && L.target.def.id; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
   rings: () => (L.built ? L.lvl.rings.concat(L.cave.rings).map(r => ({ id: r.def.id, zone: r.def.zone || "out", x: r.def.x, z: r.def.z, state: r.state })) : []),
   teleport(x, z, zone) { if (!L.built) return false; L.zone = zone || (x > 2000 ? "cave" : "out"); L.pos.set(x, 0, z); L.wade = 0; moveHeroTo(x, z, L.zone); return true; },
   faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },

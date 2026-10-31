@@ -303,7 +303,13 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     water.position.y = WATER_Y + Math.sin(t * 1.3) * 0.015;
   }
   function setGateOpen(open) { gateWall.disabled = !!open; wind.visible = !open; }
-  return { scene, sun, hemi, rings, colliders, update, setGateOpen, tracks: TRACKS, herds, flames, water, fogColor: SKY_H, sky: scene.userData.sky };
+  // v2.3: camera occluders (the follow camera pulls in front of these instead of clipping through them)
+  const gy = groundH(-5, 126), camOcc = [
+    { x: -5, z: 126, hx: 6.8, hz: 0.55, y0: gy + 2.3, y1: gy + 4.6 },      // cross-pole + hanging hides
+    { x: -11.2, z: 126, r: 0.45, y0: -5, y1: gy + 4.6 }, { x: 1.2, z: 126, r: 0.45, y0: -5, y1: gy + 4.6 },
+    { x: -9.6, z: 150, r: 0.95, y0: -5, y1: groundH(-9.6, 150) + 2.1 }];
+  for (const [x, z] of [[-7.5, 7], [7.5, 8], [0, 14], [-22, 80]]) camOcc.push({ x, z, r: 2.0, y0: -5, y1: groundH(x, z) + 4.0 });
+  return { scene, sun, hemi, rings, colliders, camOcc, update, setGateOpen, tracks: TRACKS, herds, flames, water, fogColor: SKY_H, sky: scene.userData.sky };
 }
 
 // ---------------- Trial Cave interior (own scene; collider zone 'cave' around x = 4000) ----------------

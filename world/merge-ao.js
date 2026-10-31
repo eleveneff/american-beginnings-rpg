@@ -27,7 +27,7 @@ export function createMergeAO(THREE, scene, { groundH, color = '#2b3a24', opacit
       const m = o.material; if (Array.isArray(m) || !m || m.transparent || o.morphTargetInfluences) return;
       for (let p = o.parent; p && p !== root; p = p.parent) if (p.userData.noMerge || !p.visible) return;
       if (!o.visible) return;
-      let ck = ''; if (cell > 0) { o.getWorldPosition(_wp); ck = '|' + Math.floor(_wp.x / cell) + ',' + Math.floor(_wp.z / cell); }
+      let ck = ''; if (cell > 0) { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); _wp.copy(o.geometry.boundingSphere.center).applyMatrix4(o.matrixWorld); ck = '|' + Math.floor(_wp.x / cell) + ',' + Math.floor(_wp.z / cell); }
       const k = m.uuid + '|' + (o.castShadow ? 1 : 0) + (o.receiveShadow ? 1 : 0) + '|' + o.renderOrder + ck;
       if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(o);
     });

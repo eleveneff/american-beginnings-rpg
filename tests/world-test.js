@@ -92,6 +92,18 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await tp(-5, 128); await p.evaluate(() => __world.faceCam(Math.PI / 2)); await hold('KeyW', 3000); const wa = await W(); await p.evaluate(() => __world.faceCam(-Math.PI / 2)); await hold('KeyW', 4000); w = await W();
   assert(Math.max(wa.pos.x, w.pos.x) <= 2 - 0.3 + 0.05 && Math.min(wa.pos.x, w.pos.x) >= -12 + 0.3 - 0.05 && Math.abs(wa.pos.x - w.pos.x) > 6, 'ice walls hold her inside the corridor (x ' + wa.pos.x.toFixed(2) + ' / ' + w.pos.x.toFixed(2) + ')');
 
+  console.log('v2.3 banner + camera:');
+  await p.evaluate(() => { const S = ABRPG.state(); S.owned.push('fur-cloak'); }); await sleep(700);
+  await tp(-5, 160); await sleep(500);
+  { const bn = await p.evaluate(() => __world.banner); assert(!/Marker 1\b/.test(bn) && /Marker [78]\b/.test(bn), 'far along the route the banner names the next marker ahead, not Marker 1 ("' + bn + '")'); }
+  { await tp(-5, 136); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(300); await closeCards(); await p.keyboard.down('KeyW'); let bad = 0, pulled = 0, n = 0; const t0 = Date.now();
+    while (Date.now() - t0 < 3500) { const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad++; if (c.pulled) pulled++; await sleep(80); }
+    await p.keyboard.up('KeyW'); w = await W();
+    assert(w.pos.z < 125 && n > 8 && bad === 0, 'walking south under the gate cross-pole the camera never sits inside the poles, hides or ice (' + n + ' samples, pulled in ' + pulled + ', z ' + w.pos.z.toFixed(1) + ')'); }
+  { await tp(-5, 150); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2500); const c = await p.evaluate(() => __world.cam); w = await W();
+    assert(Math.abs(c.yaw - y0) < 0.05 && Math.abs(w.pos.x + 5) > 1.5, 'strafing sideways does not swing the camera around her (yaw drift ' + Math.abs(c.yaw - y0).toFixed(3) + ', x ' + w.pos.x.toFixed(1) + ')'); }
+  await p.evaluate(() => { const S = ABRPG.state(); S.owned = S.owned.filter(k => k !== 'fur-cloak'); });
+
   const keysNow = Object.keys(JSON.parse(await p.evaluate(k => localStorage.getItem(k), KEY))).sort().join(','), keys0 = Object.keys(JSON.parse(before)).sort().join(',');
   assert(keysNow === keys0, 'no new fields in the progress save after ring panels (' + keysNow.split(',').length + ' fields)');
   console.log('Trial Cave:');

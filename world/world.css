@@ -1,0 +1,32 @@
+/* world/world.css — v2.2 walk-mode HUD. z-index ladder (world/kit.js Z): world 0, stage 2, version 3, topbar 5,
+   worldHud 8, prompt 9, joystick 10, buttons 11, worldCard 12, modal 20, toast 30, fade 60 */
+body.walking{overflow:hidden}
+body.walking #stage{display:none}
+#w-hud[hidden],#w-card[hidden],#w-prompt[hidden],#w-banner[hidden],.w-back[hidden],#w-mode[hidden]{display:none!important}
+#w-hud{position:fixed;inset:0;z-index:8;pointer-events:none;font-family:inherit}
+#w-hud>*{pointer-events:auto}
+#w-obj{position:absolute;top:4.1rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;max-width:min(92vw,640px);background:rgba(20,30,50,.72);color:#fff;border:2px solid var(--gold);border-radius:999px;padding:.4rem .95rem;font-weight:bold;font-size:.95rem;text-shadow:0 1px 0 #000;pointer-events:none}
+#w-arrow{display:inline-block;color:var(--gold);font-size:1.2rem;transition:transform .15s linear}
+#w-era{position:absolute;top:6.7rem;left:50%;transform:translateX(-50%);color:#fff;font-size:.8rem;font-weight:bold;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
+#w-prompt{position:absolute;left:50%;bottom:5.6rem;transform:translateX(-50%);z-index:9;min-height:48px;max-width:min(92vw,560px);background:var(--parch);color:var(--ink);border:3px solid #000;border-radius:14px;padding:.55rem 1rem;font:inherit;font-weight:bold;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #000}
+#w-prompt .w-key{display:inline-block;margin-left:.4rem;background:var(--gold);border:2px solid #000;border-radius:7px;padding:0 .4rem;font-size:.85rem}
+#w-joy{position:absolute;left:1.2rem;bottom:1.4rem;z-index:10;width:128px;height:128px;border-radius:50%;background:rgba(255,255,255,.18);border:3px solid rgba(0,0,0,.45);touch-action:none;display:none}
+#w-knob{position:absolute;left:39px;top:39px;width:50px;height:50px;border-radius:50%;background:rgba(248,236,201,.92);border:3px solid #000}
+#w-use{position:absolute;right:1.2rem;bottom:1.8rem;z-index:11;min-width:76px;min-height:76px;border-radius:50%;border:3px solid #000;background:var(--gold);font:inherit;font-weight:bold;font-size:1rem;box-shadow:0 4px 0 #000;display:none;touch-action:manipulation}
+body.touch #w-joy,body.touch #w-use{display:block}
+body.touch #w-keys{display:none}
+body.touch #w-prompt{bottom:10.5rem}
+#w-tools{position:absolute;right:.75rem;top:4.1rem;z-index:11;display:flex;flex-direction:column;gap:.4rem}
+#w-tools .chip{min-height:40px}
+#w-keys{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);color:#fff;font-size:.85rem;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
+#w-card{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:rgba(10,15,30,.35);padding:1rem}
+.w-card-in{background:var(--parch);color:var(--ink);border:4px solid #000;border-radius:18px;box-shadow:var(--shadow);max-width:560px;width:100%;max-height:80vh;overflow:auto;padding:1rem 1.2rem}
+.w-card-in h3{margin:.1rem 0 .5rem;font-size:1.25rem}
+.w-card-in p,.w-card-in li{line-height:1.45}
+.w-card-btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.w-card-btns .btn{min-height:44px}
+#w-fade{position:fixed;inset:0;z-index:60;background:#000;opacity:0;pointer-events:none;transition:opacity .35s}
+#w-fade.on{opacity:1}
+#w-banner{position:fixed;left:50%;bottom:4.2rem;transform:translateX(-50%);z-index:12;background:rgba(20,30,50,.9);color:#fff;border:3px solid var(--gold);border-radius:14px;padding:.6rem .9rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94vw;font-size:.95rem}
+.chip.w-back{background:#3f8f5a;color:#fff;text-shadow:0 1px 0 #000}
+@media (max-width:600px){#w-obj{top:3.8rem;font-size:.82rem}#w-tools{top:auto;bottom:11rem}#w-era{top:6.2rem}}

@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v2.1";
+  var GAME_VERSION = "v2.2";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -297,6 +297,8 @@
   /* ---------------- world map ---------------- */
   function actsDone(s) { return (s.activities || []).filter(function (a) { return S.acts[a.id] && S.acts[a.id].plays; }).length; }
   function home() {
+    /* v2.2: when a panel was opened from the walkable world, "back to the map" returns to the world instead */
+    if (window.ABWorld && window.ABWorld.claim("home")) return;
     setWorld(null);
     var h = '<div class="panel map-head"><div><h1>🗺️ ' + esc(C.title) + "</h1><p>" + esc(C.subtitle) + "</p>" +
       "<p>Pick a glowing land. Read the lesson scrolls, play the <b>activities</b>, then pass the Trial. Master a land with <b>" + C.passPercent + "% or better</b> and by clearing every missed question. Every <b>" + C.correctPerGear + " correct answers</b> earns new gear, and every new right answer, activity, and badge earns <b>⭐ stars</b> to spend in the marketplace!</p>" +
@@ -326,8 +328,9 @@
   }
 
   /* ---------------- section flow ---------------- */
-  function enterSection(sid) {
+  function enterSection(sid, noClaim) {
     var s = sectionById(sid); setWorld(s.palette);
+    if (!noClaim && window.ABWorld && window.ABWorld.claim("enter", sid)) return; /* v2.2: walk mode opens the 3D level */
     if (S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) {
       show('<div class="panel"><h2>' + s.icon + " " + esc(s.title) + "</h2><p>You have a trial in progress" + (S.run.phase === "review" ? " (review of missed questions)" : "") + ".</p>" +
         '<button class="btn" id="b-resume">▶ Resume where I left off</button><button class="btn alt" id="b-lessons">📜 Re-read the scrolls first</button></div>');
@@ -363,6 +366,7 @@
     return '<button class="act-card" id="act-' + a.id + '" data-act="' + a.id + '"><span class="ic">' + a.icon + "</span><b>" + esc(a.title) + "</b><small>" + kind + " · " + best + "</small><small>" + (r && r.plays ? "Played " + r.plays + "× · earned ⭐ " + (r.earned || 0) : "Up to ⭐ " + C.stars.actPerfect) + "</small></button>";
   }
   function sectionIntro(sid) {
+    if (window.ABWorld && window.ABWorld.claim("intro", sid)) return; /* v2.2: walk mode shows the level instead */
     var s = sectionById(sid), p = S.players[sid], st = sec(sid);
     if (!st.startedAt) { st.startedAt = now(); save(); }
     S.run = { sid: sid, phase: "lessons" }; save();
@@ -461,6 +465,7 @@
   }
   function lesson(sid, i, resumeAfter) {
     var s = sectionById(sid), l = s.lessons[i];
+    try { window.dispatchEvent(new CustomEvent("ab:lesson", { detail: { sid: sid, i: i } })); } catch (e) { } /* v2.2: the world marks scrolls read (its own storage key) */
     var acts = (s.activities || []).filter(function (a) { return a.topic === l.topic; });
     var h = '<div class="panel"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + "</span><span>Scroll " + (i + 1) + " of " + s.lessons.length + "</span></div><h2>📜 " + esc(l.title) + "</h2>" + scrollBody(l);
     if (l.source && !resumeAfter) { var sq = srcQs(s, l.topic), sr = S.srcQ[l.topic]; if (sq.length) h += '<div class="try-act src-q">📜 <button class="btn small gold" id="b-srcq">Answer the source questions (' + sq.length + ")</button> <small>" + (sr && sr.plays ? "Best: " + sr.best + "/" + sq.length : "Counts toward stars and gear!") + "</small></div>"; }
@@ -478,6 +483,7 @@
 
   /* ---------------- trial ---------------- */
   function startTrial(sid) {
+    if (window.ABWorld && window.ABWorld.claim("trial", sid)) return; /* v2.2: in walk mode the Trial is taken in the Trial Cave */
     var s = sectionById(sid), st = sec(sid), size = Math.min(C.trialSize || s.questions.length, s.questions.length);
     st.attempts++;
     /* questions never answered right yet, or missed before, come first */
@@ -1286,7 +1292,7 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast("📋 Report copied!"); }, fallback); else fallback();
     });
     on("b-reset", function () {
-      if (confirm("Erase ALL progress, gear, badges, stars, and purchases on this device? This cannot be undone.") && confirm("Are you really sure?")) { localStorage.removeItem(SAVE_KEY); load(); closeModal(); home(); toast("Progress reset."); }
+      if (confirm("Erase ALL progress, gear, badges, stars, and purchases on this device? This cannot be undone.") && confirm("Are you really sure?")) { localStorage.removeItem(SAVE_KEY); try { localStorage.removeItem("americanBeginningsRPG_world"); } catch (e) { } load(); closeModal(); home(); toast("Progress reset."); }
     });
   }
 
@@ -1298,6 +1304,10 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY };
+  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY,
+    /* v2.2 bridge for the walkable world (world.js). None of these add fields to the progress save. */
+    enterSection: enterSection, sectionIntro: sectionIntro, startTrial: startTrial, nextQuestion: nextQuestion, nextReview: nextReview, sectionById: sectionById, toast: toast, closeModal: closeModal, renderHero: renderHero, save: save,
+    touchSection: function (sid) { var st = sec(sid), ch = false; if (!st.startedAt) { st.startedAt = now(); ch = true; } if (!(S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) && !(S.run && S.run.sid === sid && S.run.phase === "lessons")) { S.run = { sid: sid, phase: "lessons" }; ch = true; } if (ch) save(); },
+    trial: function (sid) { if (S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) enterSection(sid, true); else startTrial(sid); } };
   home();
 })();

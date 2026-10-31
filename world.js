@@ -337,6 +337,10 @@ window.ABWorld = {
 };
 // the topbar 🗺️ Map button is the player choosing the map: let it through (capture phase runs first)
 document.addEventListener("click", e => { if (e.target && e.target.closest && e.target.closest("#btn-home")) { L.userMap = true; setTimeout(() => { L.userMap = false; }, 0); } }, true);
+// v2.3: inside a world panel, the results' own "🗺️ Map" buttons return to Beringia (the top-bar 🗺️ Map is the real map), so say so
+const relabelMap = () => { if (failed || mode() !== "walk" || L.phase !== "panel") return;
+  document.querySelectorAll("#screen #b-map").forEach(b => { if (b.dataset.wmap) return; b.dataset.wmap = "1"; b.textContent = "🏕️ Back to Beringia"; b.title = "Back into the walkable world. The 🗺️ Map button at the top opens the world map."; }); };
+{ const sc = document.getElementById("screen"); if (sc) new MutationObserver(relabelMap).observe(sc, { childList: true }); }
 window.addEventListener("palette", e => {
   const p = e.detail; bgPal = p || DEFAULT;
   if (L.phase !== "off" && !(S1() && p === S1().palette)) exitLevel(false);

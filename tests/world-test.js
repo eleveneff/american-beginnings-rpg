@@ -188,7 +188,9 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   if (await p.$('#b-rev')) { await click('#b-rev'); while (await p.$('#b-ready')) { await click('#b-ready'); await answer(true); await sleep(50); } }
   let s = await p.evaluate(() => ABRPG.state());
   assert(s.sections.s1.completed, '23/24 + mastery review → Section 1 mastered from the Trial Cave');
-  await p.evaluate(() => ABRPG.home()); await waitPhase('active'); assert((await W()).zone === 'cave', 'results → back to the cave');
+  { const lb = await p.evaluate(() => [...document.querySelectorAll('#screen #b-map')].map(b => b.textContent)), top = await p.$eval('#btn-home', e => e.textContent);
+    assert(lb.length && lb.every(t => /Back to Beringia/.test(t)) && /Map/.test(top), 'results button says "Back to Beringia" (what it does); the top-bar 🗺️ Map stays the world map (' + lb.join('|') + ')'); }
+  await click('#screen #b-map'); await waitPhase('active'); assert((await W()).zone === 'cave', 'results → back to the cave');
   await tp(4000, 7.3); await p.evaluate(() => __world.use()); await sleep(1300); w = await W();
   assert(w.zone === 'out' && w.pos.z > 180, 'the daylight ring leads back out of the cave');
   await tp(-5, 121); await p.evaluate(() => __world.faceCam(0)); await sleep(1200); await shot('w3-glacier-pass.png');

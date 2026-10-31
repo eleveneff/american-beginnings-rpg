@@ -51,7 +51,7 @@ const GEAR = {
     const f = part(new THREE.ConeGeometry(0.025, 0.2, 6), '#f1ead8', 0.02, 1.53, -0.12, -0.35, 0, 0.15, 1, 1, 0.3);
     const tip = part(new THREE.ConeGeometry(0.018, 0.06, 6), '#3a2a22', 0.04, 1.62, -0.155, -0.35, 0, 0.15, 1, 1, 0.3);
     return { body: [band, f, tip] };
-  }
+  },
   // ---- v2.4: Section 2 (Native Nations, about 1000 to 1500s) art keys from content/v2-s2.js; drawn only in Level 2 ----
   'wampum-belt': (col) => {           // belt slot: a woven band of purple and white shell beads at the waist
     const out = [];

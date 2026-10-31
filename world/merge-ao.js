@@ -15,7 +15,10 @@ export function createMergeAO(THREE, scene, { groundH, color = '#2b3a24', opacit
   function decal(mat, f = -1, u = -2) { mat.polygonOffset = true; mat.polygonOffsetFactor = f; mat.polygonOffsetUnits = u; return mat; }
   // ---------- static merge ----------
   const stats = { groups: 0, meshesIn: 0, meshesOut: 0 };
-  function mergeStatic(root, { minCount = 2 } = {}) {
+  // v2.3 (AB): optional spatial cells (cell = metres). Each merged chunk keeps its own bounding sphere, so chunks
+  // outside the view (and outside the sun's ±25 m shadow box) are culled instead of drawing the whole level each pass.
+  const _wp = new THREE.Vector3();
+  function mergeStatic(root, { minCount = 2, cell = 0 } = {}) {
     root.updateMatrixWorld(true);
     const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
     const buckets = new Map(); const victims = [];
@@ -24,7 +27,8 @@ export function createMergeAO(THREE, scene, { groundH, color = '#2b3a24', opacit
       const m = o.material; if (Array.isArray(m) || !m || m.transparent || o.morphTargetInfluences) return;
       for (let p = o.parent; p && p !== root; p = p.parent) if (p.userData.noMerge || !p.visible) return;
       if (!o.visible) return;
-      const k = m.uuid + '|' + (o.castShadow ? 1 : 0) + (o.receiveShadow ? 1 : 0) + '|' + o.renderOrder;
+      let ck = ''; if (cell > 0) { o.getWorldPosition(_wp); ck = '|' + Math.floor(_wp.x / cell) + ',' + Math.floor(_wp.z / cell); }
+      const k = m.uuid + '|' + (o.castShadow ? 1 : 0) + (o.receiveShadow ? 1 : 0) + '|' + o.renderOrder + ck;
       if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(o);
     });
     let made = 0;

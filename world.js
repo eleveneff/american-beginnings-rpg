@@ -14,8 +14,12 @@ const WKEY = "americanBeginningsRPG_world";
 const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 const gfxPref = (() => { try { return localStorage.getItem("americanBeginningsRPG_gfx") || "auto"; } catch (e) { return "auto"; } })();
 const rawDPR = window.devicePixelRatio || 1;
+// v2.3: on a software rasterizer (SwiftShader / llvmpipe: no GPU) 4x MSAA roughly halves the frame rate, which made Auto
+// throw away shadows and ink outlines instead. Auto skips MSAA there and keeps them; High keeps MSAA everywhere.
+const SOFT_GL = (() => { try { const c = document.createElement("canvas"); const gl = c.getContext("webgl2") || c.getContext("webgl"); if (!gl) return false; const e = gl.getExtension("WEBGL_debug_renderer_info"); const r = String((e && gl.getParameter(e.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || ""); const lc = gl.getExtension("WEBGL_lose_context"); if (lc) lc.loseContext(); return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r); } catch (e) { return false; } })();
+const AA = rawDPR < 1.5 && (gfxPref === "high" || (gfxPref !== "low" && !SOFT_GL));
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas, antialias: gfxPref !== "low" && rawDPR < 1.5, powerPreference: "high-performance" }); } catch (e) { canvas.style.display = "none"; throw e; }
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: AA, powerPreference: "high-performance" }); } catch (e) { canvas.style.display = "none"; throw e; }
 const webgl2 = !!(renderer.capabilities && renderer.capabilities.isWebGL2);
 const BG_DPR = Math.min(rawDPR, 1.5);
 renderer.setPixelRatio(BG_DPR);
@@ -512,6 +516,7 @@ window.__world = {
   faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },
   use: () => useRing(), card: () => (L.cardOpen ? document.getElementById("w-card").textContent : null), closeCard: () => closeCard(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
-  info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, bg: bgStats }),
+  info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),
+  _dbg: () => ({ L, renderer, THREE }),
   bgStats, quiet: false
 };

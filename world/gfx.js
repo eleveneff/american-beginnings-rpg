@@ -35,34 +35,43 @@ export function createGfx({ THREE, renderer, scene, sun, hemi, getFocus, isTouch
   }
   function setDPR(d) { d = Math.round(Math.max(st.floor, Math.min(st.cap, d)) * 100) / 100; if (d === st.dpr) return; st.dpr = d; renderer.setPixelRatio(d); renderer.setSize(window.innerWidth, window.innerHeight, false); st.changes++; }
   function setShadows(on) { st.shadows = on; renderer.shadowMap.enabled = on; sun.castShadow = on; }
+  let degMode = null;
   function apply() {
     if (st.mode === 'high') { st.cap = Math.min(rawDPR, 2); st.floor = st.cap; setShadows(true); setShadowSize(2048); renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
     else if (st.mode === 'low') { st.cap = 1; st.floor = Math.min(1, rawDPR) * 0.75; setShadows(false); }
     else { st.cap = Math.min(rawDPR, 1.5); st.floor = Math.min(0.75, st.cap); setShadows(true); setShadowSize(phone ? 1024 : 2048); renderer.shadowMap.type = phone ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; }
-    setDPR(st.cap); st.slowFor = 0; st.deg = 0;
+    // v2.3: a step-down sticks for this visit (coming back from a lesson panel used to reset it and re-run the slow ramp)
+    st.dpr = renderer.getPixelRatio();   // the Classic background may have changed it behind our back
+    if (degMode !== st.mode) { degMode = st.mode; st.deg = 0; setDPR(st.cap); } else if (st.mode === 'auto' && st.deg) { setDPR(st.floor); reDeg(); } else setDPR(st.cap);
+    st.slowFor = 0; st.skip = 1;
     renderer.shadowMap.needsUpdate = true; scene.traverse(o => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
     inkT = 0;
     const b = document.getElementById('gfx-mode'); if (b) b.textContent = '✨ ' + ({ auto: 'Auto', high: 'High', low: 'Low' })[st.mode];
     if (onApply) onApply(st);
+  }
+  function reDeg() {
+    if (st.deg >= 1) { renderer.shadowMap.type = THREE.PCFShadowMap; setShadowSize(1024); }
+    if (st.deg >= 2) setShadows(false);
+    if (st.deg >= 3) inkPass();
   }
   let inkT = 0; const inkOn = () => st.mode !== 'low' && !(st.deg >= 3);
   function inkPass() { if (!toon || !chars) return; for (const c of chars()) { if (!c) continue; if (inkOn()) toon.decorate(c, { width: 0.012, rimMin: 0.18 }); toon.setVisible(c, inkOn()); } }
   function frame(dt) {
     follow(); if (sparks) sparks.step(dt || 0);
     inkT -= dt || 0; if (inkT <= 0) { inkT = 1; inkPass(); }
-    if (!(dt > 0)) return;
+    if (!(dt > 0) || dt > 0.25) return;   // v2.3: a one-off stall (shader compile, tab switch) is not a slow device
     st.acc += dt; st.n++;
     if (st.acc < 1.5) return;
     const avg = st.acc / st.n, span = st.acc; st.acc = 0; st.n = 0;
+    if (st.skip > 0) { st.skip--; return; }   // v2.3: let a change settle (recompiles) before judging it
     if (st.mode === 'auto') {
       if (avg > 1 / 40) setDPR(st.dpr - 0.25);
       else if (avg < 1 / 56 && st.dpr < st.cap) setDPR(st.dpr + 0.125);
-      // v2.2: still under 30 fps at the DPR floor → step features down once each (hard shadows, no shadows, no ink); never back up in this visit
-      if (avg > 1 / 30 && st.dpr <= st.floor + 0.001 && (st.deg || 0) < 3) {
-        st.deg = (st.deg || 0) + 1;
-        if (st.deg === 1) { renderer.shadowMap.type = THREE.PCFShadowMap; setShadowSize(1024); }
-        else if (st.deg === 2) setShadows(false);
-        else inkPass();
+      // v2.2: still slow at the DPR floor → step features down once each (hard shadows, no shadows, no ink); never back up in this visit.
+      // v2.3: thresholds per step (24 / 13 / 10 fps) so a playable 13–24 fps keeps shadows and ink outlines.
+      const need = [24, 13, 10][st.deg || 0];
+      if ((st.deg || 0) < 3 && avg > 1 / need && st.dpr <= st.floor + 0.001) {
+        st.deg = (st.deg || 0) + 1; reDeg(); st.skip = 1;
         renderer.shadowMap.needsUpdate = true; scene.traverse(o => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
         st.changes++;
       }

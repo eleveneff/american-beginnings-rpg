@@ -97,7 +97,7 @@ function inkMat(width) {
 function herd(geo, n, mat, ink) {
   const m = new THREE.InstancedMesh(geo, mat, n); m.castShadow = true; m.userData.noMerge = true;
   const i = new THREE.InstancedMesh(geo, ink, n); i.userData.noMerge = true; i.userData.ink = true;
-  m.frustumCulled = i.frustumCulled = false; return { mesh: m, ink: i, items: [] };
+  return { mesh: m, ink: i, items: [] };
 }
 
 // ---------------- props ----------------
@@ -266,7 +266,9 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
   const herds = { mammoth: herd(mammothGeo(), 5, lam, ink), bison: herd(bisonGeo(), 9, lam, ink), caribou: herd(caribouGeo(), 8, lam, inkS) };
   const H = (h, cx, cz, rad, n, speed, scale) => { for (let i = 0; i < n; i++) { const a = rnd() * 6.28, r = rad * (0.4 + rnd() * 0.6); h.items.push({ cx, cz, a, r, w: speed * (rnd() < 0.5 ? -1 : 1) * (0.6 + rnd() * 0.6), s: scale * (0.9 + rnd() * 0.2), x: 0, z: 0, yaw: 0, ph: rnd() * 6 }); } };
   H(herds.mammoth, 52, 30, 11, 5, 0.05, 1); H(herds.bison, 44, 52, 9, 9, 0.07, 1); H(herds.caribou, 34, 72, 8, 8, 0.11, 1);
-  for (const k in herds) { scene.add(herds[k].mesh); scene.add(herds[k].ink); }
+  // v2.3: each herd wanders a fixed circle, so one fixed bounding sphere per herd lets three.js skip herds that are
+  // off screen (and outside the shadow box) instead of drawing all 22 animals + ink hulls every pass
+  for (const [k, cx, cz, rad] of [['mammoth', 52, 30, 11], ['bison', 44, 52, 9], ['caribou', 34, 72, 8]]) { const h = herds[k]; h.mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(cx, groundH(cx, cz) + 1.5, cz), rad + 4); h.ink.boundingSphere = h.mesh.boundingSphere; h.mesh.frustumCulled = h.ink.frustumCulled = true; scene.add(h.mesh); scene.add(h.ink); }
   const _o = new THREE.Object3D();
   function stepHerds(t) {
     for (const k in herds) { const h = herds[k]; h.items.forEach((it, i) => {
@@ -290,7 +292,7 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
   // rings (glowing; Use opens the existing panels unchanged)
   const rings = ringDefs.filter(d => d.zone !== 'cave').map(d => makeRing(scene, d, d.y != null ? d.y : (onStone(d.x, d.z) ? onStone(d.x, d.z).top : groundH(d.x, d.z))));
   mergeAO.buildAO();
-  mergeAO.mergeStatic(statics);
+  mergeAO.mergeStatic(statics, { cell: 40 });
 
   let t = 0;
   function update(dt, hero) {

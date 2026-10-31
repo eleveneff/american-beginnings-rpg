@@ -56,14 +56,40 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   assert(Math.abs(w.pos.x + 5) < 0.2 && w.pos.z < 100, 'wading 2 s in the icy river respawns her safely on the south bank (' + w.pos.x.toFixed(1) + ', ' + w.pos.z.toFixed(1) + ')');
   await closeCards();
   const st = await p.evaluate(() => { const { x, z } = __world.rings().find(r => r.id === 's1-timeline'); return { x, z }; });
-  await tp(st.x, st.z); await sleep(2600); w = await W();
-  assert(Math.hypot(w.pos.x - st.x, w.pos.z - st.z) < 0.3 && w.near === 's1-timeline', 'standing on the middle stepping stone is safe (no respawn) and shows the Journal Timeline ring');
+  await tp(st.x, st.z); await sleep(900); w = await W();
+  { const f = await p.evaluate(() => __world.ford());
+    assert(w.near === 's1-timeline' && f.armed && f.row === 0 && f.labels === 2 && f.rows.length === 8, 'south bank: the Timeline ring sits by the ford, the stones arm as a timeline and row 1 shows 2 labels');
+    assert(f.rows.every((r, k) => k === 7 ? r.right === -1 : (r.right === 0 || r.right === 1) && +r.wrong > k), 'each row holds its event plus a later one (the last row has one stone)'); }
+  await closeCards();
 
   console.log('progress unchanged by walking:');
   const after = await p.evaluate(k => localStorage.getItem(k), KEY);
   assert(before !== null && after === before, 'progress save byte-identical after walking, finding tracks and the ford respawn');
   const wk = await p.evaluate(k => JSON.parse(localStorage.getItem(k)), WKEY);
   assert(wk && wk.ver === 1 && wk.season.tracks.length === 3 && typeof wk.x === 'number', 'position / tracks live in the separate world key');
+  console.log('v2.3 ford timeline puzzle:');
+  { const keys0 = Object.keys(JSON.parse(before || '{}')).sort().join(',');
+    const ford = () => p.evaluate(() => __world.ford());
+    const stone = (f, k, ok) => f.stones.find(s => s.row === k && (f.rows[k].right === -1 || (ok ? s.side === f.rows[k].right : s.side !== f.rows[k].right)));
+    let f = await ford(); const bad = stone(f, 0, false);
+    await tp(bad.x, bad.z); await sleep(1400); w = await W();
+    let S = await p.evaluate(() => ABRPG.state());
+    const sk = (S.skills || {})['s1-timeline'] || {};
+    assert(Math.abs(w.pos.x + 5) < 0.3 && w.pos.z < (await ford()).stones[0].z - 3 && (await ford()).row === 0, 'a wrong (later) stone splashes her back onto the south bank (' + w.pos.x.toFixed(1) + ', ' + w.pos.z.toFixed(1) + ')');
+    assert(sk.wrong === 1 && sk.plays === 1 && Object.keys(sk.missed || {}).length === 1, 'the miss is logged like the card timeline: wrong 1, one fact in mastery review');
+    for (let k = 0; k < 8; k++) { f = await ford(); const s = stone(f, k, true); await tp(s.x, s.z); await sleep(300); if (k === 4) { f = await ford(); assert(f.row === 5 && f.armed, 'right stones light up row by row (row ' + f.row + ')'); await shot('w-ford-puzzle.png'); } }
+    await waitPhase('panel', 8000);
+    S = await p.evaluate(() => ABRPG.state()); const a = S.acts['s1-timeline'], sk2 = S.skills['s1-timeline'];
+    assert(/Timeline of the First Americans complete/.test(await p.$eval('#screen', e => e.textContent)) && a.plays === 1 && a.history[0].mistakes === 1 && a.history[0].rating === 2, 'crossing in order finishes the timeline: the normal results panel, 1 mistake = 2 stars');
+    assert(sk2.right === 7 && Object.keys(sk2.credited).length === 7, 'stars per right event credited once, the missed event earns none (same as the card version)');
+    assert(Object.keys(S).sort().join(',') === keys0 && !/ford/i.test(JSON.stringify(S)), 'no new save fields (top-level keys unchanged, nothing ford-specific saved)');
+    await p.evaluate(() => document.querySelector('#a-back').click()); await waitPhase('active');
+    f = await ford(); const mid = f.stones.find(s => s.row === 3 && s.side === 0);
+    await tp(mid.x, mid.z); await sleep(1500); w = await W(); f = await ford();
+    assert(!f.armed && f.solved && Math.hypot(w.pos.x - mid.x, w.pos.z - mid.z) < 0.3, 'once played, the stones are a safe crossing (no splash)');
+    await tp(st.x, st.z); await sleep(500); await p.evaluate(() => __world.use()); await sleep(400); const cd = (await W()).card || '';
+    assert(/Replay on the river stones/.test(cd) && /Card version/.test(cd), 'the bank ring offers a replay on the stones or the card version');
+    await closeCards(); }
   console.log('rings open the existing panels:');
   await tp(-3.5, 1); w = await W(); assert(w.near === 's1-l0', 'standing in the Scroll 1 ring shows the prompt');
   assert(/Scroll 1/.test(await p.$eval('#w-prompt', e => e.textContent)), 'prompt names the scroll');
@@ -82,6 +108,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await p.evaluate(() => ABRPG.home()); await waitPhase('active'); assert(true, 'a panel’s own "back to map" button returns to the world');
 
   console.log('glacier pass gate:');
+  await p.evaluate(() => { const S = ABRPG.state(); S.owned = S.owned.filter(k => k !== 'fur-cloak'); }); await sleep(700);   // the ford timeline's 5th right answer earned the cloak (gear every 5 correct)
   await tp(-5, 123.5); await hold('KeyW', 1800); w = await W();
   assert(w.pos.z < 125.7 && /Too cold to cross/.test(w.card || ''), 'without the Fur Cloak the pole gate blocks her and explains how to earn it');
   await closeCards();

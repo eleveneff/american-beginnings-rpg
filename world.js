@@ -121,7 +121,6 @@ function lessonRing(id, i, x, z, station) { return { id, x, z, station, icon: "�
 function actRing(id, actId, icon, title, x, z, station) { return { id, x, z, station, icon, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity("s1", actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
 let RINGS = null;
 function ringDefs(B) {
-  const mid = B.STONES[3];
   return [
     lessonRing("s1-l0", 0, -3.5, 1, "camp"),
     actRing("s1-geomap", "s1-geomap", "🗺️", "Traveler’s Journal: Map the First Americans", 3.5, 1, "camp"),
@@ -130,7 +129,7 @@ function ringDefs(B) {
     lessonRing("s1-l2", 2, -19, 82, "hearth"),
     actRing("s1-clovis", "s1-clovis", "🪨", "Craft a Clovis Point", -11, 82, "hearth"),
     lessonRing("s1-l7", 7, -15, 90.6, "hearth"),
-    { ...actRing("s1-timeline", "s1-timeline", "📓", "Traveler’s Journal: Timeline of the First Americans", mid.x, mid.z, "ford"), y: mid.top },
+    { ...actRing("s1-timeline", "s1-timeline", "📓", "Traveler’s Journal: Timeline of the First Americans", -1.6, B.riverZ(-5) - 6.9, "ford"), act: () => card(fordCard()) },
     { id: "gate", x: -5, z: 123, station: "gate", icon: "🧥", label: () => "The glacier pass", act: () => card(gateCard()), state: () => hasCloak() ? "done" : "locked" },
     { id: "sign", x: -7, z: 150, station: "corridor", icon: "🧭", label: () => "Two ideas: an ice-free corridor or the coast?", act: () => { W.seen.sign = true; saveW(); card(signCard()); }, state: () => W.seen.sign ? "done" : "new" },
     { id: "journey", x: -5, z: 169.5, station: "corridor", icon: "🌽", label: () => "Journey South: thousands of years later", act: () => { W.seen.journey = true; saveW(); card(journeyCard()); }, state: () => journeyDone() ? "done" : "new" },
@@ -146,6 +145,103 @@ const missingScrolls = () => [0, 1, 2, 3, 4, 5, 6, 7].filter(i => !(W.read.s1.in
 const caveOpen = () => missingScrolls().length === 0 || (sec().attempts || 0) > 0 || !!sec().completed || trialActive();
 const journeyDone = () => [3, 4, 5, 6].every(i => W.read.s1.includes(i)) && ["s1-garden", "s1-maya"].every(a => ST().acts && ST().acts[a] && ST().acts[a].plays);
 function trialLabel() { const st = sec(); if (trialActive()) return "Resume the Elders’ Trial"; if (st.completed) return "The Elders’ Trial (mastered " + st.bestPct + "%) — try again"; return "Take the Elders’ Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+
+// ---- v2.3 ford timeline: the stepping stones ARE the Section 1 timeline activity ----
+// Each row of stones is one step in time, oldest on the south bank. One stone in a row is the right event and the
+// other is a later one; stepping on the later one is a timeline mistake (splash, back to the bank). It runs through
+// ABRPG.worldTimeline, which uses the very same star credit, first-miss logging, mastery review and results screen as
+// the card version, so there are no new save fields. Once the timeline has been played, the stones are safe and show
+// the dates; the ring on the bank offers a replay on the stones or the card version.
+const FORD_SHORT = { s1tl1: "Monte Verde camp (Chile)", s1tl2: "Clovis spear points", s1q15: "Maize farming begins", s1q19: "Olmec stone heads", s1tl4: "Maya Classic Age", s1q25: "Cahokia at its peak", s1tl3: "Aztecs found Tenochtitlán", s1tl5: "Inca Empire expands" };
+const F = { lay: null, armed: false, replay: false, row: 0, miss: [], last: null, started: false, vis: null, done: false };
+const fordSolved = () => { const a = ST().acts && ST().acts["s1-timeline"]; return !!(a && a.plays); };
+const fordName = e => FORD_SHORT[e.q] || e.label;
+function fordNew() {
+  const B = L.mods.B, h = window.ABRPG.worldTimeline && window.ABRPG.worldTimeline("s1", "s1-timeline", resume);
+  if (!h || h.events.length !== B.FORD_ROWS) return null;
+  const ev = h.events, rows = ev.map((e, k) => { const later = ev.slice(k + 1); return { ev: e, right: k < ev.length - 1 ? (Math.random() < 0.5 ? 0 : 1) : -1, wrong: later.length ? later[Math.floor(Math.random() * later.length)] : null }; });
+  F.lay = { h, rows }; F.row = 0; F.miss = rows.map(() => 0); F.started = false; F.done = false; return F.lay;
+}
+function fordCard() {
+  const solved = fordSolved();
+  const body = solved
+    ? "<p>You have built this timeline before. The stones are safe now and show their dates as you cross.</p><p>Want to practise? Replay it on the stones, or use the card version.</p>"
+    : "<p>Cross the river on the stepping stones <b>in time order</b>. Each row of stones is the next step in time, starting with the oldest event on this bank.</p><p>Read the two labels and step on the one that happened <b>first</b>. Step on a later one and you fall in the cold river and wash back to this bank. Right stones stay lit.</p>";
+  const btns = [{ t: "🪨 " + (solved ? "Replay on the river stones" : "Start on the river stones"), f: () => { closeCard(); F.replay = true; fordNew(); F.armed = true; toast("🪨 Step on the stones from <b>oldest</b> to <b>newest</b>. Start at the row nearest you."); } }, actBtn("s1-timeline", "📓 Card version")];
+  return { title: "📓 Timeline on the river stones", body, btns };
+}
+function fordLabelTex(top, bottom, tone) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 160; const x = c.getContext("2d");
+  x.fillStyle = tone === "ok" ? "rgba(32,74,40,0.86)" : tone === "hint" ? "rgba(140,96,10,0.9)" : "rgba(40,30,22,0.82)";
+  x.beginPath(); x.roundRect(6, 6, 500, 148, 26); x.fill(); x.strokeStyle = tone === "hint" ? "#ffd75e" : "rgba(255,236,200,0.75)"; x.lineWidth = 5; x.stroke();
+  x.fillStyle = "#fff6e4"; x.textAlign = "center"; x.textBaseline = "middle";
+  let fs = 46; x.font = "700 " + fs + "px system-ui, sans-serif"; while (x.measureText(top).width > 470 && fs > 26) { fs -= 2; x.font = "700 " + fs + "px system-ui, sans-serif"; }
+  x.fillText(top, 256, bottom ? 58 : 80);
+  if (bottom) { x.font = "600 34px system-ui, sans-serif"; x.fillStyle = tone === "ok" ? "#bff0b4" : "#ffe3a3"; x.fillText(bottom, 256, 114); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function fordVisuals() {
+  if (F.vis) return F.vis; const B = L.mods.B, sc = L.lvl.scene;
+  const glowG = new THREE.RingGeometry(0.42, 0.6, 24); glowG.rotateX(-Math.PI / 2);
+  const items = B.STONES.map(s => {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: true }));
+    sp.position.set(s.x, s.top + 1.35, s.z); sp.scale.set(2.05, 0.64, 1); sp.visible = false; sp.renderOrder = 6; sp.userData.noMerge = true; sp.name = "ford-label"; sc.add(sp);
+    const gl = new THREE.Mesh(glowG, new THREE.MeshBasicMaterial({ color: "#ffd75e", transparent: true, opacity: 0.7, depthWrite: false }));
+    gl.position.set(s.x, s.top + 0.015, s.z); gl.visible = false; gl.userData.noMerge = true; gl.name = "ford-glow"; sc.add(gl);
+    return { s, sp, gl, key: "" };
+  });
+  F.vis = { items }; return F.vis;
+}
+function fordSet(it, key, top, bottom, tone) { if (it.key === key) return; it.key = key; if (it.sp.material.map) it.sp.material.map.dispose(); it.sp.material.map = fordLabelTex(top, bottom, tone); it.sp.material.needsUpdate = true; }
+function fordStoneEvent(s) { const r = F.lay && F.lay.rows[s.row]; if (!r) return null; return (r.right === -1 || s.side === r.right) ? r.ev : r.wrong; }
+function fordSplash(s, html) {
+  const B = L.mods.B; L.sparks && L.sparks.emit(new THREE.Vector3(s.x, B.WATER_Y + 0.1, s.z), 60, ["#dfefff", "#a9d4f5", "#ffffff"], { speed: 0.55, life: 1.1, up: 0.8 });
+  L.pos.y = B.WATER_Y - 0.25; toast(html); L.frozen = true; L.fordFall = true;
+  setTimeout(() => { L.fordFall = false; teleport("out", B.FORD_RESPAWN); }, 420);
+}
+function fordStep() {
+  const B = L.mods.B; if (L.zone !== "out" || !F.vis && Math.hypot(L.pos.x + 5, L.pos.z - B.riverZ(-5)) > 30) return;
+  const v = fordVisuals(), zc = B.riverZ(-5), near = Math.abs(L.pos.x + 5) < 12 && Math.abs(L.pos.z - zc) < 14;
+  // arm on the south bank (she meets the oldest event first); coming back from the north the stones are just stones
+  if (!F.armed && !F.done && near && L.pos.z < zc - 5.4 && Math.abs(L.pos.x + 5) < 8 && (!fordSolved() || F.replay)) { if (!F.lay) fordNew(); if (F.lay) { F.armed = true; if (!F.started && !F.hinted) { F.hinted = true; toast("🪨 The river stones are a <b>timeline</b>: step on the event that happened first, row by row. A later one means a splash!"); } } }
+  if (F.armed && L.pos.z < zc - 16) F.armed = false;   // walked away: progress on lit rows stays for this visit
+  const play = F.armed && F.lay;
+  // labels: only the row she is about to step on; lit rows get a gold ring. Safe mode shows dates just ahead of her
+  for (const it of v.items) {
+    const s = it.s; let show = false;
+    if (near) {
+      if (play) {
+        const ev = fordStoneEvent(s), r = F.lay.rows[s.row], right = ev === r.ev;
+        if (s.row < F.row) { it.gl.visible = right; }   // lit rows: a gold ring on the right stone (the date was in the toast)
+        else if (s.row === F.row) { show = true; const hint = right && F.miss[s.row] >= 2; fordSet(it, (hint ? "h" : "q") + ev.key, fordName(ev), hint ? "Hint: this one came first" : "", hint ? "hint" : ""); it.gl.visible = false; }
+        else { it.gl.visible = false; }
+      } else {
+        const r = F.lay && F.lay.rows[s.row], ev = r ? fordStoneEvent(s) : null;
+        // safe crossing: no puzzle, the middle line of stones shows the timeline in order
+        const evs = window.ABRPG.worldTimeline ? (F.safe || (F.safe = window.ABRPG.worldTimeline("s1", "s1-timeline", resume))) : null;
+        const e = evs && evs.events[s.row];
+        const dz = (s.z - L.pos.z) * (Math.cos(L.yaw) >= 0 ? 1 : -1); show = !!e && dz > 0.4 && dz < 3.1 && (s.side === 1 || s.side === -1); if (show) fordSet(it, "safe" + e.key, e.when, fordName(e), "ok"); it.gl.visible = false;
+      }
+    } else it.gl.visible = false;
+    it.sp.visible = show;
+  }
+  if (!play || L.frozen || L.cardOpen) { F.last = null; return; }
+  const s = B.onStone(L.pos.x, L.pos.z, -0.15);
+  if (!s || s === F.last) { if (!s) F.last = null; return; }
+  F.last = s; const h = F.lay.h, r = F.lay.rows[s.row];
+  if (s.row < F.row) return;                        // lit rows are safe
+  if (!F.started) { F.started = true; h.start(); }
+  if (s.row > F.row) { fordSplash(s, "💦 Splash! Step on the stones <b>row by row</b>, oldest first. That row was skipped."); return; }
+  const ev = fordStoneEvent(s);
+  if (ev === r.ev) {
+    const star = h.right(ev.key); F.row++;
+    toast("✅ " + star + "<b>" + esc(ev.when) + ":</b> " + esc(ev.label) + ".");
+    if (F.row >= F.lay.rows.length) { F.armed = false; F.done = true; F.replay = false; const done = F.lay; setTimeout(() => { if (L.phase === "active") openPanel(() => done.h.finish()); F.lay = null; F.done = false; }, 1100); }
+  } else {
+    h.miss(ev.key); F.miss[s.row]++;
+    fordSplash(s, "💦 Splash! <b>" + esc(fordName(ev)) + "</b> happened <b>later</b> than the other stone in that row." + (F.miss[s.row] >= 2 ? " Look for the <b>gold</b> hint label." : " Back to the bank. Your lit stones stay lit."));
+  }
+}
 
 // ---- world cards (small overlays inside the world; never block the game) ----
 function cardBtns(list) { return '<div class="w-card-btns">' + list.map((b, i) => '<button class="btn ' + (b.cls || "") + '" data-wb="' + i + '">' + b.t + "</button>").join("") + "</div>"; }
@@ -164,7 +260,7 @@ const actBtn = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() 
 function tracksCard() { const n = W.season.tracks.length; return { title: "🦌 The caribou trail", body: "<p>Herds of caribou walk this trail with the seasons, and hunters followed them. Look on the ground near this trail: can you find <b>3 sets of caribou tracks</b>?</p><p><b>Found: " + n + " of 3</b>" + (n >= 3 ? " — great tracking! Following herds is how Ice Age hunters lived." : "") + "</p><p><small>This is an exploring game (no stars). Walk over a set of tracks to find it.</small></p>" }; }
 function gateCard() {
   if (hasCloak()) return { title: "🧥 The glacier pass is open", body: "<p>Your <b>Fur Cloak</b> keeps out the icy wind. Walk through the pole gate and follow the path between the ice sheets.</p>" };
-  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Earn it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river stones.</p>", btns: [actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
+  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Earn it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river’s stepping stones.</p>", btns: [actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
 }
 function signCard() { return { title: "🧭 Two ideas scientists are still testing", body: "<p><b>Ice-free corridor:</b> as the great ice sheets melted, a gap may have opened between them, and people walked south through it. That is the path you are walking now.</p><p><b>Coastal route:</b> people may have traveled south by boat along the Pacific shore, where fish, shellfish, and seals gave them food.</p><p>Both are <b>theories</b> based on evidence. Scientists keep testing them with new finds, and people may have used both routes.</p>" }; }
 function journeyCard() {
@@ -420,6 +516,7 @@ function routeS(x, z) {
 function nextTarget() {
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
+  if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
   const gate = rings.find(r => r.def.id === "gate"), door = rings.find(r => r.def.id === "cave-door");
   const unfinished = r => r.def.id !== "gate" && r.def.id !== "cave-door" && (r.state === "new" || (r.def.id === "tracks" && r.state !== "done"));
   let best = null, bs = 1e9;
@@ -487,7 +584,9 @@ function step(dt, raw) {
   // travel, so she walked in a circle round it; now sideways steps keep the view still.
   if (L.manualT <= 0 && L.vel > 0.8 && sf > 0.25 && Math.abs(sx) < sf * 0.75 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
+  if (L.fordFall) L.pos.y = L.mods.B.WATER_Y - 0.35;
   if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold and fast. Hop across on the <b>stepping stones</b>."); teleport("out", B.FORD_RESPAWN); } } else L.wade = 0;
+  fordStep();
   // the glacier pass: bumping the closed gate shows a hint
   L.hintT = Math.max(0, L.hintT - dt);
   if (p.blocked && p.blocked.tag === "gate" && L.hintT <= 0) { L.hintT = 8; card(gateCard()); }
@@ -544,6 +643,7 @@ window.__world = {
   rings: () => (L.built ? L.lvl.rings.concat(L.cave.rings).map(r => ({ id: r.def.id, zone: r.def.zone || "out", x: r.def.x, z: r.def.z, state: r.state })) : []),
   teleport(x, z, zone) { if (!L.built) return false; L.zone = zone || (x > 2000 ? "cave" : "out"); L.pos.set(x, 0, z); L.wade = 0; moveHeroTo(x, z, L.zone); return true; },
   faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },
+  ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0 }),
   use: () => useRing(), card: () => (L.cardOpen ? document.getElementById("w-card").textContent : null), closeCard: () => closeCard(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

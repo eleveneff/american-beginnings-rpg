@@ -10,6 +10,8 @@ import { mergeGeometries } from 'three/addons/BufferGeometryUtils.js';
 export const WATER_Y = -0.22, CAVE_X = 4000;
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 export const riverZ = x => 105 + 2.2 * Math.sin(x * 0.045 + 0.6);
+// distance from the river's centre line, scaled so the channel is wider (about 11 m) at the ford, where the stepping-stone timeline sits
+export const riverS = (x, z) => Math.abs(z - riverZ(x)) / (1 + 0.45 * smooth(9, 3.5, Math.abs(x + 5)));
 // station centres (flattened ground)
 export const STATIONS = {
   camp: { x: 0, z: 3, r: 13, label: 'Camp', n: 1 }, herds: { x: 30, z: 26, r: 9, label: 'Herd lookout', n: 2 },
@@ -28,15 +30,19 @@ export function groundH(x, z) {
   for (const k in STATIONS) { const s = STATIONS[k]; if (!s.r) continue; const w = smooth(s.r, s.r * 0.45, Math.hypot(x - s.x, z - s.z)); h *= 1 - 0.85 * w; }
   const pd = pathDist(x, z); h *= 0.55 + 0.45 * smooth(1.5, 5, pd);
   if (z > 114) h = h * (1 - smooth(114, 122, z)) + smooth(114, 122, z) * (0.25 + 0.15 * Math.sin(x * 0.4) * Math.sin(z * 0.3));
-  const s = Math.abs(z - riverZ(x));
+  const s = riverS(x, z);
   h += (0.12 - h) * smooth(12, 6, s);
   h -= 0.85 * smooth(4.6, 3.2, s);
   const r = Math.max(0, BOUNDS.x0 - x, x - BOUNDS.x1, BOUNDS.z0 - z);
   if (r > 0) h += r * 0.55 + r * r * 0.03;
   return h;
 }
-// stepping stones across the ford (the middle one is wide and holds the Journal Timeline ring)
-export const STONES = (() => { const zc = riverZ(-5), out = []; for (let k = -3; k <= 3; k++) out.push({ x: -5 + (k % 2 ? 0.35 : -0.2) * (k ? 1 : 0), z: zc + k * 1.5, r: k === 0 ? 1.9 : 0.85, top: 0.1 }); return out; })();
+// stepping stones across the ford: 8 rows, one per timeline event, oldest on the south bank. Rows 0–6 have two stones
+// (the right event and a later one); the last row has one. Which side is right is chosen each visit (world.js).
+export const FORD_ROWS = 8, FORD_DZ = 1.35;
+export const STONES = (() => { const zc = riverZ(-5), out = []; for (let k = 0; k < FORD_ROWS; k++) { const z = zc + (k - (FORD_ROWS - 1) / 2) * FORD_DZ, j = 0.12 * Math.sin(k * 2.3);
+  if (k < FORD_ROWS - 1) for (const side of [0, 1]) out.push({ x: -5 + (side ? 1.15 : -1.15) + j, z, r: 0.6, top: 0.1, row: k, side });
+  else out.push({ x: -5 + j, z, r: 0.62, top: 0.1, row: k, side: -1 }); } return out; })();
 export const FORD_RESPAWN = { x: -5, z: riverZ(-5) - 8.6, yaw: 0 };
 export function onStone(x, z, pad = 0) { for (const s of STONES) if (Math.hypot(x - s.x, z - s.z) < s.r + pad) return s; return null; }
 
@@ -182,7 +188,7 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     const snowAmt = Math.max(smooth(0.9, 1.6, nz + (z - 40) * 0.012), smooth(108, 121, z), smooth(3, 14, Math.max(BOUNDS.x0 - x, x - BOUNDS.x1, BOUNDS.z0 - z)));
     c.lerp(nz > 1.3 ? BLUE : SNOW, snowAmt);
     const pd = pathDist(x, z); c.lerp(z > 114 ? BLUE : PATHC, (1 - smooth(1.0, 2.6, pd)) * 0.75);
-    const s = Math.abs(z - riverZ(x)); c.lerp(MUD, smooth(6, 4.4, s) * 0.8); c.lerp(BED, smooth(4.4, 3.4, s)); return c; };
+    const s = riverS(x, z); c.lerp(MUD, smooth(6, 4.4, s) * 0.8); c.lerp(BED, smooth(4.4, 3.4, s)); return c; };
   const terrNormals = geo => { const p = geo.attributes.position, n = p.count, nrm = new Float32Array(n * 3), e = 0.5, v = new THREE.Vector3();
     for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i); v.set(groundH(x - e, z) - groundH(x + e, z), 2 * e, groundH(x, z - e) - groundH(x, z + e)).normalize(); nrm.set([v.x, v.y, v.z], i * 3); }
     geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3)); };
@@ -200,7 +206,7 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     geo.computeBoundingSphere();
     const t = new THREE.Mesh(geo, lam); t.receiveShadow = true; t.name = 'terrain-tile'; t.userData.noMerge = true; terrain.add(t); }
   // river water (gently animated), ice-cold blue-grey
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(250, 10, 125, 1), new THREE.MeshLambertMaterial({ color: '#7fa6bf', transparent: true, opacity: 0.82, depthWrite: false }));
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(250, 16, 125, 1), new THREE.MeshLambertMaterial({ color: '#7fa6bf', transparent: true, opacity: 0.82, depthWrite: false }));
   { const p = water.geometry.attributes.position; water.geometry.rotateX(-Math.PI / 2); for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) + riverZ(p.getX(i) + 10)); water.geometry.translate(10, 0, 0); water.position.y = WATER_Y; water.userData.noMerge = true; water.renderOrder = 2; scene.add(water); }
 
   const statics = new THREE.Group(); statics.name = 'statics'; scene.add(statics);
@@ -347,11 +353,11 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     box(-200, 200, 190.2, 300); }
   // scattered boulders (collide), dwarf willow scrub and grass tufts (walk-through), far mountains
   const boulderGeo = vc(new THREE.DodecahedronGeometry(1, 0), '#86827b', 0.15, rnd), shrubGeo = vc(new THREE.IcosahedronGeometry(1, 0), '#6f7a45', 0.2, rnd), tuftGeo = vc(new THREE.ConeGeometry(0.12, 0.45, 4), '#b3a56a', 0.2, rnd);
-  const spots = (count, ok, minPath) => { const out = []; let guard = 0; while (out.length < count && guard++ < count * 40) { const x = BOUNDS.x0 + rnd() * (BOUNDS.x1 - BOUNDS.x0), z = BOUNDS.z0 + rnd() * (118 - BOUNDS.z0); if (pathDist(x, z) < minPath) continue; if (Math.abs(z - riverZ(x)) < 5.5) continue; let near = false; for (const k in STATIONS) { const s = STATIONS[k]; if (Math.hypot(x - s.x, z - s.z) < 11) near = true; } if (near || (ok && !ok(x, z))) continue; out.push([x, z]); } return out; };
+  const spots = (count, ok, minPath) => { const out = []; let guard = 0; while (out.length < count && guard++ < count * 40) { const x = BOUNDS.x0 + rnd() * (BOUNDS.x1 - BOUNDS.x0), z = BOUNDS.z0 + rnd() * (118 - BOUNDS.z0); if (pathDist(x, z) < minPath) continue; if (riverS(x, z) < 5.5) continue; let near = false; for (const k in STATIONS) { const s = STATIONS[k]; if (Math.hypot(x - s.x, z - s.z) < 11) near = true; } if (near || (ok && !ok(x, z))) continue; out.push([x, z]); } return out; };
   const inst = (geo, list, scl, cast) => { const m = new THREE.InstancedMesh(geo, lam, list.length), o = new THREE.Object3D(); list.forEach(([x, z, s, sy], i) => { o.position.set(x, groundH(x, z), z); o.rotation.set(0, rnd() * 6.28, 0); o.scale.set(s, s * (sy || 1), s); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); m.castShadow = cast; m.receiveShadow = true; m.userData.noMerge = true; scene.add(m); return m; };
   const bould = spots(34, null, 6).map(([x, z]) => [x, z, 0.6 + rnd() * 1.1, 0.7]); inst(boulderGeo, bould, 1, true); bould.forEach(([x, z, s]) => { circ(x, z, s * 0.95); mergeAO.addAO({ x, z }, s * 1.5, 0.9); });
   const shrubs = spots(80, null, 3).map(([x, z]) => [x, z, 0.45 + rnd() * 0.5, 0.55]);
-  for (let i = 0; i < 26; i++) { const x = -50 + rnd() * 125, z = riverZ(x) + (rnd() < 0.5 ? -1 : 1) * (5.6 + rnd() * 3); if (Math.abs(x + 5) > 4) shrubs.push([x, z, 0.5 + rnd() * 0.5, 0.6]); }
+  for (let i = 0; i < 26; i++) { const x = -50 + rnd() * 125, z = riverZ(x) + (rnd() < 0.5 ? -1 : 1) * (5.6 + rnd() * 3); if (Math.abs(x + 5) > 9) shrubs.push([x, z, 0.5 + rnd() * 0.5, 0.6]); }
   inst(shrubGeo, shrubs, 1, true);
   inst(tuftGeo, spots(700, (x, z) => z < 108, 1.8).map(([x, z]) => [x, z, 0.8 + rnd() * 0.8, 1]), 1, false);
   { const g = []; for (let i = 0; i < 26; i++) { const a = -Math.PI * 0.05 + i / 25 * Math.PI * 1.1, R = 175 + rnd() * 40, h = 30 + rnd() * 45; const x = 10 + Math.cos(a) * R * 1.2, z = 70 - Math.sin(a) * R; const cone = new THREE.ConeGeometry(h * 0.9, h, 7, 3); const base = vc(cone, '#7d8693', 0.1, rnd); const pos = base.attributes.position, col = base.attributes.color; for (let k = 0; k < pos.count; k++) if (pos.getY(k) > h * 0.12) col.setXYZ(k, 0.93, 0.95, 0.98); base.translate(x, h / 2 - 2, z); g.push(base); }

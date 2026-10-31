@@ -1308,6 +1308,22 @@
     /* v2.2 bridge for the walkable world (world.js). None of these add fields to the progress save. */
     enterSection: enterSection, sectionIntro: sectionIntro, startTrial: startTrial, nextQuestion: nextQuestion, nextReview: nextReview, sectionById: sectionById, toast: toast, closeModal: closeModal, renderHero: renderHero, save: save,
     touchSection: function (sid) { var st = sec(sid), ch = false; if (!st.startedAt) { st.startedAt = now(); ch = true; } if (!(S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) && !(S.run && S.run.sid === sid && S.run.phase === "lessons")) { S.run = { sid: sid, phase: "lessons" }; ch = true; } if (ch) save(); },
+    /* v2.3: the ford's stepping stones play the same timeline activity in 3D. Same item keys, the same first-try
+       star credit, the same first-miss logging and mastery review, and the same results screen: no new save fields. */
+    worldTimeline: function (sid, id, back) {
+      var a = actById(sid, id); if (!a || a.type !== "timeline") return null;
+      var evs = a.events.map(function (e, i) { return { label: e.t, when: e.when, y: e.y, q: e.q, fact: e.fact, key: String(i), tries: 0 }; }).sort(function (x, y) { return x.y - y.y; });
+      var mistakes = 0, review = [], started = false, byKey = {}; evs.forEach(function (e) { byKey[e.key] = e; });
+      return {
+        title: a.title, icon: a.icon,
+        events: evs.map(function (e) { return { label: e.label, when: e.when, y: e.y, key: e.key, q: e.q, fact: e.fact }; }),
+        start: function () { if (started) return; started = true; skillRec(a).plays++; skillRec(a).lastAt = now(); save(); },
+        right: function (key) { var e = byKey[key]; if (!e) return ""; return e.tries === 0 ? skillRight(sid, a, e, e.key) : ""; },
+        miss: function (key) { var e = byKey[key]; if (!e) return; mistakes++; e.tries++; if (e.tries === 1) skillFirstMiss(sid, a, e, review); },
+        mistakes: function () { return mistakes; },
+        finish: function () { finishActivity(sid, a, mistakes, back, review); }
+      };
+    },
     trial: function (sid) { if (S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) enterSection(sid, true); else startTrial(sid); } };
   home();
 })();

@@ -172,7 +172,7 @@ function ringDefsS2(B) {
     L2("l4", 4, "ew"), A2("clanmother", "🪶", "Council with a Clan Mother", "ew"), L2("l6", 6, "ew"),
     L2("l5", 5, "mound"), info("moundinfo", "mound", "mound", "⛰️", "The great platform mound", moundCard),
     { ...A2("clues", "🧺", "Culture Clues: carry the bundles to their mats", "plaza"), act: () => card(cluesCard()) },
-    at("market", { id: "market", station: "plaza", icon: "🛍️", label: () => "Trade blanket: Cahokia Trade Gathering", act: () => openPanel(() => window.ABRPG.market("m1")), state: () => "done" }),
+    at("market", { id: "market", station: "plaza", icon: "🛍️", label: () => "Trade blanket: Cahokia Trade Gathering", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m1"); }), state: () => "done" }),
     info("chunkey", "chunkey", "plaza", "🥏", "The chunkey yard", chunkeyCard),
     A2("timeline", "📓", "Game review: Timeline of the Nations", "council"),
     at("trial", { id: "trial", station: "council", icon: "⚔️", label: () => trialLabel("s2"), act: () => meetOpen() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s2"); } finally { L.bypass = false; } }) : card(meetLockedCard()), state: () => !meetOpen() ? "locked" : (sec("s2").completed ? "star" : "new") })
@@ -452,7 +452,8 @@ const relabelMap = () => { if (failed || mode() !== "walk" || L.phase !== "panel
 { const sc = document.getElementById("screen"); if (sc) new MutationObserver(relabelMap).observe(sc, { childList: true }); }
 window.addEventListener("palette", e => {
   const p = e.detail; bgPal = p || DEFAULT;
-  if (L.phase !== "off" && !(CUR() && p === CUR().palette)) exitLevel(false);
+  // the market paints its own era's sky (and its tabs other eras'): opened from a world ring that is still a world panel
+  if (L.phase !== "off" && !(CUR() && p === CUR().palette) && !(L.inMarket && L.phase === "panel")) exitLevel(false);
   setTimeout(syncChips, 0);
 });
 
@@ -555,7 +556,7 @@ function exitLevel(toClassic) {
   if (toClassic) window.ABRPG.home();
 }
 function setPhase(p) {
-  const was = L.phase; L.phase = p;
+  const was = L.phase; L.phase = p; if (p !== "panel") L.inMarket = false;
   const stage = document.getElementById("stage"), hud = document.getElementById("w-hud");
   document.body.classList.toggle("walking", p === "active");
   document.body.classList.toggle("world-linked", p === "panel");

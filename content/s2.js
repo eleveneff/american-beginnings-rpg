@@ -18,10 +18,11 @@ GAME_CONTENT.sections.push({
         "In the dry **Great Basin**, groups such as the Shoshone and Ute moved often, gathering seeds, nuts, and roots and hunting small animals."
       ] },
     { topic: "northwest", title: "Scroll 2: The Pacific Northwest", video: null,
-      videoIdea: "Low-poly N64-style coastal village with cedar plank houses, tall carved totem poles, and canoes full of salmon.",
+      videoIdea: "Low-poly N64-style coastal village with cedar plank houses, carved cedar house posts showing family crests, and canoes full of salmon.",
       text: [
         "Along the rainy Pacific Northwest coast, peoples such as the **Kwakiutl (Kwakwaka'wakw), Haida, and Tlingit** found plenty of food: **salmon**, shellfish, whales, and berries.",
-        "Giant **cedar** trees gave them wood for large **plank houses**, ocean-going canoes, and tall carved **totem poles** that told family histories.",
+        "Giant **cedar** trees gave them wood for large **plank houses** and ocean-going canoes. They carved cedar **house posts** and poles showing **family crests**.",
+        "The very tall freestanding **totem poles** came later, mostly in the **1800s** after iron tools arrived.",
         "At a **potlatch**, a family held a great feast and **gave away gifts** to show its wealth and status."
       ] },
     { topic: "plains", title: "Scroll 3: The Great Plains", video: null,
@@ -77,8 +78,8 @@ GAME_CONTENT.sections.push({
     { id: "s2q5", topic: "northwest", type: "vocab", term: "potlatch",
       choices: ["A ceremony where a family gave away gifts to show its wealth and status", "A cone-shaped home made of buffalo hide", "A round underground room for ceremonies", "A knotted cord used to keep records"],
       explain: "Giving gifts generously brought honor." },
-    { id: "s2q6", topic: "northwest", type: "fill", q: "Pacific Northwest peoples carved tall totem poles and built plank houses from ____ trees.",
-      accept: ["cedar", "cedars", "red cedar"], display: "cedar", explain: "Cedar wood is strong and resists rot." },
+    { id: "s2q6", topic: "northwest", type: "fill", q: "Pacific Northwest peoples built plank houses and carved house posts showing family crests from ____ trees.",
+      accept: ["cedar", "cedars", "red cedar"], display: "cedar", explain: "Cedar wood is strong and resists rot. The very tall freestanding totem poles came later, mostly in the 1800s after iron tools arrived." },
     { id: "s2q7", topic: "plains", type: "mc", q: "Which animal was the center of life for peoples of the Great Plains?",
       choices: ["The buffalo (bison)", "The salmon", "The seal", "The woolly mammoth"],
       explain: "Buffalo provided food, clothing, shelter, and tools." },

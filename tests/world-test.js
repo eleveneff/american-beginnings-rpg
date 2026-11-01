@@ -289,7 +289,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await closeCards(); await tp(-44, -37); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(500); await shot('v24-mound.png');
     { const cs = await p.evaluate(() => { const out = []; const walk = o => { if (typeof o === 'string') { if (/Cahokia/.test(o) && /largest city/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k]); }; walk(GAME_CONTENT); return out; });   // Cahokia is taught in Section 1 scrolls and the market too
       const tp2 = await p.evaluate(() => JSON.stringify(GAME_CONTENT, (k, v) => k === 'accept' ? undefined : v).match(/\b(teepee|tipi)s?\b/gi));   // typed-answer accept lists may list other spellings
-      assert(cs.length >= 1 && cs.every(t => /north of Mexico/.test(t)) && !tp2, 'wording: every "largest" Cahokia line says north of Mexico; "tepee" spelled one way (' + cs.length + ' lines)'); }
+      assert(cs.length >= 1 && cs.every(t => /north of Mexico/.test(t)) && !tp2, 'wording: every "largest" Cahokia line says north of Mexico; "tepee" spelled one way (' + cs.length + ' lines)');
+      const tot = await p.evaluate(() => { const out = []; const walk = o => { if (typeof o === 'string') { if (/totem/i.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k]); }; walk(GAME_CONTENT.sections.find(s => s.id === 's2')); return out; });
+      const s2t = await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's2')));
+      assert(tot.length >= 1 && tot.every(t => /came later, mostly in the \**1800s\** after iron tools arrived/.test(t)) && /house posts\*?\*? and poles showing \*?\*?family crests/.test(s2t) && /carved house posts showing family crests from ____ trees/.test(s2t), 'wording: Section 2 says house posts and crest poles; every totem-pole line says tall freestanding poles came later, mostly in the 1800s after iron tools (' + tot.length + ' lines)'); }
     console.log('  v2.4 plaza puzzle (Culture Clues Sort on the mats):');
     { const clues = await p.evaluate(() => GAME_CONTENT.sections.find(s => s.id === 's2').activities.find(a => a.id === 's2-clues'));
       const binOf = t => clues.items.find(i => i.t === t).bin;

@@ -68,7 +68,7 @@ GAME_CONTENT.extend("s2", {
               { id: "sw", label: "Southwest" }, { id: "ew", label: "Eastern Woodlands" }, { id: "se", label: "Southeast" } ],
       items: [
         { t: "Inuit", bin: "arctic", fact: "Inuit hunted seals and whales by kayak and built snow houses for winter hunts." },
-        { t: "Haida", bin: "nw", fact: "The Haida carved cedar canoes and totem poles." },
+        { t: "Haida", bin: "nw", fact: "The Haida carved cedar canoes and house posts showing family crests." },
         { t: "Tlingit", bin: "nw", fact: "The Tlingit fished for salmon and held potlatches." },
         { t: "Lakota", bin: "plains", fact: "The Lakota followed the bison and lived in tepees." },
         { t: "Cheyenne", bin: "plains", fact: "The Cheyenne became famous horse-riding bison hunters on the Plains." },
@@ -85,7 +85,7 @@ GAME_CONTENT.extend("s2", {
               { id: "sw", label: "Southwest", icon: "🌵" }, { id: "ew", label: "Eastern Woodlands", icon: "🍁" }, { id: "se", label: "Southeast", icon: "🌾" } ],
       items: [
         { t: "Kayak and snow house", bin: "arctic", fact: "Arctic peoples used every part of seals and whales." },
-        { t: "Cedar plank house and totem pole", bin: "nw", fact: "Totem poles told family histories." },
+        { t: "Cedar plank house and crest post", bin: "nw", fact: "Carved cedar house posts and poles showed family crests. Very tall freestanding totem poles came later, mostly in the 1800s after iron tools arrived." },
         { t: "Potlatch gift-giving feast", bin: "nw", fact: "Potlatches showed a family's wealth and rank." },
         { t: "Tepee and travois", bin: "plains", fact: "Tepees could be taken down and moved quickly." },
         { t: "Adobe pueblo and kiva", bin: "sw", fact: "Kivas were underground rooms for ceremonies." },

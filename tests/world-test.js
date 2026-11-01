@@ -1,4 +1,4 @@
-/* American Beginnings RPG v2.2–v2.5 walkable-world test (Section 1: Beringia; v2.4 adds Section 2: Native Nations; v2.5 adds Section 3: the Voyage of 1492).
+/* American Beginnings RPG v2.2–v2.6 walkable-world test (Section 1: Beringia; v2.4 adds Section 2: Native Nations; v2.5 adds Section 3: the Voyage of 1492; v2.6 adds Section 4: Three Empires).
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/wshots/ node tests/world-test.js
    Run it on its own (not in parallel with smoke-test.js): SwiftShader is slow and the timings below assume one suite at a time. */
 const puppeteer = require('puppeteer-core');
@@ -28,12 +28,12 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.5' && (await p.evaluate(() => ABRPG.version)) === 'v2.5', 'version marker v2.5');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.6' && (await p.evaluate(() => ABRPG.version)) === 'v2.6', 'version marker v2.6');
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
-  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.5/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.5" banner shows on the map (non-blocking)');
+  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.6/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.6" banner shows on the map (non-blocking)');
 
   console.log('enter Beringia + movement:');
   const before = await p.evaluate(k => localStorage.getItem(k), KEY);
@@ -444,7 +444,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await closeCards();
     for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s3', i, false), i); await sleep(80); }
     await p.evaluate(() => ABRPG.home()); await waitPhase('active');
-    assert(await p.evaluate(() => __world.stormOpen()) && (await ringAt('trial')).state === 'new', 'with all 7 scrolls read the Trial ring opens');
+    { const dbg = await p.evaluate(() => ({ open: __world.stormOpen(), read: __world.readL('s3'), sid: __world.state ? __world.state().sid : null })), rt = await ringAt('trial');
+      assert(dbg.open && rt && rt.state === 'new', 'with all 7 scrolls read the Trial ring opens' + (dbg.open && rt && rt.state === 'new' ? '' : ' [debug ' + JSON.stringify(dbg) + ' ring ' + JSON.stringify(rt) + ']')); }
     await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
     assert((await W()).phase === 'panel', 'the Trial opens as the real Section 3 trial panel');
     if (await p.$('#b-trial')) await click('#b-trial');
@@ -464,6 +465,105 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert(Math.abs(w.pos.x + 53) < 0.01 && Math.abs(w.pos.z - 30) < 0.01, 'a saved Section 3 spot is restored');
     { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/astrolabe/.test(hk) && /nav-cap/.test(hk) && /wool/.test(hk) && await p.evaluate(() => __world.boardOpen()), 'the navigator gear shows on the wool dress, and the Astrolabe lets her board (' + hk + ')'); }
     await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(700); await shot('v25-hero.png');
+  }
+
+  console.log('v2.6 Section 4: Three Empires:');
+  { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
+    const s4base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE() }, ...extra });
+    const enterS4 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s4"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
+    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
+    const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
+    await seed(s4base(), null);
+    const before4 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    await enterS4(); w = await W();
+    assert((await p.evaluate(() => __world.level)) === 's4' && w.phase === 'active' && Math.abs(w.pos.x + 56) < 0.01 && Math.abs(w.pos.z + 56) < 0.01, 'tapping Section 4 opens the Three Empires at St. Augustine (-56, -56)');
+    assert(/Section 4 · Three Empires/.test(await p.$eval('#w-era', e => e.textContent)), 'era label names Section 4');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 1 · /.test(bn), 'at the start the banner names a Marker 1 ring in St. Augustine ("' + bn + '")'); }
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/"wool"/.test(hk), 'around 1610 she wears the wool dress (' + hk + ')'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v26-staugustine.png');
+    // geography: north = +z, WEST = +x. Santa Fe far west, Quebec far north, New Amsterdam east on the coast, St. Augustine south-east
+    { const S = await p.evaluate(() => __world.stations());
+      assert(S.santafe.x > S.staug.x + 60 && S.quebec.z > S.staug.z + 80 && S.market.x < S.beaver.x && S.market.z > S.staug.z + 40 && S.quebec.z > S.market.z, 'the colonies sit in their real directions (Santa Fe far west, Quebec far north, New Amsterdam north of St. Augustine on the east coast)'); }
+    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+      const off = rs.filter(r => !r.w || r.s); assert(rs.length === 25 && !off.length, 'all 25 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
+    { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
+      assert(hb.length === 2 && hb.every(h => h.w && !h.s), 'both canoe landings are walkable (' + JSON.stringify(hb) + ')'); }
+    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().map(r => r.id)));
+      for (const id of ids) { await tpRing(id);
+        for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(260); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
+      assert(n === ids.length * 4 && !bad.length, 'camera never inside a building, tree or mesa at ' + ids.length + ' rings × 4 views (' + bad.join(', ') + ')'); }
+    { await tp(-30, 56); await p.evaluate(() => __world.faceCam(0)); await hold('KeyW', 3000); w = await W();
+      assert(w.pos.z < 63.5 && !(await p.evaluate((x, z) => __world.solid(x, z), w.pos.x, w.pos.z)), 'the Quebec cliff stops her (z ' + w.pos.z.toFixed(2) + ')'); }
+    console.log('  scrolls and cards:');
+    for (const [id, re, i] of [['s4-l0', /Conquistadors/, 0], ['s4-l3', /New France/, 3]]) {
+      await tpRing(id); await p.evaluate(() => __world.use()); await sleep(400);
+      assert((await W()).phase === 'panel' && re.test(await p.$eval('#screen', e => e.textContent)), id + ' ring opens its scroll');
+      if (i === 0) assert(/Back to the Three Empires/.test(await p.$eval('#w-back', e => e.textContent)), '"Back to the Three Empires" chip shows while a Section 4 panel is open');
+      assert((await p.evaluate(() => __world.readL('s4'))).includes(i), 'scroll ' + (i + 1) + ' marked read for Section 4 (world key)');
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+    for (const [id, re] of [['fort', /September 8, 1565/], ['timucua', /Seloy/], ['palace', /Pueblo Revolt|Popé/], ['adobe', /straw/], ['beaver', /felt/], ['furtrade', /Wendat/], ['wendat', /1609/], ['windmill', /18 languages/], ['manhattan', /60 guilders/]]) {
+      const cd = await useCard(id); assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
+    { const cd = await useCard('manhattan'); assert(/\$24/.test(cd) && /sharing/.test(cd), 'the Manhattan card explains the "$24" myth and the Lenape view'); await closeCards(); }
+    await tp(-56, -40); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(500); await shot('v26-staug-fort.png');
+    { const r = await ringAt('s4-l2'); await tp(r.x - 6, r.z - 8); await p.evaluate(() => __world.faceCam(Math.atan2(6, 8))); await sleep(500); await shot('v26-santafe.png'); }
+    console.log('  the St. Lawrence canoe:');
+    { const cd = await useCard('canoe-south'); assert(/where the river narrows/.test(cd) && /July 3, 1608/.test(cd), 'the canoe card: Kébec, "where the river narrows", July 3, 1608');
+      await p.evaluate(() => [...document.querySelectorAll('#w-card button')].find(b => /Quebec/.test(b.textContent)).click()); await sleep(1300); w = await W();
+      const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.north);
+      assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'she paddles to the Quebec landing'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v26-quebec.png');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 4 · /.test(bn), 'at Quebec the banner names Marker 4 ("' + bn + '")'); }
+    await p.evaluate(() => __world.canoe('south')); await sleep(1300); w = await W();
+    { const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.south); assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'and paddles back to the south bank'); }
+    { const r = await ringAt('windmill'); await tp(r.x + 8, r.z - 10); await p.evaluate(() => __world.faceCam(Math.atan2(-8, 10))); await sleep(600); await shot('v26-newamsterdam.png'); }
+    const after4 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    assert(Object.keys(JSON.parse(after4)).sort().join(',') === Object.keys(JSON.parse(before4)).sort().join(','), 'no new progress-save fields from exploring the three empires');
+    const keys4 = Object.keys(JSON.parse(after4)).sort().join(',');
+    console.log('  empire goals puzzle (crates on the mats):');
+    { const ex = await p.evaluate(() => GAME_CONTENT.sections.find(s => s.id === 's4').activities.find(a => a.id === 's4-goals'));
+      const binOf = t => ex.items.find(i => i.t === t).bin;
+      const cd = await useCard('s4-goals'); assert(/Spain/.test(cd) && /left \(west\)/.test(cd) && /Card version/.test(cd), 'the goals ring explains the mats (Spain left / west) and offers the card version');
+      await p.evaluate(() => document.querySelector('#w-card [data-wb="0"]').click()); await sleep(300);
+      let s = await p.evaluate(() => __world.sort()); assert(s.active && s.left === ex.items.length && s.mats.length === 3, 'carrying starts: ' + s.left + ' crates, 3 empire mats');
+      { const M = Object.fromEntries(s.mats.map(m => [m.bin, m])); assert(M.spain.x > M.france.x && M.dutch.x < M.france.x && M.france.z > M.spain.z, 'facing north, Spain is left (west, +x), France ahead, the Netherlands right'); }
+      const ring = await ringAt('s4-goals'), off = async () => { await tp(ring.x, ring.z); await sleep(250); };
+      const onMat = async bin => { const m = (await p.evaluate(() => __world.sort())).mats.find(q => q.bin === bin); await tp(m.x, m.z); await sleep(1000); };
+      const right = binOf(s.cur), wrong = right === 'spain' ? 'france' : 'spain';
+      await onMat(wrong); s = await p.evaluate(() => __world.sort()); assert(s.mistakes === 1 && s.left === ex.items.length, 'a wrong mat counts as a mistake');
+      await off(); await onMat(right); await sleep(1100); s = await p.evaluate(() => __world.sort()); assert(s.left === ex.items.length - 1 && s.mats.find(m => m.bin === right).bundles === 1, 'the right mat takes the crate');
+      await off(); await p.evaluate(() => __world.faceCam(0)); await sleep(400); await shot('v26-goals-puzzle.png');
+      while ((s = await p.evaluate(() => __world.sort())).left > 0 && s.cur) { await off(); await onMat(binOf(s.cur)); await sleep(1000); }
+      await waitPhase('panel', 8000);
+      const S = await p.evaluate(() => ABRPG.state()), a = S.acts['s4-goals'];
+      assert(a && a.plays === 1 && a.history[0].mistakes === 1, 'all crates placed → the normal results panel, 1 mistake recorded');
+      assert(Object.keys(S).sort().join(',') === keys4 && !/bundle|mats/i.test(JSON.stringify(S)), 'no new save fields from the goals puzzle');
+      await p.evaluate(() => document.querySelector('#a-back') ? document.querySelector('#a-back').click() : ABRPG.home()); await waitPhase('active'); }
+    console.log('  the palisade gate (Trial):');
+    { const cd = await useCard('trial'); assert(/all 7 scrolls/.test(cd) && (await W()).phase === 'active', 'the gate Trial ring stays locked until all 7 scrolls are read'); await closeCards(); }
+    for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s4', i, false), i); await sleep(80); }
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    assert(await p.evaluate(() => __world.gateOpenS4()) && (await ringAt('trial')).state === 'new', 'with all 7 scrolls read the gate opens');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel', 'the Trial opens as the real Section 4 trial panel');
+    if (await p.$('#b-trial')) await click('#b-trial');
+    for (let i = 0; i < 3; i++) await answer(true);
+    await go(); await enterS4(); w = await W();
+    { const t = await ringAt('trial'); assert((await p.evaluate(() => __world.level)) === 's4' && Math.hypot(w.pos.x - t.x, w.pos.z - t.z + 4) < 1, 'reload mid-trial: entering Section 4 puts her by the palisade gate'); }
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500); if (await p.$('#b-resume')) await click('#b-resume');
+    assert((await p.evaluate(() => ABRPG.state().run.idx)) === 3, 'the Section 4 Trial resumes at question 4');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    { const wk = await p.evaluate(k => JSON.parse(localStorage.getItem(k)), WKEY); assert(wk.read.s4.length === 7 && wk.seen.fort && wk.seen.manhattan && wk.at && wk.at.s4, 'Section 4 scrolls, cards and position live in the world key'); }
+    console.log('  world key safety + explorer gear:');
+    await seed(s4base(), { ver: 1, mode: 'walk', at: { s4: { x: 1e9, z: 3, yaw: 'q' } }, read: { s4: [0, 9, 'a', 2, 2] }, seen: { help4: true, fort: 'yes', bogus: true } });
+    await enterS4(); w = await W();
+    assert(Math.abs(w.pos.x + 56) < 0.01 && Math.abs(w.pos.z + 56) < 0.01 && JSON.stringify(await p.evaluate(() => __world.readL('s4'))) === '[0,2]' && !(await p.evaluate(() => __world.seen())).bogus, 'junk Section 4 world data is cleaned (start spot, only valid scroll ids)');
+    await seed(s4base({ owned: ['beaver-cap', 'explorer-journal', 'lantern', 'satchel'], equip: { head: 'beaver-cap', belt: 'explorer-journal', offhand: 'lantern', back: 'satchel' } }), { ver: 1, mode: 'walk', at: { s4: { x: -52, z: 10, yaw: 0 } }, seen: { help4: true } });
+    await enterS4(); w = await W();
+    assert(Math.abs(w.pos.x + 52) < 0.01 && Math.abs(w.pos.z - 10) < 0.01, 'a saved Section 4 spot is restored');
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/beaver-cap/.test(hk) && /lantern/.test(hk) && /satchel/.test(hk) && /journal/.test(hk) && /wool/.test(hk), 'the explorer gear shows on the wool dress (' + hk + ')'); }
+    await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(700); await shot('v26-hero.png');
+    assert(!/🇪🇸/.test(await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's4')))), 'no modern flag emoji in Section 4 content');
   }
 
   console.log('old saves + world key safety:');

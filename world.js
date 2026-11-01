@@ -561,7 +561,17 @@ function ui() {
 const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires" };
 function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
+// v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
+function layoutHud() {
+  if (L.phase !== "active") return; const tb = document.getElementById("topbar"), ob = document.getElementById("w-obj"), er = document.getElementById("w-era"); if (!ob || !er) return;
+  const tbB = tb && tb.offsetParent !== null ? tb.getBoundingClientRect().bottom : 0, top = Math.max(8, tbB + 6);
+  if (ob._top !== top) { ob.style.top = top + "px"; ob._top = top; }
+  const tl = document.getElementById("w-tools"); if (tl) { const t2 = window.matchMedia("(max-width:600px)").matches ? "" : top + "px"; if (tl.style.top !== t2) tl.style.top = t2; }
+  const oB = ob.getBoundingClientRect().bottom, et = Math.round(oB + 5); if (er._top !== et) { er.style.top = et + "px"; er._top = et; }
+}
+window.addEventListener("resize", () => setTimeout(layoutHud, 50));
 function syncChips() {
+  layoutHud();
   const mb = document.getElementById("w-mode"), back = document.getElementById("w-back"); if (!mb) return;
   mb.hidden = !!failed; mb.textContent = mode() === "walk" ? "🗂️ Classic screens" : WALKNAME[L.sid];
   if (back.textContent !== BACK[L.sid]) back.textContent = BACK[L.sid];
@@ -745,7 +755,7 @@ function setPhase(p) {
   document.body.classList.toggle("world-linked", p === "panel");
   if (stage) stage.hidden = p === "active";
   if (hud) hud.hidden = p !== "active";
-  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; } }   // v2.6: ring states are right on the first frame back
+  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; }  requestAnimationFrame(layoutHud); }   // v2.6: ring states are right on the first frame back
   if (p === "off") { renderer.toneMapping = THREE.NoToneMapping; renderer.shadowMap.enabled = false; renderer.setPixelRatio(BG_DPR); resize(); bgBuiltFor = null; bgDirty = true; }
   if (p === "panel") L.dirty = true;
   if (was !== p) syncChips();

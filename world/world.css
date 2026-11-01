@@ -47,3 +47,4 @@ body.touch:has(#w-prompt:not([hidden])) #toast{bottom:15rem}
   body.touch:has(#w-prompt:not([hidden])) #toast{bottom:5.2rem}
   .w-card-in{padding-top:.6rem}.w-card-in p,.w-card-in li{line-height:1.35}
 }
+@media (max-width:600px){#w-era{white-space:normal;text-align:center;width:max-content;max-width:92vw;line-height:1.25}}

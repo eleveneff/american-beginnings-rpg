@@ -516,7 +516,7 @@ function card(c) {
   const el = document.getElementById("w-card"); cardActs = c.btns || [];
   el.innerHTML = '<div class="w-card-in" role="dialog" aria-label="' + esc(c.title) + '"><h3>' + c.title + "</h3>" + c.body + cardBtns(cardActs.concat([{ t: c.close || "Keep exploring ▶", cls: "alt", f: closeCard }])) + "</div>";
   cardActs = cardActs.concat([{ f: closeCard }]);
-  el.hidden = false; L.cardOpen = true;
+  el.hidden = false; L.cardOpen = true; clearHeld();
   el.querySelectorAll("[data-wb]").forEach(b => b.onclick = () => { const a = cardActs[+b.dataset.wb]; if (a && a.f) a.f(); });
   const first = el.querySelector("button"); if (first) first.focus({ preventScroll: true });
 }

@@ -20,10 +20,11 @@ body.touch #w-prompt{bottom:10.5rem}
 #w-tools .chip{min-height:40px}
 #w-keys{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);color:#fff;font-size:.85rem;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
 #w-card{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:rgba(10,15,30,.35);padding:1rem}
-.w-card-in{background:var(--parch);color:var(--ink);border:4px solid #000;border-radius:18px;box-shadow:var(--shadow);max-width:560px;width:100%;max-height:80vh;overflow:auto;padding:1rem 1.2rem}
+.w-card-in{background:var(--parch);color:var(--ink);border:4px solid #000;border-radius:18px;box-shadow:var(--shadow);max-width:560px;width:100%;max-height:80vh;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);overflow:auto;padding:1rem 1.2rem 0}
 .w-card-in h3{margin:.1rem 0 .5rem;font-size:1.25rem}
 .w-card-in p,.w-card-in li{line-height:1.45}
-.w-card-btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.w-card-btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem;position:sticky;bottom:0;background:var(--parch);padding:.5rem 0 1rem;box-shadow:0 -8px 8px -8px rgba(0,0,0,.25)}   /* v2.6: buttons stay pinned in view */
+.w-card-in h3{font-size:clamp(1.02rem,4.2vw,1.25rem)}
 .w-card-btns .btn{min-height:44px}
 #w-fade{position:fixed;inset:0;z-index:60;background:#000;opacity:0;pointer-events:none;transition:opacity .35s}
 #w-fade.on{opacity:1}
@@ -33,3 +34,16 @@ body.touch #w-prompt{bottom:10.5rem}
 /* v2.5: when a ring prompt is showing, lift the toast above it so the two never overlap */
 body:has(#w-prompt:not([hidden])) #toast{bottom:10rem}
 body.touch:has(#w-prompt:not([hidden])) #toast{bottom:15rem}
+/* v2.6 phone HUD: one owner per corner. top-left = topbar chips (stars / gear), top-right = #w-tools (graphics, help; on a
+   portrait phone a row just above Use), bottom-left = joystick, bottom-right = Use; the centre column = objective, era, prompt, banner, toast. */
+@media (max-width:600px){body.touch #w-tools{top:auto;bottom:7.4rem;flex-direction:row}}   /* portrait: a row just above Use, below the prompt (10.5rem) */
+@media (orientation:landscape) and (max-height:500px){
+  #w-obj{top:3.3rem;font-size:.8rem;padding:.25rem .8rem;max-width:calc(100vw - 2 * 12rem)}#w-era{top:5.3rem;font-size:.72rem}
+  body.touch #w-joy{width:104px;height:104px;left:.9rem;bottom:.8rem}body.touch #w-knob{left:27px;top:27px}
+  body.touch #w-use{min-width:62px;min-height:62px;right:.9rem;bottom:1rem;font-size:.9rem}
+  body.touch #w-tools{top:3.3rem;flex-direction:row}body.touch #w-tools .chip{min-height:36px}
+  body.touch #w-prompt{bottom:1rem;max-width:calc(100vw - 2 * 8.5rem)}
+  #w-banner{max-width:calc(100vw - 2 * 8.5rem)}
+  body.touch:has(#w-prompt:not([hidden])) #toast{bottom:5.2rem}
+  .w-card-in{padding-top:.6rem}.w-card-in p,.w-card-in li{line-height:1.35}
+}

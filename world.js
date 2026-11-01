@@ -714,7 +714,7 @@ function camBlocked(x, y, z) {
   }
   return false;
 }
-const LOOK_UP = 1.1;
+const LOOK_UP = 2.0;
 function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
@@ -787,7 +787,11 @@ function step(dt, raw) {
   }
   L.saveT -= dt; if (L.saveT <= 0) { L.saveT = 2; saveWorldPos(); }
 }
-function renderLevel() { renderer.render(L.zone === "cave" ? L.cave.scene : L.lvl.scene, L.cam); }
+function renderLevel() {
+  // v2.4 QC: the 500 m sky dome sat past the 420 m far plane, so looking up showed clipped black/grey wedges; keep it centred on the camera, inside the far plane
+  const sky = L.zone !== "cave" && L.lvl && L.lvl.sky; if (sky) { sky.position.copy(L.cam.position); sky.scale.setScalar(0.76); sky.frustumCulled = false; }
+  renderer.render(L.zone === "cave" ? L.cave.scene : L.lvl.scene, L.cam);
+}
 
 // ---- main loop ----
 const clock = makeClock();

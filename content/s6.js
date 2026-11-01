@@ -36,7 +36,7 @@ GAME_CONTENT.sections.push({
         "Plantations relied more and more on the labor of **enslaved Africans**. Many were brought across the Atlantic on the brutal voyage called the **Middle Passage**, part of the **triangular trade** among the Americas, Europe, and Africa."
       ] },
     { topic: "government", title: "Scroll 4: Trade and Colonial Government", video: null,
-      videoIdea: "Low-poly N64-style: a colonial assembly hall with representatives debating; ships flying English flags in the harbor.",
+      videoIdea: "Low-poly N64-style: a colonial assembly hall with representatives debating; ships flying the British Union flag of 1707 in the harbor.",
       text: [
         "England followed **mercantilism**: the idea that a nation grows rich by **exporting more than it imports**, with colonies supplying raw materials and buying finished goods.",
         "The **Navigation Acts** required colonists to ship certain goods only to England and to use English or colonial ships.",

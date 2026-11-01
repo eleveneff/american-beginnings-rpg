@@ -11,6 +11,10 @@
   The James Fort ships are spaced in mid-river (JSHIPS in colonies.js), the Roanoke caravel moved to RSHIP (-48,-43), ships at
   anchor are furled (James ships, Mayflower, Boston), and scattered trees are kept off the river banks in front of the ships.
   Checked every level: only s3, s5 and s6 use shipGeo; s4 uses its own flags (Spain, France, Netherlands); s3 keeps Spain's flag (correct).
+- **Flag check, 6:20 AM ET (v2.8.x, content only):** a reported "red saltire" on the Level 6 Union flags was checked at full zoom
+  (/workspace/abrpg-report/v28-flag-zoom-charleston.png, -albany.png): the 3D flags (unionFlagGeo in thirteen.js, shipGeo 'britain'
+  in voyage.js) are already the 1707 Queen Anne design with no red diagonals. No 🇬🇧 emoji or flag images anywhere. Fixed one text line:
+  s6 videoIdea "English flags" → "the British Union flag of 1707". Smoke ALL PASSED; world test skipped (text only, too close to 7 AM).
 - Shots: /workspace/abrpg-report/v28-shot-*.png (charleston, williamsburg, revival, philadelphia, village, boston, albany, hero, phone,
   jamesfort-ships-fixed, mayflower-fixed, roanoke) and v28-s*-*.png (fps views). v27 shots are still there for comparison.
 - Lessons: /workspace/shared/abrpg-lessons/lessons-learned.md (Level 5 and Level 6 sections, incl. ship flags), copied to /workspace/abrpg-design/.

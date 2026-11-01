@@ -72,19 +72,42 @@ const GEAR = {
     const out = []; for (let i = 0; i < 11; i++) { const a = Math.PI * (0.15 + 0.7 * i / 10); out.push(part(new THREE.SphereGeometry(0.008, 4, 3), '#3a2a1a', Math.cos(a) * 0.1, 1.16 - Math.sin(a) * 0.05, Math.sin(a) * 0.12 + 0.02)); }
     out.push(part(new THREE.OctahedronGeometry(0.03, 0), col || '#2ec4b6', 0, 1.09, 0.145, 0, 0, 0, 0.9, 1.2, 0.5));
     return { body: out };
+  },
+  // ---- v2.5: Section 3 (Age of Exploration, 1492) art keys from content/v2-s3.js; drawn in Level 3 ----
+  'compass': (col) => {               // belt slot: a little round boxwood compass on a cord at her hip
+    return { body: [part(new THREE.CylinderGeometry(0.045, 0.045, 0.025, 14), col || '#b8893a', 0.13, 0.9, 0.09, Math.PI / 2, 0, 0.3), part(new THREE.CylinderGeometry(0.036, 0.036, 0.004, 14), '#f1ead8', 0.135, 0.9, 0.105, Math.PI / 2, 0, 0.3), part(new THREE.BoxGeometry(0.004, 0.05, 0.004), '#a8352a', 0.137, 0.9, 0.11, 0, 0, 0.3)] };
+  },
+  'astrolabe': (col) => {             // off-hand slot: a brass mariner's astrolabe hanging from her belt on the left side
+    const c = col || '#c99a3a';
+    return { body: [part(new THREE.TorusGeometry(0.07, 0.01, 6, 20), c, -0.2, 0.8, 0.02, 0, Math.PI / 2, 0), part(new THREE.BoxGeometry(0.008, 0.13, 0.008), c, -0.2, 0.8, 0.02), part(new THREE.BoxGeometry(0.008, 0.008, 0.13), c, -0.2, 0.8, 0.02, 0.5, 0, 0), part(new THREE.TorusGeometry(0.015, 0.004, 4, 8), c, -0.2, 0.88, 0.02, 0, Math.PI / 2, 0)] };
+  },
+  'map-tube': (col) => {              // back slot: a leather chart case slung across her back
+    const c = col || '#7a4a2a';
+    return { body: [part(new THREE.CylinderGeometry(0.045, 0.045, 0.6, 10), c, 0, 0.95, -0.2, 0, 0, 0.7), part(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 10), '#c99a3a', -0.2, 1.18, -0.2, 0, 0, 0.7), part(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 10), '#c99a3a', 0.2, 0.72, -0.2, 0, 0, 0.7), part(new THREE.TorusGeometry(0.22, 0.008, 4, 16), '#4a2e1a', 0, 1.0, -0.02, 0, 0, 0.75, 1, 1.25, 0.95)] };
+  },
+  'sounding-lead': (col) => {         // right-hand slot: a coil of line and the lead weight used to measure the water's depth
+    return { rhand: [part(new THREE.TorusGeometry(0.06, 0.014, 6, 14), '#c8aa72', 0, 0.02, 0, Math.PI / 2), part(new THREE.CylinderGeometry(0.004, 0.004, 0.25, 4), '#c8aa72', 0.05, -0.1, 0.02), part(new THREE.CylinderGeometry(0.022, 0.03, 0.09, 8), col || '#6a6e74', 0.05, -0.25, 0.02)] };
+  },
+  'nav-cap': (col) => {               // head slot: a sailor's soft wool cap
+    return { body: [part(new THREE.SphereGeometry(0.132, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), col || '#a8352a', 0, 1.415, -0.01, -0.2, 0, 0, 1, 0.95, 1), part(new THREE.TorusGeometry(0.125, 0.016, 6, 20), col || '#a8352a', 0, 1.44, 0, Math.PI / 2 - 0.2, 0, 0)] };
   }
 };
 export const S1_ART = ['fur-cloak', 'spear', 'basket', 'shell-necklace', 'feather-band'];
 export const S2_ART = ['wampum-belt', 'paddle', 'buffalo-robe', 'turquoise'];
+export const S3_ART = ['compass', 'astrolabe', 'map-tube', 'sounding-lead', 'nav-cap'];
+// outfits: the hide tunic of Levels 1–2, and (v2.5) a wool dress and linen collar for Spain in 1492
+const OUTFITS = { hide: { tunic: HIDE, hem: HIDE_D, fringe: true, sleeve: HIDE, leg: LEG, shoe: MOC }, wool: { tunic: '#3f5f7a', hem: '#2c4258', fringe: false, sleeve: '#ece3cf', leg: '#4a3a2e', shoe: '#2e2219' } };
 
-export function createHero({ gender = 'girl', gearArt = [] } = {}) {
+export function createHero({ gender = 'girl', gearArt = [], outfit = 'hide' } = {}) {
+  const O = OUTFITS[outfit] || OUTFITS.hide;
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
   const root = new THREE.Group(); root.name = 'abigail';
   const body = [], rhand = [];
   // torso: hide tunic (flares to the knees) + darker fringe hem + belt
-  body.push(part(lathe([[0.001, 0.6], [0.23, 0.6], [0.2, 0.7], [0.16, 0.9], [0.152, 0.97], [0.165, 1.1], [0.17, 1.2], [0.1, 1.255], [0.001, 1.26]]), HIDE));
-  body.push(part(new THREE.TorusGeometry(0.218, 0.018, 4, 20), HIDE_D, 0, 0.62, 0, Math.PI / 2));
-  for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; body.push(part(new THREE.ConeGeometry(0.015, 0.07, 3), HIDE_D, Math.sin(a) * 0.222, 0.575, Math.cos(a) * 0.222, Math.PI)); }
+  body.push(part(lathe([[0.001, 0.6], [0.23, 0.6], [0.2, 0.7], [0.16, 0.9], [0.152, 0.97], [0.165, 1.1], [0.17, 1.2], [0.1, 1.255], [0.001, 1.26]]), O.tunic));
+  body.push(part(new THREE.TorusGeometry(0.218, 0.018, 4, 20), O.hem, 0, 0.62, 0, Math.PI / 2));
+  if (!O.fringe) body.push(part(new THREE.TorusGeometry(0.11, 0.02, 4, 18), '#f1ead8', 0, 1.235, 0, Math.PI / 2));   // linen collar
+  if (O.fringe) for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; body.push(part(new THREE.ConeGeometry(0.015, 0.07, 3), HIDE_D, Math.sin(a) * 0.222, 0.575, Math.cos(a) * 0.222, Math.PI)); }
   body.push(part(new THREE.TorusGeometry(0.156, 0.016, 4, 18), '#5a3a20', 0, 0.95, 0, Math.PI / 2));
   // neck + head
   body.push(part(new THREE.CylinderGeometry(0.045, 0.05, 0.1, 10), SKIN, 0, 1.26, 0));
@@ -109,8 +132,8 @@ export function createHero({ gender = 'girl', gearArt = [] } = {}) {
   const torsoMesh = new THREE.Mesh(merge(body), mat); torsoMesh.castShadow = true; torso.add(torsoMesh);
   const eyes = new THREE.Mesh(eyeGeo, mat); torso.add(eyes);
   const limb = (geos, px, py, pz) => { const piv = new THREE.Group(); piv.position.set(px, py, pz); const m = new THREE.Mesh(merge(geos), mat); m.castShadow = true; piv.add(m); return piv; };
-  const legs = [-1, 1].map(s => limb([part(new THREE.CapsuleGeometry(0.056, 0.52, 4, 10), LEG, 0, -0.33, 0), part(new THREE.SphereGeometry(0.07, 10, 8), MOC, 0, -0.66, 0.035, 0, 0, 0, 0.9, 0.62, 1.45)], s * 0.08, 0.72, 0));
-  const arms = [-1, 1].map(s => limb([part(new THREE.CapsuleGeometry(0.044, 0.38, 4, 10), HIDE, 0, -0.22, 0), part(new THREE.SphereGeometry(0.045, 10, 8), SKIN, 0, -0.45, 0), ...(s === 1 ? rhand.map(g => g.clone().translate(0, -0.65, 0.05)) : [])], s * 0.205, 1.19, 0));
+  const legs = [-1, 1].map(s => limb([part(new THREE.CapsuleGeometry(0.056, 0.52, 4, 10), O.leg, 0, -0.33, 0), part(new THREE.SphereGeometry(0.07, 10, 8), O.shoe, 0, -0.66, 0.035, 0, 0, 0, 0.9, 0.62, 1.45)], s * 0.08, 0.72, 0));
+  const arms = [-1, 1].map(s => limb([part(new THREE.CapsuleGeometry(0.044, 0.38, 4, 10), O.sleeve, 0, -0.22, 0), part(new THREE.SphereGeometry(0.045, 10, 8), SKIN, 0, -0.45, 0), ...(s === 1 ? rhand.map(g => g.clone().translate(0, -0.65, 0.05)) : [])], s * 0.205, 1.19, 0));
   legs.forEach(l => root.add(l)); arms.forEach(a => torso.add(a));
   for (const a of arms) a.rotation.z = 0;
   arms[0].rotation.z = -0.08; arms[1].rotation.z = 0.08;

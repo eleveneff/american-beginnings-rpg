@@ -1,7 +1,7 @@
-// world.js — v2.2–v2.4 3D layer for American Beginnings RPG.
+// world.js — v2.2–v2.5 3D layer for American Beginnings RPG.
 // (1) Classic: the low-poly N64-style background behind the screens (paused while panels / videos cover it).
-// (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js) and, new in v2.4,
-//     Section 2 Native Nations (world/nations.js). Each level keeps its own scene, rings, graphics and sparks (LV);
+// (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js), Section 2 Native
+//     Nations (world/nations.js, v2.4) and, new in v2.5, Section 3 The Voyage of 1492 (world/voyage.js). Each level keeps its own scene, rings, graphics and sparks (LV);
 //     useLevel() swaps them in, so the Beringia code paths below run exactly as in v2.3.
 // three.js is vendored (vendor/, mapped by the import map in index.html). If anything here fails, the CSS
 // gradient fallback is shown and the game plays exactly as before (Classic screens).
@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -105,10 +105,12 @@ function loadW() {
   d.seenIntro = w.seenIntro === true;
   if (w.season && Array.isArray(w.season.tracks)) d.season.tracks = [...new Set(w.season.tracks.filter(t => ["t1", "t2", "t3"].includes(t)))];
   if (w.read && Array.isArray(w.read.s1)) d.read.s1 = [...new Set(w.read.s1.filter(i => Number.isInteger(i) && i >= 0 && i < 8))].sort();
-  if (w.read && Array.isArray(w.read.s2)) d.read.s2 = [...new Set(w.read.s2.filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey"]) if (w.seen[k] === true) d.seen[k] = true;
+  for (const k of ["s2", "s3"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
+  const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
+  if (a3 && typeof a3 === "object" && Number.isFinite(a3.x) && Number.isFinite(a3.z) && a3.x > -92 && a3.x < 92 && a3.z > -72 && a3.z < 92) d.at.s3 = { x: a3.x, z: a3.z, yaw: Number.isFinite(a3.yaw) ? wrapA(a3.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -118,14 +120,14 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2"];                                        // sections with a walkable level
+const WALK = ["s1", "s2", "s3"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"] };      // the primary-source scroll also counts once its questions were played
+const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"], s3: [6, "src3"] };      // the primary-source scroll also counts once its questions were played
 const scrollRead = (sid, i) => W.read[sid].includes(i) || (i === SRC_LESSON[sid][0] && !!(ST().srcQ && ST().srcQ[SRC_LESSON[sid][1]] && ST().srcQ[SRC_LESSON[sid][1]].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
@@ -190,9 +192,93 @@ function helpCardS2() {
   W.seen.help2 = true; saveW();
 }
 
+// ---- v2.5 Section 3: The Voyage of 1492 (world/voyage.js) ----
+// Marker order: San Jorge church → La Rábida → lookout tower → rope & sail shop → Palos pier → La Gomera (Canaries) →
+// San Salvador → Hispaniola. Four islands; the sail rings fade her between harbors (the ocean is shrunk for play).
+const ISLE_OF = { church: "palos", rabida: "palos", tower: "palos", rope: "palos", pier: "palos", canary: "canary", ss: "ss", hisp: "hisp" };
+const ISLES3 = ["palos", "canary", "ss", "hisp"];
+const ISLE_NAME = { palos: "Palos, Spain", canary: "La Gomera, Canary Islands", ss: "San Salvador", hisp: "Hispaniola" };
+const ISLE_WHEN = { palos: "Sailed August 3, 1492, and came home March 15, 1493", canary: "Repairs and supplies, August to September 6, 1492", ss: "Landfall, October 12, 1492", hisp: "December 1492 and the wreck at Christmas" };
+function ringDefsS3(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, key, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[key] = true; saveW(); card(cardFn()); }, state: () => W.seen[key] ? "done" : "new" });
+  const L3 = (id, i, st) => lessonRing("s3-" + id, i, A[id][0], A[id][1], st, "s3");
+  const A3 = (id, icon, title, st) => actRing("s3-" + id, "s3-" + id, icon, title, A[id][0], A[id][1], st, "s3");
+  const sail = (isle, station) => at("sail-" + isle, { id: "sail-" + isle, station, icon: "⛵", label: () => isle === "palos" && !boardOpen() ? "Board the fleet (learn to navigate first)" : "Set sail", act: () => card(sailCard(isle)), state: () => isle === "palos" && !boardOpen() ? "locked" : "done" });
+  return [
+    L3("l0", 0, "church"), info("royal", "royal", "church", "📯", "The royal order, read at San Jorge", royalCard),
+    L3("l2", 2, "rabida"), info("perez", "perez", "rabida", "✝️", "Fray Juan Pérez of La Rábida", perezCard), A3("geomap", "🧭", "Chart the Great Voyages", "rabida"),
+    L3("l1", 1, "tower"), info("stars", "stars", "tower", "⭐", "Finding the way by the stars", starsCard),
+    info("sails", "sails", "rope", "🪢", "Square sails and lateen sails", sailsCard), at("market", { id: "market", station: "rope", icon: "🛍️", label: () => "Seville Chandlery: a ship’s supplier", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m2"); }), state: () => "done" }),
+    info("ships", "ships", "pier", "🚢", "Meet the Niña, the Pinta and the Santa María", shipsCard), A3("caravel", "⛵", "Navigate the Caravel", "pier"), L3("l6", 6, "pier"), sail("palos", "pier"),
+    info("rudder", "rudder", "canary", "🔧", "The Pinta’s broken rudder", rudderCard), L3("l5", 5, "canary"), A3("pigafetta", "🌏", "Talk with Antonio Pigafetta", "canary"), sail("canary", "canary"),
+    L3("l3", 3, "ss"), info("taino", "taino", "ss", "🛶", "October 12, 1492: Land! The Taíno of Guanahaní", tainoCard), info("after", "after", "ss", "⚖️", "What came after: the honest history", afterCard), sail("ss", "ss"),
+    L3("l4", 4, "hisp"), info("wreck", "wreck", "hisp", "🎄", "Christmas 1492: the wreck of the Santa María", wreckCard),
+    { ...A3("exchange", "🔄", "Columbian Exchange: carry the crates to the dock mats", "hisp"), act: () => card(exchangeCard()) },
+    A3("timeline", "📓", "Ship’s log: Timeline of the Age of Exploration", "hisp"),
+    at("trial", { id: "trial", station: "hisp", icon: "⛈️", label: () => trialLabelS3(), act: () => stormOpen() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s3"); } finally { L.bypass = false; } }) : card(stormLockedCard()), state: () => !stormOpen() ? "locked" : (sec("s3").completed ? "star" : "new") }),
+    sail("hisp", "hisp")
+  ];
+}
+const missingS3 = () => [0, 1, 2, 3, 4, 5, 6].filter(i => !scrollRead("s3", i));
+const stormOpen = () => missingS3().length === 0 || (sec("s3").attempts || 0) > 0 || !!sec("s3").completed || trialActive("s3");
+// boarding at Palos: the Astrolabe (Section 3 gear) or Scrolls 1–3 read (why explore, the science of sailing, Columbus)
+const boardOpen = () => (ST().owned || []).includes("astrolabe") || [0, 1, 2].every(i => scrollRead("s3", i)) || stormOpen() || ISLES3.slice(1).some(k => W.seen["sail-" + k]);
+function trialLabelS3() { const st = sec("s3"); if (trialActive("s3")) return "Resume the Trial: the storm home"; if (st.completed) return "Board the Niña: the storm home (mastered " + st.bestPct + "%) — try again"; return "Board the Niña: the storm home (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function stormLockedCard() { return { title: "⛈️ The voyage home", body: "<p>On January 16, 1493, Columbus sailed for Spain in the little <b>Niña</b>. On February 14 a terrible storm near the Azores nearly sank her. Columbus wrote an account of his voyage, sealed it in a barrel and threw it into the sea, in case the ship went down.</p><p>You will face the storm (the Trial) once you have read <b>all 7 scrolls</b> of this voyage. Still to read:</p>", btns: missingS3().map(i => lessonBtnS("s3", i)) }; }
+function sailCard(from) {
+  if (from === "palos" && !boardOpen()) return { title: "⛵ Not yet, sailor!", body: "<p>Every crew needs to know <b>why</b> they sail and <b>how</b> to find the way home. Read <b>Scrolls 1–3</b> (the church, La Rábida and the lookout tower) or earn the <b>Astrolabe</b>, then come back to board.</p>", btns: [0, 1, 2].filter(i => !scrollRead("s3", i)).map(i => lessonBtnS("s3", i)) };
+  const btns = ISLES3.filter(k => k !== from).map(k => ({ t: "⛵ " + ISLE_NAME[k], f: () => { closeCard(); sailTo(k); } }));
+  return { title: "⛵ Set sail", body: "<p>Where to? The ports are listed in the order of the voyage:</p><ul>" + ISLES3.map(k => "<li><b>" + ISLE_NAME[k] + "</b>: " + ISLE_WHEN[k] + (k === from ? " (you are here)" : "") + "</li>").join("") + "</ul><p class=\"muted\">The real crossing from the Canaries to San Salvador was about 3,000 miles and took 33 days. Here the ocean is shrunk so you can sail it in a moment.</p>", btns };
+}
+const ARRIVE = {
+  palos: "⚓ Palos, Spain. The Niña came home here on <b>March 15, 1493</b>, and the Pinta sailed in later that same day.",
+  canary: "⚓ The Canary Islands, August 1492. Fix the Pinta’s rudder and load fresh water. Next: the open ocean!",
+  ss: "🏝️ <b>October 12, 1492.</b> After 33 days at sea, “¡Tierra! ¡Tierra!” Land!",
+  hisp: "⚓ Hispaniola, December 1492. Look for the Santa María on the reef."
+};
+function sailTo(k) { const h = L.mods.B.HARBORS[k]; if (!h) return false; W.seen["sail-" + k] = true; teleport("out", h); setTimeout(() => toast(ARRIVE[k]), 600); return true; }
+function royalCard() { return { title: "📯 The royal order, May 23, 1492", body: "<p>In this church of <b>San Jorge</b>, a royal order was read aloud to the people of Palos. The town owed the crown a penalty, so it had to provide <b>two caravels</b>, with their crews, for Columbus’s voyage.</p><p>Many sailors were afraid to sail west into the unknown Ocean Sea. Then <b>Martín Alonso Pinzón</b>, a respected Palos captain, joined and helped sign up the crew. He captained the <b>Pinta</b>, and his brother <b>Vicente Yáñez Pinzón</b> captained the <b>Niña</b>. About <b>90 men</b> sailed in all, most of them from Palos and the towns nearby.</p><p>Ordinary sailors, risking everything on a bold idea: that took real courage.</p>" }; }
+function perezCard() { return { title: "✝️ Fray Juan Pérez of La Rábida", body: "<p>Columbus spent more than <b>six years</b> asking Spain’s rulers to pay for his plan to reach Asia by sailing west. Experts said the trip was much longer than he thought (and they were right about that!).</p><p>In 1491, almost ready to give up and try France, he came to this friary of <b>La Rábida</b>. Its friar, <b>Juan Pérez</b>, had once been Queen Isabella’s confessor. He wrote to the Queen and won Columbus another hearing.</p><p>In April 1492, <b>Ferdinand and Isabella</b> signed an agreement to back the voyage. Persistence paid off.</p>" }; }
+function starsCard() { return { title: "⭐ Finding the way by the stars", body: "<p>How far north or south are you? That is your <b>latitude</b>. At night a sailor measured how high the <b>North Star</b> stood above the horizon with a <b>quadrant</b> or an <b>astrolabe</b>. The higher the star, the farther north the ship was.</p><p>East and west were harder. Pilots used <b>dead reckoning</b>: the <b>compass</b> gave the direction, a half-hour <b>sandglass</b> (turned by a ship’s boy) kept the time, and they estimated the speed. Direction × speed × time = where you are, more or less. Columbus was a superb dead-reckoning navigator.</p><p>No one could measure longitude well at sea until clockmakers built reliable sea clocks in the 1700s.</p>" }; }
+function sailsCard() { return { title: "🪢 Square sails and lateen sails", body: "<p>Look at the two model rigs here. A <b>square sail</b> catches wind from behind and pushes hard. It is perfect for the steady <b>trade winds</b> that blow from the northeast and carry ships west from the Canary Islands.</p><p>A triangular <b>lateen sail</b> can sail closer into the wind, which helps along coasts. The <b>Niña</b> left Palos with lateen sails. At Gran Canaria her crew switched her to <b>square sails</b> for the long run west.</p><p>The ships also loaded stores: water and wine in barrels, hard ship’s biscuit, salted meat and fish, cheese, beans and olive oil.</p>" }; }
+function shipsCard() { return { title: "🚢 The Niña, the Pinta and the Santa María", body: "<p>The <b>Santa María</b> was a <b>nao</b>: the biggest, slowest ship and Columbus’s flagship. The <b>Niña</b> and the <b>Pinta</b> were <b>caravels</b>: smaller, faster and easier to handle. “Niña” was a nickname. Her real name was <b>Santa Clara</b>!</p><p>Before sunrise on <b>August 3, 1492</b>, the three ships slipped away from Palos and sailed down the river to the sea.</p><p>The <b>Niña</b> was Columbus’s favorite. She brought him safely home through a terrible storm in 1493, back to this very spot.</p>" }; }
+function rudderCard() { return { title: "🔧 The Pinta’s broken rudder", body: "<p>Only three days out of Palos, the <b>Pinta’s rudder</b> came loose. Columbus suspected that the ship’s owners, who had not wanted to sail, had damaged it on purpose. Captain Pinzón kept her going until the crew could repair it at <b>Gran Canaria</b>.</p><p>The Canary Islands belonged to Spain and sat right in the path of the <b>trade winds</b>. At <b>La Gomera</b> the fleet loaded fresh water, firewood and food.</p><p>On <b>September 6, 1492</b>, they sailed west into the open ocean, farther than any of the crew had ever gone.</p>" }; }
+function tainoCard() { return { title: "🛶 Land! The Taíno of Guanahaní", body: "<p>At about <b>2 a.m. on October 12, 1492</b>, <b>Rodrigo de Triana</b>, the lookout on the Pinta, shouted “¡Tierra! ¡Tierra!” After 33 days on the open sea, and a crew that had begged to turn back, they had found land.</p><p>The island’s people were the <b>Taíno</b>, and they called it <b>Guanahaní</b>. Columbus named it San Salvador. The Taíno lived in villages of round houses called <b>bohíos</b>, with a larger house for the <b>cacique</b> (chief). They grew cassava in mounded fields, baked it into flat bread on a clay griddle, fished from <b>dugout canoes</b> carved from single trees, and slept in <b>hammocks</b>.</p><p>English still uses Taíno words: <b>canoe, hammock, hurricane, barbecue</b> and <b>tobacco</b>. Columbus wrote that the people were friendly and generous.</p>" }; }
+function afterCard() { return { title: "⚖️ What came after: the honest history", body: "<p>On this very first visit, Columbus wrote that the Taíno would make good servants, and he took several of them captive to guide him and to show in Spain.</p><p>In the years that followed, Spanish settlers forced Taíno people to work in gold mines and fields. Diseases from Europe, such as <b>smallpox</b>, killed huge numbers, because their bodies had never met these germs. Within about 50 years, most Taíno of the Caribbean islands had died.</p><p>Brave people spoke out. In 1511 a friar named <b>Antonio de Montesinos</b> preached against the cruelty on Hispaniola, and <b>Bartolomé de las Casas</b> spent his life defending Native peoples.</p><p>Taíno heritage lives on today in Puerto Rico, Cuba and the Dominican Republic, in words, foods and family roots. A true historian admires real courage and tells the hard parts, too.</p>" }; }
+function wreckCard() { return { title: "🎄 Christmas 1492: the wreck of the Santa María", body: "<p>Late on <b>December 24, 1492</b>, while a ship’s boy held the tiller, the <b>Santa María</b> drifted onto a coral reef off Hispaniola. By <b>Christmas Day</b> she was lost. (The Pinta had sailed off on her own in November.)</p><p>The cacique <b>Guacanagarí</b> sent his people in canoes to help unload the ship. Columbus wrote that nothing at all was stolen.</p><p>The little Niña could not carry everyone, so <b>39 men</b> stayed behind. They built a fort from the wreck’s timbers and named it <b>La Navidad</b> (“Christmas”), the first Spanish settlement in the Americas. When Columbus came back in November 1493, the fort was burned and all 39 men were dead, after fighting among themselves and with Taíno people.</p>" }; }
+function exchangeCard() {
+  const a = ST().acts && ST().acts["s3-exchange"], played = !!(a && a.plays);
+  const body = (played ? "<p>You have loaded these crates before. Want to practice? Carry them again, or use the card version.</p>" : "<p>Columbus’s second voyage, in 1493, brought <b>17 ships</b> to Hispaniola, loaded with horses, cattle, pigs, wheat and sugarcane. For the next hundred years, plants, animals and germs crossed the ocean both ways. Historians call it the <b>Columbian Exchange</b>.</p>") +
+    "<p>Carry each crate to the dock mat for the way it crossed the ocean: stand on the mat for a moment to set it down. Facing north, the <b>Americas → Europe, Africa, Asia</b> mat is on your right (east, toward Spain), and the <b>Europe, Africa, Asia → Americas</b> mat is on your left (west).</p>";
+  return { title: "🔄 Columbian Exchange: load the ships", body, btns: [{ t: "📦 " + (played ? "Carry the crates again" : "Carry the crates"), f: () => { closeCard(); sortStart("s3", "s3-exchange"); } }, { t: "🗂️ Card version", f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s3", "s3-exchange", resume)); } }] };
+}
+function helpCardS3() {
+  card({ title: "❔ How to sail the Voyage of 1492", body: "<p>You are <b>" + esc(heroName()) + "</b>, in the port of <b>Palos, Spain</b>, in 1492. Columbus’s voyage took courage, skill and the daring of ordinary sailors. It opened the Atlantic, and more than a century later that ocean road carried English settlers to the colonies where <b>American self-government</b> took root. A good historian admires the courage and tells the whole truth, including what it cost the Taíno.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch). <b>Look:</b> drag on the world. <b>North is ahead</b> when you start, so <b>west is on your left</b>.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Explore Palos, then board at the <b>pier</b> (⛵ ring). The sail rings carry you to the Canaries, San Salvador and Hispaniola. The ocean is shrunk so you can cross it in a moment.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, gray rings are locked. The banner points to your next marker.</li><li>The Trial, the storm on the way home, waits by the Niña at Hispaniola once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
+  W.seen.help3 = true; saveW();
+}
+// Level 3 banner: the next unfinished marker on the island she is on; when that island is done, the sail ring for the
+// next port in voyage order that still has work; with nothing left, the Trial ring by the Niña.
+function nextTargetS3() {
+  const B = L.mods.B, rings = L.lvl.rings, S = B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const isleAt = (x, z) => x < -15 && z > 10 ? "palos" : x < 25 ? "canary" : z > -20 ? "ss" : "hisp";
+  const here = isleAt(L.pos.x, L.pos.z);
+  if (SP.active && SP.sid === "s3") { const hm = SP.hintBin && L.lvl.mats.find(m => m.bin === SP.hintBin), cl = byId("s3-exchange");
+    return { def: { id: "s3-exchange", station: "hisp", x: hm ? hm.x : cl.def.x, z: hm ? hm.z : cl.def.z, text: "Marker 8 · Hispaniola: carry the crate to its dock mat" + (hm ? " (hint: the glowing mat)" : "") } }; }
+  const todo = rings.filter(r => r.def.scored && r.state === "new"), isle = r => ISLE_OF[r.def.station];
+  const sailRing = (to) => { const r = byId("sail-" + here); return r && { def: { ...r.def, text: "Marker " + S[r.def.station].n + " · " + (here === "palos" && !boardOpen() ? "Read Scrolls 1–3 or earn the Astrolabe, then board at the pier" : "Set sail for " + ISLE_NAME[to]) } }; };
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  if (!todo.length) return here === "hisp" ? byId("trial") : sailRing("hisp");
+  const local = todo.filter(r => isle(r) === here);
+  if (local.length) { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3); const inSt = st && local.filter(r => r.def.station === st); if (inSt && inSt.length) return pick(inSt); const n0 = Math.min(...local.map(r => S[r.def.station].n)); return pick(local.filter(r => S[r.def.station].n === n0)); }   // story order: the lowest-numbered marker on this island
+  if (here === "palos" && !boardOpen()) return sailRing("canary");
+  const next = ISLES3.find(k => todo.some(r => isle(r) === k));
+  return sailRing(next);
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
-const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null };
+const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
 const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 function cluesCard() {
   const a = ST().acts && ST().acts["s2-clues"], played = !!(a && a.plays);
@@ -201,16 +287,16 @@ function cluesCard() {
   return { title: "🧺 Culture Clues: carry the bundles", body, btns: [{ t: "🧺 " + (played ? "Carry the bundles again" : "Carry the clue bundles"), f: () => { closeCard(); sortStart(); } }, actBtn2("s2-clues", "🗂️ Card version")] };
 }
 const actBtn2 = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s2", id, resume)); } });
-function sortStart() {
-  const h = window.ABRPG.worldSort && window.ABRPG.worldSort("s2", "s2-clues", resume); if (!h) { openPanel(() => window.ABRPG.runActivity("s2", "s2-clues", resume)); return; }
+function sortStart(sid = "s2", act = "s2-clues") {
+  const h = window.ABRPG.worldSort && window.ABRPG.worldSort(sid, act, resume); if (!h) { openPanel(() => window.ABRPG.runActivity(sid, act, resume)); return; }
   L.lvl.clearBundles(); for (const m of L.lvl.mats) m.glowOn = false;
-  Object.assign(SP, { active: true, h, queue: h.items.slice(), cur: null, onMat: null, hintBin: null });
+  Object.assign(SP, { active: true, h, queue: h.items.slice(), cur: null, onMat: null, hintBin: null, sid, act });
   const m = L.lvl.mats.find(q => Math.abs(L.pos.x - q.x) < L.mods.B.MAT_HALF && Math.abs(L.pos.z - q.z) < L.mods.B.MAT_HALF); SP.onMat = m ? m.bin : null;   // standing on a mat: not a drop
   nextClue(true);
 }
 function carryLabel(text) {
   if (SP.carry) { L.lvl.scene.remove(SP.carry.lab); SP.carry.lab.material.map.dispose(); }
-  const lab = L.mods.B.labelSprite(text, 3.8, "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
+  const lab = L.mods.B.labelSprite(text, 3.8, SP.sid === "s3" ? "carry it to the right dock mat" : "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
   if (!SP.carry) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: "#b08a5c", flatShading: true })); b.scale.set(1.2, 0.8, 1); b.userData.noMerge = true; L.lvl.scene.add(b); SP.carry = { lab, b }; }
   else SP.carry.lab = lab;
 }
@@ -219,11 +305,11 @@ function nextClue(first) {
   for (const m of L.lvl.mats) m.glowOn = false; SP.hintBin = null;
   SP.cur = SP.queue.shift() || null; if (!SP.cur) return;
   carryLabel("📦 " + SP.cur.t);
-  toast((first ? "🧺 First bundle: " : "📦 Next bundle: ") + "<b>" + esc(SP.cur.t) + "</b>. Stand on the mat for its region.");
+  toast((first ? "🧺 First bundle: " : "📦 Next bundle: ") + "<b>" + esc(SP.cur.t) + "</b>. " + (SP.sid === "s3" ? "Which way did it cross the ocean? Stand on that mat." : "Stand on the mat for its region."));
 }
 function sortStep(dt) {
   SP.dt = dt;
-  if (!SP.active || L.sid !== "s2") return;
+  if (!SP.active || L.sid !== SP.sid) return;
   if (SP.carry) { SP.carry.lab.position.set(L.pos.x, L.pos.y + 3.0, L.pos.z); SP.carry.b.position.set(L.pos.x + Math.sin(L.yaw) * 0.32, L.pos.y + 0.95, L.pos.z + Math.cos(L.yaw) * 0.32); SP.carry.b.visible = SP.carry.lab.visible = true; }
   if (L.cardOpen || L.frozen || !SP.cur) return;
   const B = L.mods.B, m = L.lvl.mats.find(q => Math.abs(L.pos.x - q.x) < B.MAT_HALF && Math.abs(L.pos.z - q.z) < B.MAT_HALF);
@@ -240,7 +326,7 @@ function sortStep(dt) {
     SP.cur = null;
   } else {
     if (r.hint) { SP.hintBin = r.hint; for (const q of L.lvl.mats) q.glowOn = q.bin === r.hint; }
-    toast("🤔 <b>" + esc(cur.t) + "</b> doesn’t belong on the " + esc(r.bin) + " mat." + (r.hint ? " Hint: try the glowing mat, <b>" + esc(r.hintLabel || r.hint) + "</b>." : " Think about what that region is like and try another mat."));
+    toast("🤔 <b>" + esc(cur.t) + "</b> doesn’t belong on the " + esc(r.bin) + " mat." + (r.hint ? " Hint: try the glowing mat, <b>" + esc(r.hintLabel || r.hint) + "</b>." : (SP.sid === "s3" ? " Think about where it first grew or lived, then try the other mat." : " Think about what that region is like and try another mat.")));
   }
 }
 function sortStop() { if (!SP.active) return; SP.active = false; SP.cur = null; carryHide(); for (const m of L.lvl.mats) m.glowOn = false; }
@@ -398,8 +484,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 function syncChips() {
   const mb = document.getElementById("w-mode"), back = document.getElementById("w-back"); if (!mb) return;
@@ -408,7 +494,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.4:</b> walk Section 2, the Native Nations, in 3D (plus Beringia, with its glacier walls and river-stone timeline)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.5:</b> sail the Voyage of 1492 in 3D, from Palos to the Canaries, San Salvador and Hispaniola (plus the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
@@ -433,6 +519,12 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s3") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s3") { enterLevel("s3"); return true; }
+        resume(); if (stormOpen()) setTimeout(() => toast("⛈️ The Trial is aboard the <b>Niña</b> at Hispaniola, marker 8. Follow the arrow!"), 50); else setTimeout(() => card(stormLockedCard()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s2") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s2") { enterLevel("s2"); return true; }
@@ -477,16 +569,16 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2") {
-      const S2 = window.ABRPG.sectionById("s2"), clues = S2 && (S2.activities || []).find(a => a.id === "s2-clues"), matLabels = {};
+    if (sid === "s2" || sid === "s3") {
+      const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -506,16 +598,17 @@ async function ensureBuilt(sid = L.sid) {
 }
 function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
-  // era gear only: Ice Age gear in Beringia; in later levels the gear of that era and the eras before it (v2.4)
-  const ok = L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
+  // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
+  const ok = L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), key = JSON.stringify([p && p.gender, art]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
-  L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art }); L.heroKey = key;
+  L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
   L.hero.root.position.copy(L.pos); L.hero.root.rotation.y = L.yaw;
   (L.zone === "cave" ? L.cave.scene : L.lvl.scene).add(L.hero.root);
   if (L.gfx) L.gfx.inkPass();
@@ -523,6 +616,7 @@ function buildHero() {
 function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
+  if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
   if (zone === "cave") { L.zone = "cave"; L.pos.set(B.CAVE_X, 0, 5); L.yaw = Math.PI; }
   else { L.zone = "out"; L.pos.set(0, B.groundH(0, -4), -4); L.yaw = 0; }
 }
@@ -531,10 +625,11 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if (sid === "s2" && (L.phase === "off" || from !== sid)) {
-    // spawn: a Trial in progress → the meeting ground; else her saved spot (if valid) or the council fire
-    const a = W.at.s2, t = B.RING_AT.trial;
-    if (trialActive("s2")) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
+  if ((sid === "s2" || sid === "s3") && (L.phase === "off" || from !== sid)) {
+    // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
+    const a = W.at[sid], t = B.RING_AT.trial;
+    if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid)) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
     else if (a && walkable(a.x, a.z)) { L.zone = "out"; L.pos.set(a.x, 0, a.z); L.yaw = a.yaw; }
     else placeStart("out");
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
@@ -546,9 +641,9 @@ async function enterLevel(sid = L.sid) {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -684,6 +779,7 @@ function nextTargetS2() {
 }
 function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
+  if (L.sid === "s3") return nextTargetS3();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
   if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
@@ -783,7 +879,7 @@ function step(dt, raw) {
     const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
     document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
     const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : ("Marker " + st.n + " · " + st.label + ": " + tg.def.label());
-    const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) el.textContent = txt;
+    const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) { el.textContent = txt; const ob = el.parentNode, era = document.getElementById("w-era"); if (era) era.style.top = (ob.offsetTop + ob.offsetHeight + 4) + "px"; }
   }
   L.saveT -= dt; if (L.saveT <= 0) { L.saveT = 2; saveWorldPos(); }
 }
@@ -829,6 +925,7 @@ window.__world = {
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

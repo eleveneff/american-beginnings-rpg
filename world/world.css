@@ -5,7 +5,7 @@ body.walking #stage{display:none}
 #w-hud[hidden],#w-card[hidden],#w-prompt[hidden],#w-banner[hidden],.w-back[hidden],#w-mode[hidden]{display:none!important}
 #w-hud{position:fixed;inset:0;z-index:8;pointer-events:none;font-family:inherit}
 #w-hud>*{pointer-events:auto}
-#w-obj{position:absolute;top:4.1rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;max-width:min(92vw,640px);background:rgba(20,30,50,.72);color:#fff;border:2px solid var(--gold);border-radius:999px;padding:.4rem .95rem;font-weight:bold;font-size:.95rem;text-shadow:0 1px 0 #000;pointer-events:none}
+#w-obj{position:absolute;top:4.1rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;max-width:min(80vw,820px);background:rgba(20,30,50,.72);color:#fff;border:2px solid var(--gold);border-radius:999px;padding:.4rem .95rem;font-weight:bold;font-size:.95rem;text-shadow:0 1px 0 #000;pointer-events:none}
 #w-arrow{display:inline-block;color:var(--gold);font-size:1.2rem;transition:transform .15s linear}
 #w-era{position:absolute;top:6.7rem;left:50%;transform:translateX(-50%);color:#fff;font-size:.8rem;font-weight:bold;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
 #w-prompt{position:absolute;left:50%;bottom:5.6rem;transform:translateX(-50%);z-index:9;min-height:48px;max-width:min(92vw,560px);background:var(--parch);color:var(--ink);border:3px solid #000;border-radius:14px;padding:.55rem 1rem;font:inherit;font-weight:bold;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #000}
@@ -30,3 +30,6 @@ body.touch #w-prompt{bottom:10.5rem}
 #w-banner{position:fixed;left:50%;bottom:4.2rem;transform:translateX(-50%);z-index:12;background:rgba(20,30,50,.9);color:#fff;border:3px solid var(--gold);border-radius:14px;padding:.6rem .9rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94vw;font-size:.95rem}
 .chip.w-back{background:#3f8f5a;color:#fff;text-shadow:0 1px 0 #000}
 @media (max-width:600px){#w-obj{top:3.8rem;font-size:.82rem}#w-tools{top:auto;bottom:11rem}#w-era{top:6.2rem}}
+/* v2.5: when a ring prompt is showing, lift the toast above it so the two never overlap */
+body:has(#w-prompt:not([hidden])) #toast{bottom:10rem}
+body.touch:has(#w-prompt:not([hidden])) #toast{bottom:15rem}

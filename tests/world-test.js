@@ -1,4 +1,4 @@
-/* American Beginnings RPG v2.2–v2.4 walkable-world test (Section 1: Beringia; v2.4 adds Section 2: Native Nations).
+/* American Beginnings RPG v2.2–v2.5 walkable-world test (Section 1: Beringia; v2.4 adds Section 2: Native Nations; v2.5 adds Section 3: the Voyage of 1492).
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8765/ SHOTS=/tmp/wshots/ node tests/world-test.js
    Run it on its own (not in parallel with smoke-test.js): SwiftShader is slow and the timings below assume one suite at a time. */
 const puppeteer = require('puppeteer-core');
@@ -28,12 +28,12 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.4' && (await p.evaluate(() => ABRPG.version)) === 'v2.4', 'version marker v2.4');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.5' && (await p.evaluate(() => ABRPG.version)) === 'v2.5', 'version marker v2.5');
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
-  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.4/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.4" banner shows on the map (non-blocking)');
+  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.5/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.5" banner shows on the map (non-blocking)');
 
   console.log('enter Beringia + movement:');
   const before = await p.evaluate(k => localStorage.getItem(k), KEY);
@@ -345,6 +345,121 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert(Math.abs(w.pos.x - 46) < 0.01 && Math.abs(w.pos.z - 2.2) < 0.01, 'a saved Section 2 spot is restored');
     await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'boy', name: 'Sam' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 24, totalAnswered: 25 }, null);
     await enterS2(); assert((await p.evaluate(() => __world.level)) === 's2' && (await p.evaluate(() => ABRPG.state().version)) === 3, 'a v1 save with Section 1 mastered walks into Section 2');
+  }
+
+  console.log('v2.5 Section 3: The Voyage of 1492:');
+  { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
+    const s3base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G }, sections: { s1: DONE(), s2: DONE() }, ...extra });
+    const enterS3 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s3"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
+    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
+    await seed(s3base(), null);
+    const before3 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    await enterS3(); w = await W();
+    assert((await p.evaluate(() => __world.level)) === 's3' && w.phase === 'active' && Math.abs(w.pos.x + 38) < 0.01 && Math.abs(w.pos.z - 44) < 0.01, 'tapping Section 3 opens the Voyage of 1492 in the Palos town square (-38, 44)');
+    assert(/Section 3 · The Voyage of 1492/.test(await p.$eval('#w-era', e => e.textContent)), 'era label names Section 3');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 1 · Palos town square: /.test(bn), 'at the start the banner names a Marker 1 ring in the town square ("' + bn + '")'); }
+    { const t = await p.evaluate(() => { const o = document.getElementById('w-obj'), e = document.getElementById('w-era'); return [o.getBoundingClientRect().bottom, e.getBoundingClientRect().top]; }); assert(t[1] >= t[0], 'the era line sits below the banner even when it wraps'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v25-palos.png');
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/"wool"/.test(hk), 'in 1492 Spain she wears the wool dress, not the hide tunic (' + hk + ')'); }
+    // geography: north = +z, WEST = +x. Canaries south-west of Palos, the Bahamas far west, Hispaniola south-east of San Salvador
+    { const S = await p.evaluate(() => __world.stations());
+      assert(S.canary.x > S.pier.x && S.canary.z < S.pier.z && S.ss.x > S.canary.x + 40 && S.hisp.z < S.ss.z - 30 && S.hisp.x <= S.ss.x, 'the ports sit in their real directions (Canaries SW of Palos, San Salvador far west, Hispaniola south-east of it)'); }
+    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+      const off = rs.filter(r => !r.w || r.s); assert(rs.length === 27 && !off.length, 'all 27 rings are on dry, open land (' + JSON.stringify(off) + ')'); }
+    { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
+      assert(hb.length === 4 && hb.every(h => h.w && !h.s), 'all 4 harbor landing spots are walkable (' + JSON.stringify(hb) + ')'); }
+    { let bad = [], n = 0;
+      for (const id of ['s3-l0', 'royal', 's3-l1', 'perez', 's3-geomap', 's3-l2', 'stars', 'sails', 'market', 'ships', 's3-l6', 'sail-palos', 'rudder', 's3-l5', 'sail-canary', 's3-l3', 'taino', 'after', 'wreck', 's3-exchange', 'trial', 'sail-hisp']) { await tpRing(id);
+        for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(160); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
+      assert(n === 88 && !bad.length, 'camera never inside a house, ship, tree or hill at 22 rings × 4 views (' + bad.join(', ') + ')'); }
+    await tp(-34, 24); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(600); await shot('v25-pier-ships.png');
+    { await tp(-40, 40); await p.evaluate(() => __world.faceCam(0)); await hold('KeyW', 3500); w = await W();
+      assert(w.pos.z < 52 + 3 && !(await p.evaluate((x, z) => __world.solid(x, z), w.pos.x, w.pos.z)), 'the church wall stops her (z ' + w.pos.z.toFixed(2) + ')'); }
+    console.log('  boarding the fleet:');
+    { const r = await tpRing('sail-palos'); assert(r.state === 'locked' && !(await p.evaluate(() => __world.boardOpen())), 'the pier boarding ring is locked at first');
+      const bn = await p.evaluate(() => __world.banner); await p.evaluate(() => __world.use()); await sleep(300);
+      assert(/Not yet, sailor/.test((await W()).card || '') && /Scrolls 1–3/.test((await W()).card || ''), 'boarding early: "Read Scrolls 1–3 or earn the Astrolabe" card'); await closeCards(); }
+    for (const [id, re, i] of [['s3-l0', /Why Explore/, 0], ['s3-l1', /Science of Sailing/, 1], ['s3-l2', /Columbus Sails/, 2]]) {
+      await tpRing(id); w = await W(); await p.evaluate(() => __world.use()); await sleep(400);
+      assert(w.near === id && (await W()).phase === 'panel' && re.test(await p.$eval('#screen', e => e.textContent)), id + ' ring opens its scroll');
+      if (i === 0) assert(!(await p.$eval('#w-back', e => e.hidden)) && /Back to the Voyage/.test(await p.$eval('#w-back', e => e.textContent)), '"Back to the Voyage" chip shows while a Section 3 panel is open');
+      assert((await p.evaluate(() => __world.readL('s3'))).includes(i), 'scroll ' + (i + 1) + ' marked read for Section 3 (world key)');
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+    for (const [id, re] of [['royal', /May 23, 1492/], ['perez', /Pérez|Perez/], ['stars', /longitude/i], ['sails', /lateen/i], ['ships', /Santa Clara/]]) {
+      await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); const cd = (await W()).card || '';
+      assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
+    { await tpRing('sail-palos'); assert(await p.evaluate(() => __world.boardOpen()), 'with Scrolls 1–3 read she may board');
+      await p.evaluate(() => __world.use()); await sleep(300); const cd = (await W()).card || '';
+      assert(/Set sail/.test(cd) && /33 days/.test(cd) && /3,000 miles/.test(cd), 'the sail card lists the ports in voyage order and says the ocean is shrunk (3,000 miles, 33 days)');
+      await p.evaluate(() => [...document.querySelectorAll('#w-card button')].find(b => /Canary/.test(b.textContent)).click()); await sleep(1200); w = await W();
+      const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.canary);
+      assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1 && (await p.evaluate(() => __world.seen()['sail-canary'])), 'she sails to the Canary Islands harbor'); }
+    await sleep(400); { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 6 · /.test(bn), 'on La Gomera the banner names Marker 6 ("' + bn + '")'); }
+    await p.evaluate(() => __world.faceCam(Math.PI / 2 + 0.3)); await sleep(500); await shot('v25-canary.png');
+    await tpRing('rudder'); await p.evaluate(() => __world.use()); await sleep(300);
+    assert(/rudder/i.test((await W()).card || ''), 'the rudder card tells the Pinta story'); await closeCards();
+    console.log('  San Salvador and Hispaniola:');
+    await p.evaluate(() => __world.sail('ss')); await sleep(1200); w = await W();
+    assert(await p.evaluate((x, z) => __world.walkable(x, z), w.pos.x, w.pos.z), 'she lands on San Salvador');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 7 · /.test(bn), 'on San Salvador the banner names Marker 7 ("' + bn + '")'); }
+    for (const [id, re] of [['taino', /Taíno/], ['after', /las Casas/i]]) { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); const cd = (await W()).card || '';
+      assert(re.test(cd), id + ' card (' + re + ')'); if (id === 'after') assert(/smallpox/i.test(cd) && /Montesinos/.test(cd) && /forced/i.test(cd), 'the "after" card tells the hard truth (forced labor, smallpox, Montesinos)'); await closeCards(); }
+    { const r = await ringAt('s3-l3'); await tp(r.x - 6, r.z - 6); await p.evaluate(() => __world.faceCam(Math.atan2(6, 6))); await sleep(500); await shot('v25-sansalvador.png'); }
+    await p.evaluate(() => __world.sail('hisp')); await sleep(1200); w = await W();
+    assert(await p.evaluate((x, z) => __world.walkable(x, z), w.pos.x, w.pos.z), 'she lands on Hispaniola');
+    await tpRing('wreck'); await p.evaluate(() => __world.use()); await sleep(300);
+    { const cd = (await W()).card || ''; assert(/La Navidad/.test(cd) && /39/.test(cd) && /Guacanagar/.test(cd), 'the wreck card: Christmas 1492, Guacanagarí, 39 men at La Navidad'); } await closeCards();
+    { await p.evaluate(() => __world.faceCam(Math.atan2(42 - 51, -22 + 37.5))); await sleep(600); await shot('v25-hispaniola-wreck.png'); }
+    const after3 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    assert(Object.keys(JSON.parse(after3)).sort().join(',') === Object.keys(JSON.parse(before3)).sort().join(','), 'no new progress-save fields from walking and sailing the voyage');
+    const keys3 = Object.keys(JSON.parse(after3)).sort().join(',');
+    console.log('  dock puzzle (Columbian Exchange on the mats):');
+    { const ex = await p.evaluate(() => GAME_CONTENT.sections.find(s => s.id === 's3').activities.find(a => a.id === 's3-exchange'));
+      const binOf = t => ex.items.find(i => i.t === t).bin;
+      await tpRing('s3-exchange'); await p.evaluate(() => __world.use()); await sleep(300);
+      assert(/17 ships/.test((await W()).card || '') && /Card version/.test((await W()).card || ''), 'the dock ring offers the crates on the mats or the card version');
+      await p.evaluate(() => document.querySelector('#w-card [data-wb="0"]').click()); await sleep(300);
+      let s = await p.evaluate(() => __world.sort()); assert(s.active && s.left === ex.items.length && s.mats.length === 2, 'carrying starts: ' + s.left + ' crates, 2 dock mats');
+      assert(s.mats.find(m => m.bin === 'west').x < s.mats.find(m => m.bin === 'east').x, 'the Americas → Europe mat is the east one (smaller x), toward Spain, as the card says');
+      const ring = await ringAt('s3-exchange'), off = async () => { await tp(ring.x, ring.z); await sleep(250); };
+      const onMat = async bin => { const m = (await p.evaluate(() => __world.sort())).mats.find(q => q.bin === bin); await tp(m.x, m.z); await sleep(1000); };
+      const right = binOf(s.cur), wrong = right === 'west' ? 'east' : 'west';
+      await onMat(wrong); s = await p.evaluate(() => __world.sort()); assert(s.mistakes === 1 && s.left === ex.items.length, 'a wrong mat counts as a mistake');
+      await off(); await onMat(right); await sleep(1100); s = await p.evaluate(() => __world.sort()); assert(s.left === ex.items.length - 1 && s.mats.find(m => m.bin === right).bundles === 1, 'the right mat takes the crate');
+      await off(); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(400); await shot('v25-dock-puzzle.png');
+      while ((s = await p.evaluate(() => __world.sort())).left > 0 && s.cur) { await off(); await onMat(binOf(s.cur)); await sleep(1000); }
+      await waitPhase('panel', 8000);
+      const S = await p.evaluate(() => ABRPG.state()), a = S.acts['s3-exchange'];
+      assert(a && a.plays === 1 && a.history[0].mistakes === 1, 'all crates placed → the normal results panel, 1 mistake recorded by the card version’s code');
+      assert(Object.keys(S).sort().join(',') === keys3 && !/bundle|mats/i.test(JSON.stringify(S)), 'no new save fields from the dock puzzle');
+      await p.evaluate(() => document.querySelector('#a-back') ? document.querySelector('#a-back').click() : ABRPG.home()); await waitPhase('active'); }
+    console.log('  the storm home (Trial):');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(300);
+    assert(/all 7 scrolls/.test((await W()).card || '') && /Azores/.test((await W()).card || '') && (await W()).phase === 'active', 'the Niña Trial ring stays locked until all 7 scrolls are read');
+    await closeCards();
+    for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s3', i, false), i); await sleep(80); }
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    assert(await p.evaluate(() => __world.stormOpen()) && (await ringAt('trial')).state === 'new', 'with all 7 scrolls read the Trial ring opens');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel', 'the Trial opens as the real Section 3 trial panel');
+    if (await p.$('#b-trial')) await click('#b-trial');
+    for (let i = 0; i < 3; i++) await answer(true);
+    await go(); await enterS3(); w = await W();
+    { const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.hisp); assert((await p.evaluate(() => __world.level)) === 's3' && Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'reload mid-trial: entering Section 3 puts her at the Hispaniola harbor by the Niña'); }
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500); if (await p.$('#b-resume')) await click('#b-resume');
+    assert((await p.evaluate(() => ABRPG.state().run.idx)) === 3, 'the Section 3 Trial resumes at question 4');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    { const wk = await p.evaluate(k => JSON.parse(localStorage.getItem(k)), WKEY); assert(wk.read.s3.length === 7 && wk.seen['sail-ss'] && wk.seen.wreck && wk.at && wk.at.s3, 'Section 3 scrolls, sailings and position live in the world key'); }
+    console.log('  world key safety + navigator gear:');
+    await seed(s3base(), { ver: 1, mode: 'walk', at: { s3: { x: 1e9, z: 3, yaw: 'q' } }, read: { s3: [0, 9, 'a', 2, 2] }, seen: { help3: true, 'sail-ss': 'yes', bogus: true } });
+    await enterS3(); w = await W();
+    assert(Math.abs(w.pos.x + 38) < 0.01 && Math.abs(w.pos.z - 44) < 0.01 && JSON.stringify(await p.evaluate(() => __world.readL('s3'))) === '[0,2]' && !(await p.evaluate(() => __world.seen())).bogus, 'junk Section 3 world data is cleaned (start spot, only valid scroll ids)');
+    await seed(s3base({ owned: ['brass-compass', 'astrolabe', 'sea-chart', 'sounding-lead', 'nav-cap'], equip: { belt: 'brass-compass', offhand: 'astrolabe', back: 'sea-chart', hand: 'sounding-lead', head: 'nav-cap' } }), { ver: 1, mode: 'walk', at: { s3: { x: -53, z: 30, yaw: 0 } }, seen: { help3: true } });
+    await enterS3(); w = await W();
+    assert(Math.abs(w.pos.x + 53) < 0.01 && Math.abs(w.pos.z - 30) < 0.01, 'a saved Section 3 spot is restored');
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/astrolabe/.test(hk) && /nav-cap/.test(hk) && /wool/.test(hk) && await p.evaluate(() => __world.boardOpen()), 'the navigator gear shows on the wool dress, and the Astrolabe lets her board (' + hk + ')'); }
+    await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(700); await shot('v25-hero.png');
   }
 
   console.log('old saves + world key safety:');

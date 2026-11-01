@@ -98,7 +98,7 @@ GAME_CONTENT.extend("s4", {
       ] },
     { id: "s4-goals", type: "sort", icon: "⚖️", title: "What Did Each Empire Want?", topic: "spanishLife",
       intro: "Spain, France, and the Netherlands had different goals in America. Sort each clue.",
-      bins: [ { id: "spain", label: "Spain", icon: "🇪🇸" }, { id: "france", label: "France", icon: "⚜️" }, { id: "dutch", label: "Netherlands", icon: "🌷" } ],
+      bins: [ { id: "spain", label: "Spain", icon: "🏰" }, { id: "france", label: "France", icon: "⚜️" }, { id: "dutch", label: "Netherlands", icon: "🌷" } ],
       items: [
         { t: "Gold and silver mines", bin: "spain", fact: "Silver from Potosí and Zacatecas made Spain rich." },
         { t: "Encomienda labor system", bin: "spain", fact: "Colonists demanded Native labor or tribute." },

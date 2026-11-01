@@ -179,6 +179,8 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
   const camOcc = [];
   const occBox = (x0, x1, z0, z1, y1) => camOcc.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, hx: (x1 - x0) / 2, hz: (z1 - z0) / 2, y0: -5, y1 });
   const occC = (x, z, r, y1, y0 = -5) => camOcc.push({ x, z, r, y0, y1 });
+  // a moored ship keeps the camera out of its hull and lower sails (length runs along x: every ship here lies at about π/2)
+  const shipOcc = (k, x, z, sc) => { const hl = (k === 'nao' ? 17 : 14.5) * sc / 2 + 0.3, hw = (k === 'nao' ? 5.4 : 4.4) * sc / 2 + 0.6; occBox(x - hl, x + hl, z - hw, z + hw, WATER_Y + 6 * sc); };
   const labels = [], gy = (x, z) => groundH(x, z);
   const building = (geo, x, z, ry, w, d, h) => { add(geo, x, z, ry); const c = Math.abs(Math.cos(ry)), s = Math.abs(Math.sin(ry)), hx = (w * c + d * s) / 2, hz = (w * s + d * c) / 2; box(x - hx, x + hx, z - hz, z + hz); occBox(x - hx, x + hx, z - hz, z + hz, gy(x, z) + h + 1); };
   const wall = (x0, z0, x1, z1, h = 2.8) => { const len = Math.hypot(x1 - x0, z1 - z0), ry = -Math.atan2(z1 - z0, x1 - x0), mx = (x0 + x1) / 2, mz = (z0 + z1) / 2; add(palisadeGeo(len, h, rnd), mx, mz, ry);
@@ -196,7 +198,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     add(crateGeo('#7a6a4a'), cx - 7.5, cz + 4.2, 0.4); add(barrelGeo(), cx - 8.8, cz + 3.4);
     labels.push([STATIONS.roanoke, '1 · Roanoke Island, 1587', 'the Lost Colony']);
     // the ship that carries her up the river to Jamestown, waiting off the south shore
-    add(shipGeo('caravel', 'square'), -22, -48.5, Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15);
+    add(shipGeo('caravel', 'square'), -24, -45.4, Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15); shipOcc('caravel', -24, -45.4, 0.55);
   }
   // ===== 2 · James Fort, 1607: a triangle of upright logs, a round bulwark at each corner, the three ships in the river
   { const A = [-33, -31], B = [-11, -31], T = [-22, -13];
@@ -212,7 +214,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     building(M([englishHouseGeo(4, 7, 2.8, rnd, '#c0aa82'), P(BOX(1.2, 1.2, 1.2), '#8a6a46', 0, 4.6, 3.0), P(new THREE.ConeGeometry(0.95, 1.5, 4), '#5a4a3a', 0, 5.9, 3.0, 0, Math.PI / 4, 0)]), -38, -18.5, Math.PI, 4, 7, 6);
     // the three ships of 1607 at anchor in the James River: the Susan Constant, the Godspeed and the Discovery
     const ships = [['nao', 'square', -12, -41.4, 'Susan Constant', 'about 120 tons', 0.72], ['caravel', 'square', -23, -41.9, 'Godspeed', 'about 40 tons', 0.6], ['caravel', 'square', -33, -42.4, 'Discovery', 'a small pinnace, about 20 tons', 0.45]];
-    for (const [k, rig, x, z, name, type, s] of ships) { add(shipGeo(k, rig), x, z, Math.PI / 2 + (rnd() - 0.5) * 0.1, s, true, WATER_Y - 0.15); const lab = labelSprite(name, 4.2, type); lab.position.set(x, 10.5 * s / 0.72, z); lab.name = 'ship-label'; scene.add(lab); }
+    for (const [k, rig, x, z, name, type, s] of ships) { add(shipGeo(k, rig), x, z, Math.PI / 2 + (rnd() - 0.5) * 0.1, s, true, WATER_Y - 0.15); shipOcc(k, x, z, s); const lab = labelSprite(name, 4.2, type); lab.position.set(x, 10.5 * s / 0.72, z); lab.name = 'ship-label'; scene.add(lab); }
   }
   // ===== 3 · Tobacco fields and a Powhatan town
   { for (let r = 0; r < 4; r++) for (let i = 0; i < 9; i++) add(tobaccoGeo(rnd), 8.5 + i * 1.4 + (r % 2) * 0.7, -30 + r * 1.3, rnd() * 6, 0.9 + rnd() * 0.2, false);
@@ -222,7 +224,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     labels.push([STATIONS.fields, '3 · Tobacco fields', 'John Rolfe · the Powhatan']);
   }
   // ===== 4 · Cape Cod Harbor, November 1620: the Mayflower at anchor, her shallop pulled up on the beach
-  { add(shipGeo('nao', 'square'), -61, 22, Math.PI / 2 + 0.15, 0.85, true, WATER_Y - 0.15);
+  { add(shipGeo('nao', 'square'), -61, 22, Math.PI / 2 + 0.15, 0.85, true, WATER_Y - 0.15); shipOcc('nao', -61, 22, 0.85);
     const lab = labelSprite('Mayflower', 4.6, 'a merchant ship · 102 passengers'); lab.position.set(-61, 13, 22); lab.name = 'ship-label'; scene.add(lab);
     add(M([P(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), '#5a3d24', 0, 0.45, 0, Math.PI, 0, 0, 0.9, 0.45, 2.6), P(BOX(1.6, 0.06, 0.2), '#7a5a38', 0, 0.42, 0.6)]), -51.5, 17, 0.4, 1, true, gy(-51.5, 17) + 0.02); circ(-51.5, 17, 1.0);
     add(barrelGeo(), -50, 27); add(crateGeo('#8a6a48'), -49.4, 28.2, 0.3);

@@ -731,7 +731,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { const bn0 = await p.evaluate(() => __world.banner); assert(/^Marker \d · /.test(bn0), 'the banner always names a marker ("' + bn0 + '")'); }
     { await tp(-14, -36); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v28-williamsburg.png'); }
     { await tp(18, -14); await p.evaluate(() => __world.faceCam(0.6)); await sleep(500); await shot('v28-revival.png'); }
-    { await tp(-27, -4); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v28-philadelphia.png'); }
+    { await tp(-31, 5); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v28-philadelphia.png'); }
     { await tp(10, 18); await p.evaluate(() => __world.faceCam(0.3)); await sleep(500); await shot('v28-village.png'); }
     { await tp(-38, 36); await p.evaluate(() => __world.faceCam(-0.5)); await sleep(500); await shot('v28-boston.png'); }
     { await tp(20, 44); await p.evaluate(() => __world.faceCam(0.4)); await sleep(500); await shot('v28-albany.png'); }

@@ -92,7 +92,7 @@ GAME_CONTENT.extend("s3", {
         "\"…they are so guileless and so generous with all that they possess, that no one would believe it who has not seen it. They refuse nothing that they possess, if it be asked of them…\"",
         "\"…I will give them as much gold as they may need, if their highness will render me very slight assistance; … and slaves, as many as they shall order to be shipped and who will be from the idolaters.\""
       ],
-      note: "English translation by Cecil Jane (1930). \"…\" marks words left out. Columbus believed he had reached Asia (\"the Indies\"). That is why he called the Taíno \"Indians.\"",
+      note: "English translation by Cecil Jane (1930). \"…\" marks words left out. Columbus believed he had reached Asia (\"the Indies\"). That is why he called the Taíno \"Indians.\" His \"thirty-three days\" counts from when the fleet lost sight of land, about September 9; the ships left La Gomera in the Canaries on September 6, so the crossing took about five weeks.",
       url: "https://eada.lib.umd.edu/text-entries/columbus-letter-to-santangel/"
     },
     text: [

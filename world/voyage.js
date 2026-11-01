@@ -1,7 +1,7 @@
 // world/voyage.js — Section 3 walkable level: "The Voyage of 1492" (Section 3, Chapter 1).
 // Palos de la Frontera, Spain (north-east corner) → the Canary Islands (mid-ocean) → San Salvador / Guanahaní (west)
 // → Hispaniola (south-west). Map directions are real: north = +z, WEST = +x. The ocean is shrunk enormously (the real
-// crossing from La Gomera to San Salvador was more than 3,000 miles and took 33 days); the help card says so.
+// crossing from La Gomera to San Salvador was more than 3,000 miles and took about five weeks from the Canaries (33 days after losing sight of land)); the help card says so.
 // Accuracy: the Santa María was a nao (bigger, a forecastle, square sails); the Niña and Pinta were caravels. At Palos the
 // Niña still carries her triangular lateen sails; at the Canaries she was re-rigged with square sails for the trade winds.
 // San Salvador is low and flat (no mountains), with Taíno round houses (bohíos), dugout canoes and hammocks. At
@@ -135,14 +135,39 @@ function shipGeo(kind, rig, opts = {}) {
   const hull = tris(hp, p => p[1] > fb * 0.55 && p[1] < fb * 0.75 ? WALE : p[1] > fb * 0.2 ? HULL_LT : HULL_DK);
   const dp = []; for (let i = 0; i < N; i++) { const a = sec[i], b = sec[i + 1], y = fb - 0.25; quad(dp, [a[0][0] * 0.96, y, a[0][2]], [b[0][0] * 0.96, y, b[0][2]], [b[6][0] * 0.96, y, b[6][2]], [a[6][0] * 0.96, y, a[6][2]]); }
   const deck = tris(dp, () => new THREE.Color('#a58256'));
-  const g = [hull, deck];
-  // stern castle (both kinds) and the nao's forecastle
-  const ac = nao ? 4.2 : 3.4; g.push(P(BOX(W * 0.82, 1.1, ac), '#6e4b2e', 0, fb + 0.75, -L / 2 + ac / 2 + 0.2), P(BOX(W * 0.86, 0.12, ac + 0.1), '#4a3220', 0, fb + 1.32, -L / 2 + ac / 2 + 0.2));
-  for (const sx of [-1, 1]) g.push(P(BOX(0.1, 0.5, ac), '#4a3220', sx * W * 0.42, fb + 1.6, -L / 2 + ac / 2 + 0.2));
-  if (nao) { g.push(P(BOX(W * 0.55, 1.0, 2.6), '#6e4b2e', 0, fb + 0.95, L / 2 - 2.6), P(BOX(0.12, 0.12, 4.2), '#5a3d24', 0, fb + 1.1, L / 2 + 0.9, -0.35, 0, 0)); }
-  // rudder, and a ship's boat lashed amidships
+  // bulwarks: a solid planked wall above the sheer all round, so she reads as a decked, high-sided ship (not an open boat)
+  const bh = nao ? 0.95 : 0.8, bw = [], BUL = new THREE.Color('#5e4129'), BUL_IN = new THREE.Color('#8a6440');
+  for (let i = 0; i < N; i++) for (const j of [0, 6]) { const p0 = sec[i][j], p1 = sec[i + 1][j]; quad(bw, p0, p1, [p1[0] * 0.98, p1[1] + bh, p1[2]], [p0[0] * 0.98, p0[1] + bh, p0[2]]); }
+  { const p0 = sec[0][0], p1 = sec[0][6]; quad(bw, p0, p1, [p1[0] * 0.98, p1[1] + bh, p1[2]], [p0[0] * 0.98, p0[1] + bh, p0[2]]); }   // across the transom
+  const bulwark = tris(bw, p => (p[1] > sec[0][0][1] + bh * 0.8 && Math.abs(p[0]) > 0) ? WALE : BUL);
+  const g = [hull, deck, bulwark];
+  const halfW = z => { const t = (z + L / 2) / L; return W / 2 * Math.pow(Math.max(0.001, Math.sin(Math.PI * (0.2 + 0.8 * t))), 0.5); };
+  const sheer = z => { const t = (z + L / 2) / L; return fb + 0.9 * Math.pow(1 - t, 3) + 0.6 * Math.pow(t, 4); };
+  // rail cap along the top of the bulwarks
+  for (let i = 0; i < N; i++) for (const j of [0, 6]) { const p0 = sec[i][j], p1 = sec[i + 1][j]; g.push(tube([[p0[0] * 0.98, p0[1] + bh, p0[2]], [p1[0] * 0.98, p1[1] + bh, p1[2]]], 0.07, '#2a1d14', 1)); }
+  // gunports (the nao) or scuppers (caravels): small dark squares just under the rail, and drain holes at deck level
+  const ports = nao ? [-3.6, -1.2, 1.2, 3.6] : [-2.2, 1.0]; for (const pz of ports) for (const sx of [-1, 1]) { const hw = halfW(pz); g.push(P(BOX(0.06, 0.38, 0.42), '#140d08', sx * (hw * 0.99 + 0.02), sheer(pz) + 0.3, pz), P(BOX(0.07, 0.06, 0.52), '#2a1d14', sx * (hw * 0.99 + 0.03), sheer(pz) + 0.53, pz)); }
+  for (let k = 0; k < 6; k++) { const pz = -L * 0.3 + k * L * 0.12; for (const sx of [-1, 1]) g.push(P(BOX(0.05, 0.1, 0.22), '#140d08', sx * (halfW(pz) + 0.01), fb - 0.15, pz)); }
+  // deck planking seams, a hatch with a grating, and the capstan
+  for (const px of [-0.9, -0.3, 0.3, 0.9]) g.push(P(BOX(0.03, 0.02, L * 0.62), '#7a5a38', px * W * 0.3, fb - 0.24, 0.4));
+  const hz = nao ? 2.8 : 1.5; g.push(P(BOX(1.5, 0.2, 1.8), '#5a3d24', 0, fb - 0.15, hz)); for (const gx of [-0.45, 0, 0.45]) g.push(P(BOX(0.06, 0.04, 1.7), '#2a1d14', gx, fb - 0.04, hz));
+  g.push(P(CYL(0.22, 0.28, 0.7, 8), '#6e4b2e', 0, fb + 0.1, nao ? -2.0 : -2.3));
+  // stern: the nao's tall sterncastle (aftercastle); caravels have a lower raised quarterdeck. Both decked over, with a rail.
+  const ac = nao ? 4.6 : L * 0.28, ah = nao ? 1.9 : 1.15, az = -L / 2 + ac / 2 + 0.15, aw = halfW(az) * 1.9;
+  g.push(P(BOX(aw, ah, ac), '#6e4b2e', 0, fb - 0.25 + ah / 2, az), P(BOX(aw + 0.1, 0.12, ac + 0.1), '#a58256', 0, fb - 0.25 + ah, az));
+  for (const sx of [-1, 1]) g.push(P(BOX(0.1, 0.55, ac), '#4a3220', sx * aw / 2, fb - 0.25 + ah + 0.3, az));
+  g.push(P(BOX(aw, 0.55, 0.1), '#4a3220', 0, fb - 0.25 + ah + 0.3, az + ac / 2), P(BOX(aw * 0.6, 0.55, 0.1), '#4a3220', 0, fb - 0.25 + ah + 0.3, az - ac / 2));
+  g.push(P(BOX(0.9, 1.15, 0.06), '#2a1d14', 0, fb + 0.35, az + ac / 2 + 0.04));   // cabin door onto the main deck
+  for (const wx of [-0.6, 0.6]) g.push(P(BOX(0.4, 0.4, 0.06), '#1d140c', wx, fb - 0.25 + ah * 0.6, -L / 2 + 0.1));   // stern windows on the transom
+  if (nao) {   // the nao's raised forecastle over the bow, and her bowsprit
+    const fc = 3.0, fz = L / 2 - fc / 2 - 0.4, fw = halfW(fz) * 1.95, fh = 1.6;
+    g.push(P(BOX(fw, fh, fc), '#6e4b2e', 0, fb - 0.25 + fh / 2 + 0.3, fz), P(BOX(fw + 0.1, 0.12, fc + 0.1), '#a58256', 0, fb + fh + 0.05, fz));
+    for (const sx of [-1, 1]) g.push(P(BOX(0.1, 0.5, fc), '#4a3220', sx * fw / 2, fb + fh + 0.35, fz));
+    g.push(P(BOX(fw, 0.5, 0.1), '#4a3220', 0, fb + fh + 0.35, fz - fc / 2), P(BOX(0.12, 0.12, 5.0), '#5a3d24', 0, fb + 1.6, L / 2 + 1.4, -0.35, 0, 0));
+  }
+  // rudder, and the ship's small boat stowed on the hatch
   g.push(P(BOX(0.18, 2.6, 0.9), '#4a3220', 0, fb * 0.2 - 0.3, -L / 2 - 0.35));
-  if (!opts.wreck) g.push(P(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), '#6e4b2e', 0, fb - 0.05, 0.6, Math.PI, 0, 0, 0.7, 0.35, 1.7));
+  if (!opts.wreck) g.push(P(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), '#4f3622', 0, fb + 0.35, hz, Math.PI, 0, 0, 0.55, 0.3, 1.3));
   // masts: [z, height, kind of sail]
   const masts = nao ? [[L * 0.32, 10, 'sq'], [L * 0.03, 14, 'sq'], [-L * 0.3, 8.5, 'lat']] : rig === 'lateen' ? [[L * 0.2, 11, 'lat'], [-L * 0.1, 9, 'lat'], [-L * 0.33, 7, 'lat']] : [[L * 0.24, 10, 'sq'], [-L * 0.04, 12, 'sq'], [-L * 0.32, 8, 'lat']];
   const SAIL = new THREE.Color(opts.wreck ? '#9a8f78' : '#efe6cf'), SAIL_D = new THREE.Color(opts.wreck ? '#8a8068' : '#d9ccb0');
@@ -157,10 +182,13 @@ function shipGeo(kind, rig, opts = {}) {
     } else { const yl = mh * 1.15, ya = [0, fb + mh * 0.95, mz - yl * 0.45], yb = [0, fb + mh * 0.35, mz + yl * 0.55], clew = [0, fb + 1.2, mz - yl * 0.38];
       g.push(tube([ya, [(ya[0] + yb[0]) / 2, (ya[1] + yb[1]) / 2, (ya[2] + yb[2]) / 2], yb], 0.06, '#5a3d24', 2));
       if (!opts.furled) { const mid = [0.5, (ya[1] + clew[1]) / 2 + 0.2, (ya[2] + yb[2]) / 2 - 0.4]; g.push(tris([ya, yb, mid, ya, mid, clew, mid, yb, clew], p => p[1] > fb + mh * 0.5 ? SAIL : SAIL_D)); } }
-    g.push(P(BOX(0.04, 0.4, 0.9), '#b0302a', 0, fb + mh - 0.1, mz - 0.5));   // pennant
+    if (mh === Math.max(...masts.map(m => m[1])) && !opts.wreck) {   // the Cross of Burgundy: a red ragged saltire on white, flown by Spanish ships
+      const fy = fb + mh + 0.35, fz = mz - 0.85; g.push(P(CYL(0.03, 0.03, 0.9, 4), '#5a3d24', 0, fy - 0.1, mz), P(BOX(0.03, 0.8, 1.3), '#f2eee2', 0, fy, fz));
+      for (const r of [-0.55, 0.55]) g.push(P(BOX(0.05, 0.13, 1.42), '#b0302a', 0, fy, fz, r, 0, 0));
+    } else g.push(P(BOX(0.04, 0.4, 0.9), '#b0302a', 0, fb + mh - 0.1, mz - 0.5));   // pennant
   });
   // shrouds (rigging lines) to the main mast
-  const mm = masts[nao ? 1 : rig === 'lateen' ? 0 : 1]; for (const sx of [-1, 1]) for (const dz of [-1.2, 0, 1.2]) g.push(tube([[sx * W * 0.48, fb + 0.1, mm[0] + dz], [0, fb + mm[1] * 0.8, mm[0]]], 0.02, '#3a2a1a', 1));
+  const mm = masts[nao ? 1 : rig === 'lateen' ? 0 : 1]; for (const sx of [-1, 1]) for (const dz of [-1.2, 0, 1.2]) g.push(tube([[sx * halfW(mm[0] + dz) * 0.98, sheer(mm[0] + dz) + bh, mm[0] + dz], [0, fb + mm[1] * 0.8, mm[0]]], 0.02, '#3a2a1a', 1));
   return M(g);
 }
 
@@ -437,3 +465,6 @@ export function buildVoyage({ mergeAO, rings: ringDefs, matLabels = {} }) {
   }
   return { scene, sun, hemi, rings, colliders, camOcc, update, setGateOpen() {}, tracks: [], herds: {}, flames: [], water, fogColor: SKY_H, sky: scene.userData.sky, mats, dropBundle, clearBundles, regionLabels };
 }
+
+// v2.6: shared helpers for the Level 4 module (world/empires.js)
+export { vc, P, M, rng, tube, CYL, BOX, tris, quad, roofGeo, houseGeo, makeRing, barrelGeo, crateGeo, palmGeo, bohioGeo };

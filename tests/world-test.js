@@ -389,9 +389,13 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     for (const [id, re] of [['royal', /May 23, 1492/], ['perez', /Pérez|Perez/], ['stars', /longitude/i], ['sails', /lateen/i], ['ships', /Santa Clara/]]) {
       await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); const cd = (await W()).card || '';
       assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
+    { const txt = await p.evaluate(async () => JSON.stringify(GAME_CONTENT) + (await (await fetch('world.js?w=' + Date.now())).text()) + (await (await fetch('world/voyage.js?w=' + Date.now())).text()));   // cards live in world.js, scrolls and sources in GAME_CONTENT
+      const d33 = txt.match(/.{0,60}\b33[ -]days?.{0,40}/g) || [], bad = d33.filter(t => !/about five weeks from the Canaries \(33 days after losing sight of land\)/.test(t));
+      const t33 = txt.match(/thirty-three days[\s\S]{0,4000}/g) || [];
+      assert(d33.length >= 3 && !bad.length && t33.every(t => /lost sight of land, about September 9/.test(t) && /September 6/.test(t)), 'wording: every "33 days" says "about five weeks from the Canaries (33 days after losing sight of land)"; Columbus\'s quoted "thirty-three days" has the Sept 6 / Sept 9 note (' + d33.length + ' lines' + (bad.length ? '; bad: ' + bad.join(' | ') : '') + ')'); }
     { await tpRing('sail-palos'); assert(await p.evaluate(() => __world.boardOpen()), 'with Scrolls 1–3 read she may board');
       await p.evaluate(() => __world.use()); await sleep(300); const cd = (await W()).card || '';
-      assert(/Set sail/.test(cd) && /33 days/.test(cd) && /3,000 miles/.test(cd), 'the sail card lists the ports in voyage order and says the ocean is shrunk (3,000 miles, 33 days)');
+      assert(/Set sail/.test(cd) && /about five weeks from the Canaries \(33 days after losing sight of land\)/.test(cd) && /3,000 miles/.test(cd), 'the sail card lists the ports in voyage order and says the ocean is shrunk (3,000 miles, about five weeks from the Canaries)');
       await p.evaluate(() => [...document.querySelectorAll('#w-card button')].find(b => /Canary/.test(b.textContent)).click()); await sleep(1200); w = await W();
       const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.canary);
       assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1 && (await p.evaluate(() => __world.seen()['sail-canary'])), 'she sails to the Canary Islands harbor'); }

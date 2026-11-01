@@ -1,7 +1,7 @@
-// world.js — v2.2–v2.5 3D layer for American Beginnings RPG.
+// world.js — v2.2–v2.6 3D layer for American Beginnings RPG.
 // (1) Classic: the low-poly N64-style background behind the screens (paused while panels / videos cover it).
 // (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js), Section 2 Native
-//     Nations (world/nations.js, v2.4) and, new in v2.5, Section 3 The Voyage of 1492 (world/voyage.js). Each level keeps its own scene, rings, graphics and sparks (LV);
+//     Nations (world/nations.js, v2.4) and, new in v2.5, Section 3 The Voyage of 1492 (world/voyage.js) and, new in v2.6, Section 4 Three Empires (world/empires.js). Each level keeps its own scene, rings, graphics and sparks (LV);
 //     useLevel() swaps them in, so the Beringia code paths below run exactly as in v2.3.
 // three.js is vendored (vendor/, mapped by the import map in index.html). If anything here fails, the CSS
 // gradient fallback is shown and the game plays exactly as before (Classic screens).
@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -105,12 +105,14 @@ function loadW() {
   d.seenIntro = w.seenIntro === true;
   if (w.season && Array.isArray(w.season.tracks)) d.season.tracks = [...new Set(w.season.tracks.filter(t => ["t1", "t2", "t3"].includes(t)))];
   if (w.read && Array.isArray(w.read.s1)) d.read.s1 = [...new Set(w.read.s1.filter(i => Number.isInteger(i) && i >= 0 && i < 8))].sort();
-  for (const k of ["s2", "s3"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp"]) if (w.seen[k] === true) d.seen[k] = true;
+  for (const k of ["s2", "s3", "s4"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
   if (a3 && typeof a3 === "object" && Number.isFinite(a3.x) && Number.isFinite(a3.z) && a3.x > -92 && a3.x < 92 && a3.z > -72 && a3.z < 92) d.at.s3 = { x: a3.x, z: a3.z, yaw: Number.isFinite(a3.yaw) ? wrapA(a3.yaw) : 0 };
+  const a4 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s4 : null;   // Three Empires bounds (world/empires.js BOUNDS)
+  if (a4 && typeof a4 === "object" && Number.isFinite(a4.x) && Number.isFinite(a4.z) && a4.x > -68 && a4.x < 92 && a4.z > -72 && a4.z < 63) d.at.s4 = { x: a4.x, z: a4.z, yaw: Number.isFinite(a4.yaw) ? wrapA(a4.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -120,14 +122,14 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2", "s3"];                                       // sections with a walkable level
+const WALK = ["s1", "s2", "s3", "s4"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"], s3: [6, "src3"] };      // the primary-source scroll also counts once its questions were played
+const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"], s3: [6, "src3"], s4: [6, "src4"] };      // the primary-source scroll also counts once its questions were played
 const scrollRead = (sid, i) => W.read[sid].includes(i) || (i === SRC_LESSON[sid][0] && !!(ST().srcQ && ST().srcQ[SRC_LESSON[sid][1]] && ST().srcQ[SRC_LESSON[sid][1]].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
@@ -276,6 +278,78 @@ function nextTargetS3() {
   return sailRing(next);
 }
 
+// ---- v2.6 Section 4: Three Empires c. 1610 (world/empires.js) ----
+// Marker order: St. Augustine → Santa Fe → beaver pond → canoe landing / Quebec → New Amsterdam market → Fort Amsterdam →
+// palisade gate (Trial). The St. Lawrence is crossed by canoe (the canoe rings fade her across; nothing is saved but at.s4).
+function ringDefsS4(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L4 = (id, i, st) => lessonRing("s4-" + id, i, A[id][0], A[id][1], st, "s4");
+  const A4 = (id, icon, title, st) => actRing("s4-" + id, "s4-" + id, icon, title, A[id][0], A[id][1], st, "s4");
+  const canoe = (side, station) => at("canoe-" + side, { id: "canoe-" + side, station, icon: "🛶", label: () => side === "south" ? "Paddle across the St. Lawrence to Quebec" : "Paddle back to the south bank", act: () => card(canoeCard(side)), state: () => "done" });
+  return [
+    L4("l0", 0, "staug"), L4("l1", 1, "staug"), info("fort", "staug", "🏰", "St. Augustine, 1565: the oldest city", fortCard), info("timucua", "staug", "🌴", "The Timucua people of Florida", timucuaCard), A4("map", "🗺️", "Map the Three Empires", "staug"),
+    L4("l2", 2, "santafe"), info("palace", "santafe", "🏛️", "Santa Fe and the Palace of the Governors", palaceCard), info("adobe", "santafe", "🧱", "How adobe bricks are made", adobeCard),
+    info("beaver", "beaver", "🦫", "Why Europe wanted beaver", beaverCard), info("furtrade", "beaver", "🤝", "The fur trade: partners in the woods", furTradeCard),
+    canoe("south", "landing"),
+    L4("l3", 3, "quebec"), A4("champlain", "⚜️", "Talk with Samuel de Champlain", "quebec"), L4("l6", 6, "quebec"), info("wendat", "quebec", "🏹", "Champlain’s allies: the Wendat and Algonquin", wendatCard), canoe("north", "quebec"),
+    at("market", { id: "market", station: "market", icon: "🛍️", label: () => "New Amsterdam Market: Mevrouw Annetje’s stall", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m3"); }), state: () => "done" }),
+    info("windmill", "market", "🌬️", "The windmill and the Dutch trading town", windmillCard),
+    { ...A4("goals", "⚖️", "What did each empire want? Carry the crates", "market"), act: () => card(goalsCard()) },
+    L4("l4", 4, "fort"), A4("geomap", "🧭", "Explorers and Settlements Map", "fort"), info("manhattan", "fort", "🏞️", "Fort Amsterdam and Manhattan, 1626", manhattanCard),
+    L4("l5", 5, "gate"), A4("timeline", "📓", "Timeline of the Empires", "gate"),
+    at("trial", { id: "trial", station: "gate", icon: "⚔️", label: () => trialLabelS4(), act: () => gateOpenS4() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s4"); } finally { L.bypass = false; } }) : card(gateLockedCard()), state: () => !gateOpenS4() ? "locked" : (sec("s4").completed ? "star" : "new") })
+  ];
+}
+const missingS4 = () => [0, 1, 2, 3, 4, 5, 6].filter(i => !scrollRead("s4", i));
+const gateOpenS4 = () => missingS4().length === 0 || (sec("s4").attempts || 0) > 0 || !!sec("s4").completed || trialActive("s4");
+function trialLabelS4() { const st = sec("s4"); if (trialActive("s4")) return "Resume the Trial at the palisade gate"; if (st.completed) return "The palisade gate Trial (mastered " + st.bestPct + "%) — try again"; return "Pass the palisade gate: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCard() { return { title: "🚪 The palisade gate", body: "<p>The gate opens for the Trial once you have read <b>all 7 scrolls</b> of the three empires. Still to read:</p>", btns: missingS4().map(i => lessonBtnS("s4", i)) }; }
+function canoeCard(side) {
+  if (side === "north") return { title: "🛶 Back across the river", body: "<p>Ready to paddle back to the south bank? From there the trail runs east to New Amsterdam on Manhattan.</p>", btns: [{ t: "🛶 Paddle to the south bank", f: () => { closeCard(); canoeTo("south"); } }] };
+  return { title: "🛶 The St. Lawrence River", body: "<p>The <b>St. Lawrence</b> was the highway of New France. Birch-bark canoes, made by Algonquian and Wendat builders, were light enough to carry around rapids and strong enough to carry a load of furs.</p><p>Across the water is <b>Quebec</b>. Its name comes from an Algonquian word for <b>“where the river narrows.”</b> There, a high cliff looks down on the narrows, a perfect spot to guard the river. <b>Samuel de Champlain</b> arrived on <b>July 3, 1608</b>.</p>", btns: [{ t: "🛶 Paddle across to Quebec", f: () => { closeCard(); canoeTo("north"); } }] };
+}
+const ARRIVE4 = {
+  north: "⚓ Quebec, 1608. Champlain built his <b>Habitation</b> here, at the foot of the cliff. Only 8 of his 28 men lived through the first hard winter, but he stayed.",
+  south: "🛶 The south bank. The trail east leads to <b>New Amsterdam</b> on Manhattan."
+};
+function canoeTo(side) { const h = L.mods.B.HARBORS[side]; if (!h) return false; teleport("out", h); setTimeout(() => toast(ARRIVE4[side]), 600); return true; }
+function fortCard() { return { title: "🏰 St. Augustine, 1565: the oldest city", body: "<p>On <b>September 8, 1565</b>, <b>Pedro Menéndez de Avilés</b> came ashore here with soldiers and settlers and founded <b>St. Augustine</b>. It is the oldest city founded by Europeans in the United States that people have lived in ever since: <b>42 years before Jamestown</b> and 55 years before the Pilgrims.</p><p>A Mass was said on the day they landed. Spain wanted the fort to guard its treasure fleets sailing home past Florida. Menéndez’s soldiers soon destroyed <b>Fort Caroline</b>, a French settlement to the north, and killed most of its men.</p><p>The first forts here were made of <b>wood</b>, like this one. The great stone <b>Castillo de San Marcos</b>, built of <b>coquina</b> (a rock made of tiny seashells), came much later, from <b>1672 to 1695</b>, and it still stands today.</p>" }; }
+function timucuaCard() { return { title: "🌴 The Timucua people of Florida", body: "<p>The <b>Timucua</b> had lived in north Florida for thousands of years before the Spanish came. They lived in villages of round houses roofed with palmetto, farmed maize, beans and squash, and fished and hunted along the rivers and coast.</p><p>St. Augustine was founded beside the Timucua town of the chief <b>Seloy</b>, and the Spanish first set up camp in a large Timucua house. Spanish friars later built missions among the Timucua.</p><p>The honest history: war and new diseases from Europe struck the Timucua very hard. By the 1700s only a few hundred were left. Historians know about their language today partly because a friar, <b>Francisco Pareja</b>, wrote books in Timucua.</p>" }; }
+function palaceCard() { return { title: "🏛️ Santa Fe and the Palace of the Governors", body: "<p>Around <b>1610</b>, New Mexico’s governor <b>Pedro de Peralta</b> founded <b>Santa Fe</b> (“holy faith”) as the capital of the Spanish province of New Mexico. The adobe <b>Palace of the Governors</b>, begun about then, is the oldest public building in the United States still in use. Look for the shady wooden <b>portal</b> (porch) along its front.</p><p>Santa Fe sat at the north end of the <b>Camino Real</b>, the Royal Road, about 1,600 miles long, to Mexico City.</p><p>The <b>Pueblo peoples</b> had farmed this land for centuries. In <b>1680</b>, led by <b>Popé</b>, they rose up against harsh Spanish rule, forced labor and attacks on their religion, and drove the Spanish out for 12 years. The Spanish returned in 1692. Today the Pueblos still live in their homelands.</p>" }; }
+function adobeCard() { return { title: "🧱 How adobe bricks are made", body: "<p><b>Adobe</b> is earth and water mixed with straw, shaped into bricks in wooden molds and left to bake dry in the hot sun. Thick adobe walls stay cool on summer days and hold warmth on cold desert nights.</p><p>Pueblo builders had made earth walls for centuries, building them up layer by layer. The Spanish brought the <b>brick mold</b>, and both ways of building mixed into the style you still see in Santa Fe today.</p><p>The wooden beams that stick out of the walls are called <b>vigas</b>. They hold up the flat roof.</p>" }; }
+function beaverCard() { return { title: "🦫 Why Europe wanted beaver", body: "<p>Why cross an ocean for beavers? <b>Hats!</b> Beaver underfur is covered in tiny barbs. When hatters pressed it with heat and moisture, the hairs locked together into a thick, waterproof <b>felt</b> that held its shape. Beaver felt hats were the height of fashion in Europe, and Europe’s own beavers had been hunted almost to the end.</p><p>Beavers are amazing engineers. They cut trees with their teeth (see the pointed stumps?), build <b>dams</b> of sticks and mud to make a pond, and live in a <b>lodge</b> whose door is underwater, safe from wolves.</p>" }; }
+function furTradeCard() { return { title: "🤝 The fur trade: partners in the woods", body: "<p>The French were few, and the land was huge. So the fur trade was a partnership. <b>Wendat (Huron)</b>, <b>Algonquin</b> and <b>Innu</b> hunters trapped the beaver and traded the pelts for iron kettles, axes, knives, wool cloth and glass beads. Both sides wanted what the other had.</p><p>Bold young Frenchmen paddled deep into the interior to trade. They learned Native languages and canoe skills, and later they were called <b>coureurs des bois</b>, “runners of the woods.”</p><p>The trade had costs too: competition for beaver helped cause wars between nations, and European diseases traveled along the trade routes.</p>" }; }
+function wendatCard() { return { title: "🏹 Champlain’s allies: the Wendat and Algonquin", body: "<p>Champlain knew New France could not survive without Native friends. He made alliances with the <b>Wendat (Huron)</b>, the <b>Algonquin</b> and the <b>Innu</b>, who came to Quebec to trade. Their bark-covered longhouses and birch-bark canoes are on the shore here.</p><p>In <b>1609</b> Champlain joined his allies in a battle against the <b>Mohawk</b> at the lake now named Lake Champlain. That made the <b>Haudenosaunee (Iroquois)</b> enemies of New France for many years.</p><p>In 1610 a young Frenchman, <b>Étienne Brûlé</b>, went to live with the Wendat to learn their language and ways, the first of many.</p>" }; }
+function windmillCard() { return { title: "🌬️ The windmill and the Dutch trading town", body: "<p>The Dutch were famous millers, shipbuilders and traders. Within a few years of settling Manhattan they put up windmills to grind grain and saw timber, just like the mills back home in the Netherlands.</p><p>New Amsterdam was run by the <b>Dutch West India Company</b>, which wanted <b>trade</b>, above all beaver furs brought down the Hudson River. People came from many lands. A visiting priest wrote in 1643 that <b>18 languages</b> were spoken in the town!</p><p>That Dutch habit of welcoming many peoples and trading with everyone lived on when New Amsterdam later became <b>New York</b>.</p>" }; }
+function manhattanCard() { return { title: "🏞️ Fort Amsterdam and Manhattan, 1626", body: "<p>In <b>1624</b> the first Dutch families arrived in New Netherland. In <b>1625</b> work began on <b>Fort Amsterdam</b> at the tip of Manhattan: walls of packed earth with four pointed corners, called <b>bastions</b>, so defenders could see along every wall.</p><p>In <b>1626</b> the colony’s director, <b>Peter Minuit</b>, traded goods worth <b>60 guilders</b> to <b>Lenape</b> (Munsee) people for Manhattan. (The famous “$24” came from a much later calculation.)</p><p>The Lenape probably understood the deal as sharing the land and its use, not giving it up forever, as the Dutch believed. Misunderstandings like this led to conflict later on.</p>" }; }
+function goalsCard() {
+  const a = ST().acts && ST().acts["s4-goals"], played = !!(a && a.plays);
+  const body = (played ? "<p>You have sorted these crates before. Want to practice? Carry them again, or use the card version.</p>" : "<p>Spain, France and the Netherlands came to North America for different reasons. Each crate has a clue on its tag.</p>") +
+    "<p>Carry each crate to the mat of the <b>empire that wanted it</b>: stand on the mat for a moment to set it down. The mats are laid out like a map. Facing north, <b>Spain</b> is on your left (west), <b>France</b> is ahead (north) and the <b>Netherlands</b> is on your right (east).</p>";
+  return { title: "⚖️ What did each empire want?", body, btns: [{ t: "📦 " + (played ? "Carry the crates again" : "Carry the crates"), f: () => { closeCard(); sortStart("s4", "s4-goals"); } }, { t: "🗂️ Card version", f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s4", "s4-goals", resume)); } }] };
+}
+function helpCardS4() {
+  card({ title: "❔ How to explore the Three Empires", body: "<p>You are <b>" + esc(heroName()) + "</b>, exploring North America around <b>1610</b>, when three European empires were planting colonies. <b>Spain</b> wanted gold, converts and a guard for its treasure fleets; <b>France</b> wanted furs; the <b>Dutch</b> wanted trade. Each one met Native nations who had lived here for thousands of years. Soon the English would arrive too, and their colonies would grow the <b>self-government</b> that became America (that’s the next level!).</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these places are hundreds or thousands of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start in St. Augustine, so <b>west is on your left</b>.</li><li>Cross the <b>St. Lawrence</b> by canoe at the landing. Read all <b>7 scrolls</b> to open the <b>palisade gate</b> for the Trial.</li></ul>" });
+  W.seen.help4 = true; saveW();
+}
+// Level 4 banner: the unfinished marker in the station she stands in, else the lowest-numbered station with work left
+// (nearest ring there); if that is across the St. Lawrence, the canoe ring on her bank. With nothing left: the gate.
+function nextTargetS4() {
+  const B = L.mods.B, rings = L.lvl.rings, S = B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  if (SP.active && SP.sid === "s4") { const hm = SP.hintBin && L.lvl.mats.find(m => m.bin === SP.hintBin), cl = byId("s4-goals");
+    return { def: { id: "s4-goals", station: "market", x: hm ? hm.x : cl.def.x, z: hm ? hm.z : cl.def.z, text: "Marker 5 · New Amsterdam: carry the crate to its empire’s mat" + (hm ? " (hint: the glowing mat)" : "") } }; }
+  const north = z => z > B.riverZ(L.pos.x), meN = north(L.pos.z);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const cross = () => { const r = byId(meN ? "canoe-north" : "canoe-south"); return { def: { ...r.def, text: "Marker 4 · " + (meN ? "Paddle back across the St. Lawrence" : "Paddle across the St. Lawrence to Quebec") } }; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  let best;
+  if (!todo.length) best = byId("trial");
+  else { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+    if (inSt && inSt.length) best = pick(inSt); else { const n0 = Math.min(...todo.map(r => S[r.def.station].n)); best = pick(todo.filter(r => S[r.def.station].n === n0)); } }
+  return best && north(best.def.z) !== meN ? cross() : best;
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
 const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
@@ -296,7 +370,7 @@ function sortStart(sid = "s2", act = "s2-clues") {
 }
 function carryLabel(text) {
   if (SP.carry) { L.lvl.scene.remove(SP.carry.lab); SP.carry.lab.material.map.dispose(); }
-  const lab = L.mods.B.labelSprite(text, 3.8, SP.sid === "s3" ? "carry it to the right dock mat" : "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
+  const lab = L.mods.B.labelSprite(text, 3.8, SP.sid === "s3" ? "carry it to the right dock mat" : SP.sid === "s4" ? "carry it to the empire that wanted it" : "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
   if (!SP.carry) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: "#b08a5c", flatShading: true })); b.scale.set(1.2, 0.8, 1); b.userData.noMerge = true; L.lvl.scene.add(b); SP.carry = { lab, b }; }
   else SP.carry.lab = lab;
 }
@@ -305,7 +379,7 @@ function nextClue(first) {
   for (const m of L.lvl.mats) m.glowOn = false; SP.hintBin = null;
   SP.cur = SP.queue.shift() || null; if (!SP.cur) return;
   carryLabel("📦 " + SP.cur.t);
-  toast((first ? "🧺 First bundle: " : "📦 Next bundle: ") + "<b>" + esc(SP.cur.t) + "</b>. " + (SP.sid === "s3" ? "Which way did it cross the ocean? Stand on that mat." : "Stand on the mat for its region."));
+  toast((first ? "🧺 First bundle: " : "📦 Next bundle: ") + "<b>" + esc(SP.cur.t) + "</b>. " + (SP.sid === "s3" ? "Which way did it cross the ocean? Stand on that mat." : SP.sid === "s4" ? "Which empire wanted it? Stand on its mat." : "Stand on the mat for its region."));
 }
 function sortStep(dt) {
   SP.dt = dt;
@@ -326,7 +400,7 @@ function sortStep(dt) {
     SP.cur = null;
   } else {
     if (r.hint) { SP.hintBin = r.hint; for (const q of L.lvl.mats) q.glowOn = q.bin === r.hint; }
-    toast("🤔 <b>" + esc(cur.t) + "</b> doesn’t belong on the " + esc(r.bin) + " mat." + (r.hint ? " Hint: try the glowing mat, <b>" + esc(r.hintLabel || r.hint) + "</b>." : (SP.sid === "s3" ? " Think about where it first grew or lived, then try the other mat." : " Think about what that region is like and try another mat.")));
+    toast("🤔 <b>" + esc(cur.t) + "</b> doesn’t belong on the " + esc(r.bin) + " mat." + (r.hint ? " Hint: try the glowing mat, <b>" + esc(r.hintLabel || r.hint) + "</b>." : (SP.sid === "s3" ? " Think about where it first grew or lived, then try the other mat." : SP.sid === "s4" ? " Think about what each empire wanted most: gold and converts, furs and allies, or trade. Then try another mat." : " Think about what that region is like and try another mat.")));
   }
 }
 function sortStop() { if (!SP.active) return; SP.active = false; SP.cur = null; carryHide(); for (const m of L.lvl.mats) m.glowOn = false; }
@@ -484,8 +558,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 function syncChips() {
   const mb = document.getElementById("w-mode"), back = document.getElementById("w-back"); if (!mb) return;
@@ -494,7 +568,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.5:</b> sail the Voyage of 1492 in 3D, from Palos to the Canaries, San Salvador and Hispaniola (plus the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.6:</b> explore the Three Empires in 3D: Spanish St. Augustine and Santa Fe, French Quebec and Dutch New Amsterdam (plus the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
@@ -519,6 +593,12 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s4") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s4") { enterLevel("s4"); return true; }
+        resume(); if (gateOpenS4()) setTimeout(() => toast("🚪 The Trial waits at the <b>palisade gate</b>, marker 7. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCard()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s3") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s3") { enterLevel("s3"); return true; }
@@ -569,16 +649,16 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2" || sid === "s3") {
-      const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
+    if (sid === "s2" || sid === "s3" || sid === "s4") {
+      const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s4" ? "s4-goals" : sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -600,12 +680,12 @@ function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
-  const ok = L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  const ok = L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
@@ -616,6 +696,7 @@ function buildHero() {
 function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
+  if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }   // St. Augustine, facing north into town
   if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
   if (zone === "cave") { L.zone = "cave"; L.pos.set(B.CAVE_X, 0, 5); L.yaw = Math.PI; }
   else { L.zone = "out"; L.pos.set(0, B.groundH(0, -4), -4); L.yaw = 0; }
@@ -625,10 +706,11 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if ((sid === "s2" || sid === "s3") && (L.phase === "off" || from !== sid)) {
+  if ((sid === "s2" || sid === "s3" || sid === "s4") && (L.phase === "off" || from !== sid)) {
     // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
     const a = W.at[sid], t = B.RING_AT.trial;
     if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid) && sid === "s4") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🚪 Your Trial is waiting. Step into the ring in the palisade gate to resume."), 300); }
     else if (trialActive(sid)) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
     else if (a && walkable(a.x, a.z)) { L.zone = "out"; L.pos.set(a.x, 0, a.z); L.yaw = a.yaw; }
     else placeStart("out");
@@ -641,9 +723,9 @@ async function enterLevel(sid = L.sid) {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -780,6 +862,7 @@ function nextTargetS2() {
 function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
   if (L.sid === "s3") return nextTargetS3();
+  if (L.sid === "s4") return nextTargetS4();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
   if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
@@ -925,7 +1008,7 @@ window.__world = {
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
-  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

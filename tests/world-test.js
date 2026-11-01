@@ -516,7 +516,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 4 · /.test(bn), 'at Quebec the banner names Marker 4 ("' + bn + '")'); }
     await p.evaluate(() => __world.canoe('south')); await sleep(1300); w = await W();
     { const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.south); assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'and paddles back to the south bank'); }
-    { const r = await ringAt('windmill'); await tp(r.x + 8, r.z - 10); await p.evaluate(() => __world.faceCam(Math.atan2(-8, 10))); await sleep(600); await shot('v26-newamsterdam.png'); }
+    { const r = await ringAt('windmill'); await tp(r.x - 8, r.z - 10); await p.evaluate(() => __world.faceCam(Math.atan2(8, 10))); await sleep(600); await shot('v26-newamsterdam.png'); }
     const after4 = await p.evaluate(k => localStorage.getItem(k), KEY);
     assert(Object.keys(JSON.parse(after4)).sort().join(',') === Object.keys(JSON.parse(before4)).sort().join(','), 'no new progress-save fields from exploring the three empires');
     const keys4 = Object.keys(JSON.parse(after4)).sort().join(',');

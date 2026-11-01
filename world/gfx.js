@@ -1,7 +1,7 @@
 // world/gfx.js — adapted copy of /workspace/shared/graphics-kit/helpers/gfx.js (Princess Explorer v3.6.6), 2026-10-31.
 // AB changes (see /workspace/abrpg-design/graphics-kit-review.md §2):
 //  • own key 'americanBeginningsRPG_gfx' (never inside the progress save); button '#gfx-mode' lives in the walk HUD;
-//  • Auto caps the pixel ratio at 1.5 (2 only in High); Low = no shadows, no ink outlines, pixel ratio 1;
+//  • Auto caps the pixel ratio at 1.5 (2 only in High); Low = one 1024 hard (PCF) sun shadow, no ink outlines, pixel ratio 1 (v2.6: shadows kept so props don't float);
 //  • ACES tone mapping at exposure ~1.05 with a cooler Ice Age sun (#ffe9d0), cool fill + hemisphere;
 //  • follow-shadow box ±25 m, snapped to shadow texels (unchanged from the kit);
 //  • adaptive DPR reports slow streaks to onSlow() so the world can offer Classic mode (never forced).
@@ -38,7 +38,7 @@ export function createGfx({ THREE, renderer, scene, sun, hemi, getFocus, isTouch
   let degMode = null;
   function apply() {
     if (st.mode === 'high') { st.cap = Math.min(rawDPR, 2); st.floor = st.cap; setShadows(true); setShadowSize(2048); renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
-    else if (st.mode === 'low') { st.cap = 1; st.floor = Math.min(1, rawDPR) * 0.75; setShadows(false); }
+    else if (st.mode === 'low') { st.cap = 1; st.floor = Math.min(1, rawDPR) * 0.75; setShadows(true); setShadowSize(1024); renderer.shadowMap.type = THREE.PCFShadowMap; }   // v2.6: Low keeps one 1024 hard shadow (grounding); drops ink, extras, DPR
     else { st.cap = Math.min(rawDPR, 1.5); st.floor = Math.min(0.75, st.cap); setShadows(true); setShadowSize(phone ? 1024 : 2048); renderer.shadowMap.type = phone ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; }
     // v2.3: a step-down sticks for this visit (coming back from a lesson panel used to reset it and re-run the slow ramp)
     st.dpr = renderer.getPixelRatio();   // the Classic background may have changed it behind our back

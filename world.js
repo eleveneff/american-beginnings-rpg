@@ -520,7 +520,7 @@ function card(c) {
   el.querySelectorAll("[data-wb]").forEach(b => b.onclick = () => { const a = cardActs[+b.dataset.wb]; if (a && a.f) a.f(); });
   const first = el.querySelector("button"); if (first) first.focus({ preventScroll: true });
 }
-function closeCard() { const el = document.getElementById("w-card"); el.hidden = true; el.innerHTML = ""; L.cardOpen = false; }
+function closeCard() { const el = document.getElementById("w-card"); el.hidden = true; el.innerHTML = ""; L.cardOpen = false; clearHeld(); }   // v2.6: no walking off on return
 const lessonBtn = i => ({ t: "📜 " + esc(S1().lessons[i].title), f: () => { closeCard(); openPanel(() => window.ABRPG.lesson("s1", i, false)); } });
 const actBtn = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s1", id, resume)); } });
 function tracksCard() { const n = W.season.tracks.length; return { title: "🦌 The caribou trail", body: "<p>Herds of caribou walk this trail with the seasons, and hunters followed them. Look on the ground near this trail: can you find <b>3 sets of caribou tracks</b>?</p><p><b>Found: " + n + " of 3</b>" + (n >= 3 ? " — great tracking! Following herds is how Ice Age hunters lived." : "") + "</p><p><small>This is an exploring game (no stars). Walk over a set of tracks to find it.</small></p>" }; }
@@ -739,7 +739,7 @@ function exitLevel(toClassic) {
   if (toClassic) window.ABRPG.home();
 }
 function setPhase(p) {
-  const was = L.phase; L.phase = p; if (p !== "panel") L.inMarket = false;
+  const was = L.phase; L.phase = p; if (p !== "panel") L.inMarket = false; if (was !== p) clearHeld();   // v2.6: held keys / stick never carry across a panel
   const stage = document.getElementById("stage"), hud = document.getElementById("w-hud");
   document.body.classList.toggle("walking", p === "active");
   document.body.classList.toggle("world-linked", p === "panel");
@@ -814,7 +814,9 @@ window.addEventListener("keydown", e => {
 });
 window.addEventListener("keyup", e => { if (KEYMAP[e.code]) keys.delete(KEYMAP[e.code]); });
 window.addEventListener("blur", () => keys.clear());
+document.addEventListener("visibilitychange", () => { if (document.hidden) clearHeld(); });
 const joy = { id: null, x: 0, y: 0, cx: 0, cy: 0 };
+function clearHeld() { keys.clear(); joy.x = 0; joy.y = 0; }   // hoisted; only called from events / phase changes after init
 const drag = { id: null, x: 0 };
 function wireTouch() {
   const j = document.getElementById("w-joy"), knob = document.getElementById("w-knob");
@@ -980,6 +982,7 @@ window.addEventListener("resize", resize); resize();
   requestAnimationFrame(loop);
   const t = clock.tick();
   try {
+    if (document.hidden) return;   // v2.6: nothing renders while the tab is hidden (the clock clamps the step on return)
     if (L.phase === "active") {
       if (!L._refT || (L._refT -= t.raw) <= 0) { L._refT = 0.5; refreshRings(); }
       step(t.walk, t.fx);

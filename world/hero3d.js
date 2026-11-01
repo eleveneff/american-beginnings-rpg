@@ -90,11 +90,29 @@ const GEAR = {
   },
   'nav-cap': (col) => {               // head slot: a sailor's soft wool cap
     return { body: [part(new THREE.SphereGeometry(0.132, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), col || '#a8352a', 0, 1.415, -0.01, -0.2, 0, 0, 1, 0.95, 1), part(new THREE.TorusGeometry(0.125, 0.016, 6, 20), col || '#a8352a', 0, 1.44, 0, Math.PI / 2 - 0.2, 0, 0)] };
+  },
+  // ---- v2.6: Section 4 (Three Empires) art keys from content/v2-s4.js; drawn in Level 4 ----
+  'beaver-cap': (col) => {            // head slot: a round beaver-fur cap with a thick fur brim
+    const c = col || '#6b4226';
+    return { body: [part(new THREE.SphereGeometry(0.135, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.5), c, 0, 1.4, -0.005, -0.12, 0, 0, 1, 1.05, 1), part(new THREE.TorusGeometry(0.13, 0.03, 6, 20), '#7d5030', 0, 1.41, 0, Math.PI / 2 - 0.12, 0, 0), part(new THREE.SphereGeometry(0.02, 6, 4), '#4a2c18', 0, 1.545, -0.01)] };
+  },
+  'journal': (col) => {               // belt slot: a small leather-bound journal clipped at her right hip
+    const c = col || '#7a3b2e';
+    return { body: [part(new THREE.BoxGeometry(0.09, 0.12, 0.03), c, 0.15, 0.86, 0.08, 0, -0.35, 0), part(new THREE.BoxGeometry(0.082, 0.112, 0.024), '#efe6cf', 0.153, 0.86, 0.081, 0, -0.35, 0), part(new THREE.BoxGeometry(0.012, 0.05, 0.034), '#5a3a22', 0.15, 0.93, 0.08, 0, -0.35, 0)] };
+  },
+  'lantern': (col) => {               // off-hand slot: a small tin lantern hanging from her belt on the left side
+    const c = col || '#ffb703';
+    return { body: [part(new THREE.CylinderGeometry(0.004, 0.004, 0.06, 4), '#3a3a3a', -0.19, 0.86, 0.04), part(new THREE.BoxGeometry(0.07, 0.09, 0.07), c, -0.19, 0.78, 0.04), part(new THREE.BoxGeometry(0.078, 0.012, 0.078), '#4a4a48', -0.19, 0.83, 0.04), part(new THREE.BoxGeometry(0.078, 0.012, 0.078), '#4a4a48', -0.19, 0.73, 0.04), part(new THREE.ConeGeometry(0.05, 0.04, 4), '#4a4a48', -0.19, 0.855, 0.04, 0, Math.PI / 4, 0)] };
+  },
+  'satchel': (col) => {               // back slot: a leather satchel at her hip, its strap across her chest
+    const c = col || '#8d6e4a';
+    return { body: [part(new THREE.BoxGeometry(0.2, 0.15, 0.07), c, -0.17, 0.82, -0.06, 0, 0, 0.05), part(new THREE.BoxGeometry(0.205, 0.07, 0.075), '#6e5236', -0.17, 0.87, -0.06, 0, 0, 0.05), part(new THREE.TorusGeometry(0.21, 0.012, 4, 28).scale(1, 0.62, 1).rotateX(Math.PI / 2).rotateZ(0.85), '#5a3d24', 0, 1.0, 0)] };
   }
 };
 export const S1_ART = ['fur-cloak', 'spear', 'basket', 'shell-necklace', 'feather-band'];
 export const S2_ART = ['wampum-belt', 'paddle', 'buffalo-robe', 'turquoise'];
 export const S3_ART = ['compass', 'astrolabe', 'map-tube', 'sounding-lead', 'nav-cap'];
+export const S4_ART = ['beaver-cap', 'journal', 'lantern', 'satchel'];
 // outfits: the hide tunic of Levels 1–2, and (v2.5) a wool dress and linen collar for Spain in 1492
 const OUTFITS = { hide: { tunic: HIDE, hem: HIDE_D, fringe: true, sleeve: HIDE, leg: LEG, shoe: MOC }, wool: { tunic: '#3f5f7a', hem: '#2c4258', fringe: false, sleeve: '#ece3cf', leg: '#4a3a2e', shoe: '#2e2219' } };
 

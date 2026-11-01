@@ -679,6 +679,10 @@ async function ensureBuilt(sid = L.sid) {
     }
     const sparks = SPK.createSparks(THREE, lvl.scene, renderer, 400, L.cam);
     const gfx = G.createGfx({ THREE, renderer, scene: lvl.scene, sun: lvl.sun, hemi: lvl.hemi, getFocus: () => L.pos, isTouch: () => L.touch, toon: L.toon, chars: () => [L.hero && L.hero.root], sparks, onSlow: fps => offerClassic(fps), onApply: () => { L.dirty = true; } });
+    // v2.6 graphics pass 1: natural backdrop, ground colour variation, clouds, plants and water ripples for every level (world/scenery.js,
+    // its own seeded random so the level layouts never move; no colliders, no save data). A failure only skips the extras.
+    try { const SC = await import("./world/scenery.js"), sc = SC.enhanceScenery({ lvl, B, sid, rings }), up = lvl.update;
+      lvl.update = (dt, pos) => { up.call(lvl, dt, pos); sc.update(dt); }; lvl.scenery = sc; } catch (e) { console.warn("[world] scenery extras skipped", e); }
     LV[sid] = { B, lvl, cave, sparks, gfx, rings };
     useLevel(sid);
     buildHero();

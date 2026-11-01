@@ -28,7 +28,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.6' && (await p.evaluate(() => ABRPG.version)) === 'v2.6', 'version marker v2.6');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.6.1' && (await p.evaluate(() => ABRPG.version)) === 'v2.6.1', 'version marker v2.6.1');
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
@@ -362,6 +362,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { const t = await p.evaluate(() => { const o = document.getElementById('w-obj'), e = document.getElementById('w-era'); return [o.getBoundingClientRect().bottom, e.getBoundingClientRect().top]; }); assert(t[1] >= t[0], 'the era line sits below the banner even when it wraps'); }
     await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v25-palos.png');
     { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/"wool"/.test(hk), 'in 1492 Spain she wears the wool dress, not the hide tunic (' + hk + ')'); }
+    { const sc = await p.evaluate(() => { const { L } = __world._dbg(), s = L.lvl.scene; const P = (L.lvl.scenery && L.lvl.scenery.parts) || {}; return { ok: !!L.lvl.scenery, det: !!s.getObjectByName('gfx-detail'), cl: !!s.getObjectByName('clouds'), bo: P['gfx-boulders'] || 0, gr: P['gfx-grass'] || 0, w: P.water || 0, mip: (L.lvl.scenery.water || []).some(t => t.generateMipmaps) }; }); assert(sc.ok && sc.det && sc.cl && sc.bo > 10 && sc.gr > 300 && sc.w > 0 && !sc.mip, 'graphics pass 1 scenery extras are built (grass, boulders and plants in one mesh, clouds, water ripples without mipmaps) ' + JSON.stringify(sc)); }
     // geography: north = +z, WEST = +x. Canaries south-west of Palos, the Bahamas far west, Hispaniola south-east of San Salvador
     { const S = await p.evaluate(() => __world.stations());
       assert(S.canary.x > S.pier.x && S.canary.z < S.pier.z && S.ss.x > S.canary.x + 40 && S.hisp.z < S.ss.z - 30 && S.hisp.x <= S.ss.x, 'the ports sit in their real directions (Canaries SW of Palos, San Salvador far west, Hispaniola south-east of it)'); }

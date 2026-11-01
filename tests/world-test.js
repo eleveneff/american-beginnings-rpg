@@ -597,6 +597,97 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await p.evaluate(() => document.body.classList.remove('touch')); await p.setViewport({ width: 1280, height: 800 }); await sleep(300);
   }
 
+  console.log('v2.7 Section 5: Jamestown and Plymouth:');
+  { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
+    const s5base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G, s5: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE(), s4: DONE() }, ...extra });
+    const enterS5 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s5"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
+    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
+    const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
+    await seed(s5base(), null);
+    const before5 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    await enterS5(); w = await W();
+    assert((await p.evaluate(() => __world.level)) === 's5' && w.phase === 'active' && Math.abs(w.pos.x + 42) < 0.01 && Math.abs(w.pos.z + 64) < 0.01, 'tapping Section 5 opens Jamestown and Plymouth on Roanoke Island (-42, -64)');
+    assert(/Section 5 · Jamestown and Plymouth/.test(await p.$eval('#w-era', e => e.textContent)), 'era label names Section 5');
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 1 · /.test(bn), 'at the start the banner names a Marker 1 ring on Roanoke ("' + bn + '")'); }
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/"wool"/.test(hk), 'in the 1600s she wears the wool dress (' + hk + ')'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-roanoke.png');
+    // geography: north = +z, WEST = +x. Roanoke south, James Fort north of it across the James River, Plymouth far north
+    { const S = await p.evaluate(() => __world.stations());
+      assert(S.jamestown.z > S.roanoke.z + 20 && S.plymouth.z > S.jamestown.z + 40 && S.mayflower.x < S.plymouth.x && S.fields.x > S.jamestown.x && S.wampanoag.x > S.plymouth.x, 'the places sit in their real directions (Roanoke south, Virginia, then New England north; the Cape Cod coast east)'); }
+    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+      const off = rs.filter(r => !r.w || r.s); assert(rs.length === 31 && !off.length, 'all 31 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
+    { const rs = await p.evaluate(() => __world.rings()), close = [];
+      for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) if (Math.hypot(rs[i].x - rs[j].x, rs[i].z - rs[j].z) < 2.6) close.push(rs[i].id + '/' + rs[j].id);
+      assert(!close.length, 'no two rings overlap (' + close.join(', ') + ')'); }
+    { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
+      assert(hb.length === 2 && hb.every(h => h.w && !h.s), 'both ship landings are walkable (' + JSON.stringify(hb) + ')'); }
+    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().map(r => r.id)));
+      for (const id of ids) { await tpRing(id);
+        for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(260); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
+      assert(n === ids.length * 4 && !bad.length, 'camera never inside a building, wall or tree at ' + ids.length + ' rings × 4 views (' + bad.join(', ') + ')'); }
+    { await tp(-28, -27); await p.evaluate(() => __world.faceCam(Math.PI)); await hold('KeyW', 2500); w = await W();
+      assert(w.pos.z > -31.2, 'the triangular palisade stops her away from the gates (z ' + w.pos.z.toFixed(2) + ')'); }
+    console.log('  scrolls and cards:');
+    for (const [id, re, i] of [['s5-l0', /Roanoke/, 0], ['s5-l4', /Mayflower/, 4]]) {
+      await tpRing(id); await p.evaluate(() => __world.use()); await sleep(400);
+      assert((await W()).phase === 'panel' && re.test(await p.$eval('#screen', e => e.textContent)), id + ' ring opens its scroll');
+      if (i === 0) assert(/Back to Jamestown and Plymouth/.test(await p.$eval('#w-back', e => e.textContent)), '"Back to Jamestown and Plymouth" chip shows while a Section 5 panel is open');
+      assert((await p.evaluate(() => __world.readL('s5'))).includes(i), 'scroll ' + (i + 1) + ' marked read for Section 5 (world key)');
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+    for (const [id, re] of [['croatoan', /CROATOAN/], ['ships', /Susan Constant/], ['fort5', /triangle/], ['starving', /about <b>60<\/b>|about 60/], ['assembly', /July 30, 1619/], ['tobacco', /1612/], ['powhatan', /Tsenacommacah/], ['mayship', /102 passengers/], ['plymouth', /half/], ['colonies', /1623/], ['wampanoag', /Massasoit/], ['cornhills', /Three Sisters/]]) {
+      const cd = await useCard(id); assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
+    { const cd = await useCard('assembly'); assert(/burgesses/.test(cd) && /22/.test(cd) && /Africans/.test(cd), 'the Assembly card names the burgesses and tells the honest 1619 history'); await closeCards(); }
+    console.log('  the ship up the James River:');
+    { const cd = await useCard('ship-south'); assert(/James I/.test(cd), 'the ship card: the river named for King James I');
+      await p.evaluate(() => [...document.querySelectorAll('#w-card button')].find(b => /James River/.test(b.textContent)).click()); await sleep(1300); w = await W();
+      const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.north);
+      assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'she sails to the James Fort landing'); }
+    { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 2 · /.test(bn), 'at James Fort the banner names Marker 2 ("' + bn + '")'); }
+    await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v27-jamesfort.png');
+    { const r = await ringAt('s5-l1'); await tp(r.x + 2, r.z - 18); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-jamesfort-ships.png'); }
+    await p.evaluate(() => __world.ship5('south')); await sleep(1300); w = await W();
+    { const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.south); assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'and sails back to Roanoke'); }
+    { const r = await ringAt('compact'); await tp(-40, 18); await p.evaluate(() => __world.faceCam(Math.PI / 2)); await sleep(500); await shot('v27-mayflower.png'); }
+    { await tp(-19, 34.5); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-plymouth.png'); }
+    { const r = await ringAt('wampanoag'); await tp(r.x - 5, r.z - 4); await p.evaluate(() => __world.faceCam(Math.atan2(5, 4))); await sleep(500); await shot('v27-wampanoag.png'); }
+    { const r = await ringAt('market'); await tpRing('market'); await p.evaluate(() => __world.use()); await sleep(500);
+      assert((await W()).phase === 'panel' && /Jamestown Storehouse/.test(await p.$eval('#screen', e => e.textContent)), 'the market ring opens the Jamestown Storehouse');
+      await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }
+    const after5 = await p.evaluate(k => localStorage.getItem(k), KEY);
+    assert(Object.keys(JSON.parse(after5)).sort().join(',') === Object.keys(JSON.parse(before5)).sort().join(','), 'no new progress-save fields from exploring Jamestown and Plymouth');
+    console.log('  the fort-meetinghouse (Trial):');
+    { const cd = await useCard('trial'); assert(/all 10 scrolls/.test(cd) && (await W()).phase === 'active', 'the Trial ring stays locked until all 10 scrolls are read'); await closeCards(); }
+    for (const i of [0, 1, 2, 3, 4, 5, 6, 7]) { await p.evaluate(i => ABRPG.lesson('s5', i, false), i); await sleep(80); }
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    assert(!(await p.evaluate(() => __world.gateOpenS5())), 'with 8 of 10 scrolls the door is still shut');
+    for (const i of [8, 9]) { await p.evaluate(i => ABRPG.lesson('s5', i, false), i); await sleep(80); }
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    assert(await p.evaluate(() => __world.gateOpenS5()) && (await ringAt('trial')).state === 'new', 'with all 10 scrolls read the fort-meetinghouse opens');
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500);
+    assert((await W()).phase === 'panel', 'the Trial opens as the real Section 5 trial panel');
+    if (await p.$('#b-trial')) await click('#b-trial');
+    for (let i = 0; i < 3; i++) await answer(true);
+    await go(); await enterS5(); w = await W();
+    { const t = await ringAt('trial'); assert((await p.evaluate(() => __world.level)) === 's5' && Math.hypot(w.pos.x - t.x, w.pos.z - t.z + 4) < 1, 'reload mid-trial: entering Section 5 puts her by the fort-meetinghouse'); }
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(500); if (await p.$('#b-resume')) await click('#b-resume');
+    assert((await p.evaluate(() => ABRPG.state().run.idx)) === 3, 'the Section 5 Trial resumes at question 4');
+    await p.evaluate(() => ABRPG.home()); await waitPhase('active');
+    { const wk = await p.evaluate(k => JSON.parse(localStorage.getItem(k)), WKEY); assert(wk.read.s5.length === 10 && wk.seen.croatoan && wk.seen.assembly && wk.at && wk.at.s5, 'Section 5 scrolls, cards and position live in the world key'); }
+    console.log('  world key safety + Pilgrim gear:');
+    await seed(s5base(), { ver: 1, mode: 'walk', at: { s5: { x: 1e9, z: 3, yaw: 'q' } }, read: { s5: [0, 12, 'a', 9, 9] }, seen: { help5: true, croatoan: 'yes', bogus: true } });
+    await enterS5(); w = await W();
+    assert(Math.abs(w.pos.x + 42) < 0.01 && Math.abs(w.pos.z + 64) < 0.01 && JSON.stringify(await p.evaluate(() => __world.readL('s5'))) === '[0,9]' && !(await p.evaluate(() => __world.seen())).bogus, 'junk Section 5 world data is cleaned (start spot, only valid scroll ids)');
+    await seed(s5base({ owned: ['pilgrim-collar', 'iron-hoe', 'capotain', 'quill-charter'], equip: { neck: 'pilgrim-collar', hand: 'iron-hoe', head: 'capotain', offhand: 'quill-charter' } }), { ver: 1, mode: 'walk', at: { s5: { x: -19, z: 36, yaw: 0 } }, seen: { help5: true } });
+    await enterS5(); w = await W();
+    assert(Math.abs(w.pos.x + 19) < 0.01 && Math.abs(w.pos.z - 36) < 0.01, 'a saved Section 5 spot is restored');
+    { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/collar/.test(hk) && /hoe/.test(hk) && /capotain/.test(hk) && /charter/.test(hk) && /wool/.test(hk), 'the Pilgrim gear shows on the wool dress (' + hk + ')'); }
+    await p.evaluate(() => __world.faceCam(Math.PI / 2)); await sleep(900); await shot('v27-hero.png');
+    assert(!/buckle band/.test(await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's5')))), 'no buckled Pilgrim hat in Section 5 content');
+    { await p.setViewport({ width: 390, height: 844 }); await p.evaluate(() => document.body.classList.add('touch')); await tpRing('plymouth'); await sleep(700); await shot('v27-phone-390x844.png');
+      await p.evaluate(() => document.body.classList.remove('touch')); await p.setViewport({ width: 1280, height: 800 }); await sleep(300); }
+  }
+
   console.log('old saves + world key safety:');
   await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' } }, sections: { s1: { attempts: 1, history: [{ pct: 90 }], bestPct: 90, completed: false, correctCount: 5, gearEarned: 1, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 5, totalAnswered: 6 }, null);
   s = await p.evaluate(() => ABRPG.state()); assert(s.version === 3 && s.owned.includes('fur-cloak'), 'v1 save loads (gear mapped)');

@@ -41,7 +41,14 @@ const LOOK = {
     tint: ['#b6a46c', '#6f8f4c'], grass: '#7f9450', plant: '#557a3c',
     flowers: (x, z) => x > 35 ? ['#e9c43a'] : z > 30 ? ['#f2eee2', '#8f7ad0'] : z < -25 ? ['#f2eee2', '#e9c43a'] : ['#f2eee2', '#e9c43a', '#8f7ad0'],   // chamisa in the desert; asters north; Florida white and yellow
     plantCol: (x, z) => x > 35 ? '#8f9c7a' : z > 30 ? '#4e7d3c' : z < -25 && x < 10 ? '#4f7a3a' : null,   // sagebrush / ferns / saw palmetto
-    rock: (x) => x > 35 ? '#a07a5c' : '#8b867e', clouds: '#ffffff', cloudN: 10, density: 0.7 }
+    rock: (x) => x > 35 ? '#a07a5c' : '#8b867e', clouds: '#ffffff', cloudN: 10, density: 0.7 },
+  s5: {   // v2.7: east (-x) the open Atlantic; west (+x) the far Blue Ridge; north the rolling hills of New England; south flat tidewater
+    bands: [{ col: '#c2ccd2', snow: '#eef1f3', kind: a => (a > deg(-165) && a < deg(-25)) ? 'sea' : a > deg(40) && a < deg(140) ? 'ridge' : a >= deg(-25) && a <= deg(40) ? 'ridge' : 'low', amp: 0.7 },
+            { col: '#a3b2b5', snow: '#e6ebee', kind: a => (a > deg(-170) && a < deg(-15)) ? 'sea' : a > deg(50) && a < deg(130) ? 'ridge' : 'low', amp: 0.45 }],
+    tint: ['#a9a066', '#6c8f48'], grass: '#7c9150', plant: '#547a3a',
+    flowers: (x, z) => z > 2 ? ['#e8b830', '#8f7ad0', '#f2eee2'] : ['#f2eee2', '#e9c43a', '#c46aa8'],   // goldenrod and asters in a New England autumn; Virginia's white yarrow, yellow and pink phlox
+    plantCol: (x, z) => z > 2 ? '#4e7d3c' : null,   // ferns under the New England woods
+    rock: '#8b867e', clouds: '#ffffff', cloudN: 10, density: 0.75 }
 };
 
 // ---------- painted horizon band

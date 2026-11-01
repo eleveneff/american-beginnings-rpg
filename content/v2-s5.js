@@ -3,7 +3,7 @@ GAME_CONTENT.extend("s5", {
   gear: [
     { key: "pilgrim-collar", name: "Pilgrim Collar", icon: "🤍", slot: "neck", art: "collar", color: "#ffffff", desc: "A crisp white linen falling band, laid over your shoulders." },
     { key: "iron-hoe", name: "Iron Garden Hoe", icon: "⛏️", slot: "hand", art: "hoe", color: "#5b5b5b", desc: "He that will not work shall not eat!" },
-    { key: "capotain", name: "Capotain Hat", icon: "🎩", slot: "head", art: "capotain", color: "#2b2b2b", desc: "A tall hat with a buckle band." },
+    { key: "capotain", name: "Capotain Hat", icon: "🎩", slot: "head", art: "capotain", color: "#2b2b2b", desc: "A tall-crowned felt hat with a plain band, as English men and women wore in the 1620s (the buckled \"Pilgrim hat\" was invented by artists much later)." },
     { key: "quill-charter", name: "Quill and Charter", icon: "🪶", slot: "offhand", art: "charter", color: "#e9d9a6", desc: "For signing agreements of self-government." }
   ],
   addText: {

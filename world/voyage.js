@@ -470,4 +470,4 @@ export function buildVoyage({ mergeAO, rings: ringDefs, matLabels = {} }) {
 }
 
 // v2.6: shared helpers for the Level 4 module (world/empires.js)
-export { vc, P, M, rng, tube, CYL, BOX, tris, quad, roofGeo, houseGeo, makeRing, barrelGeo, crateGeo, palmGeo, bohioGeo };
+export { vc, P, M, rng, tube, CYL, BOX, tris, quad, roofGeo, houseGeo, makeRing, barrelGeo, crateGeo, palmGeo, bohioGeo, shipGeo };

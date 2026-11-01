@@ -564,6 +564,23 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/beaver-cap/.test(hk) && /lantern/.test(hk) && /satchel/.test(hk) && /journal/.test(hk) && /wool/.test(hk), 'the explorer gear shows on the wool dress (' + hk + ')'); }
     await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(700); await shot('v26-hero.png');
     assert(!/🇪🇸/.test(await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's4')))), 'no modern flag emoji in Section 4 content');
+    console.log('  phone HUD (390x844 and 844x390):');
+    for (const [vw, vh] of [[390, 844], [844, 390]]) {
+      await p.setViewport({ width: vw, height: vh }); await p.evaluate(() => document.body.classList.add('touch')); await tpRing('fort'); await sleep(700);
+      const lay = await p.evaluate(() => { const ids = ['w-obj', 'w-era', 'w-prompt', 'w-joy', 'w-use', 'w-tools'], R = {};
+        for (const id of ids) { const e = document.getElementById(id); if (!e || e.hidden || getComputedStyle(e).display === 'none') continue; const r = e.getBoundingClientRect(); if (r.width && r.height) R[id] = r.toJSON(); }
+        const tb = document.getElementById('topbar'); if (tb && tb.offsetParent !== null && getComputedStyle(tb).display !== 'none') { const r = tb.getBoundingClientRect(); if (r.height) R.topbar = r.toJSON(); }
+        return { R, iw: innerWidth, ih: innerHeight }; });
+      const k = Object.keys(lay.R), hit = [], outside = [];
+      for (let i = 0; i < k.length; i++) { const a = lay.R[k[i]]; if (a.left < -1 || a.top < -1 || a.right > lay.iw + 1 || a.bottom > lay.ih + 1) outside.push(k[i]);
+        for (let j = i + 1; j < k.length; j++) { const c = lay.R[k[j]]; if (a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1) hit.push(k[i] + '/' + k[j]); } }
+      assert(lay.R['w-prompt'] && lay.R['w-use'] && lay.R['w-joy'] && !hit.length && !outside.length, 'phone ' + vw + 'x' + vh + ': prompt, joystick, Use, tools, objective and era never overlap and stay on screen (' + JSON.stringify({ hit, outside, shown: k }) + ')');
+      await p.evaluate(() => document.getElementById('w-help').click()); await sleep(300);
+      const cf = await p.evaluate(() => { const c = document.querySelector('.w-card-in'), bs = [...document.querySelectorAll('.w-card-btns .btn')]; if (!c || !bs.length) return null; const r = c.getBoundingClientRect(), lb = bs[bs.length - 1].getBoundingClientRect(); return { top: r.top, bottom: r.bottom, btnBottom: lb.bottom, btnTop: lb.top, ih: innerHeight }; });
+      assert(cf && cf.top >= 0 && cf.bottom <= cf.ih + 1 && cf.btnTop >= cf.top && cf.btnBottom <= cf.bottom + 1, 'phone ' + vw + 'x' + vh + ': the help card fits the screen and its buttons stay in view (' + JSON.stringify(cf) + ')');
+      await shot('v26-phone-' + vw + 'x' + vh + '.png'); await closeCards();
+    }
+    await p.evaluate(() => document.body.classList.remove('touch')); await p.setViewport({ width: 1280, height: 800 }); await sleep(300);
   }
 
   console.log('old saves + world key safety:');

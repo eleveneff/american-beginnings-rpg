@@ -274,8 +274,14 @@ function fordLabelTex(top, bottom, tone) {
   x.fillStyle = tone === "ok" ? "rgba(32,74,40,0.86)" : tone === "hint" ? "rgba(140,96,10,0.9)" : "rgba(40,30,22,0.82)";
   x.beginPath(); x.roundRect(6, 6, 500, 148, 26); x.fill(); x.strokeStyle = tone === "hint" ? "#ffd75e" : "rgba(255,236,200,0.75)"; x.lineWidth = 5; x.stroke();
   x.fillStyle = "#fff6e4"; x.textAlign = "center"; x.textBaseline = "middle";
-  let fs = 46; x.font = "700 " + fs + "px system-ui, sans-serif"; while (x.measureText(top).width > 470 && fs > 26) { fs -= 2; x.font = "700 " + fs + "px system-ui, sans-serif"; }
-  x.fillText(top, 256, bottom ? 58 : 80);
+  const fit = (txt, fs, min) => { x.font = "700 " + fs + "px system-ui, sans-serif"; while (x.measureText(txt).width > 470 && fs > min) { fs -= 2; x.font = "700 " + fs + "px system-ui, sans-serif"; } return fs; };
+  // v2.4 QC: a long name with no date line wraps onto two lines instead of shrinking to an unreadable size
+  x.font = "700 36px system-ui, sans-serif";
+  if (!bottom && x.measureText(top).width > 470) {
+    let cut = top.indexOf(" ("); if (cut < 0) { const mid = top.length / 2; let best = -1; for (let i = 0; i < top.length; i++) if (top[i] === " " && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i; cut = best; }
+    if (cut > 0) { const a = top.slice(0, cut).trim(), b = top.slice(cut).trim(); fit(a.length > b.length ? a : b, 42, 28); x.fillText(a, 256, 56); x.fillText(b, 256, 106); }
+    else { fit(top, 46, 26); x.fillText(top, 256, 80); }
+  } else { fit(top, 46, 26); x.fillText(top, 256, bottom ? 58 : 80); }
   if (bottom) { x.font = "600 34px system-ui, sans-serif"; x.fillStyle = tone === "ok" ? "#bff0b4" : "#ffe3a3"; x.fillText(bottom, 256, 114); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -708,6 +714,7 @@ function camBlocked(x, y, z) {
   }
   return false;
 }
+const LOOK_UP = 1.1;
 function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
@@ -721,7 +728,7 @@ function placeCamera(dt, snap) {
   for (let t = 0.4; t <= len + 0.001; t += 0.2) {
     if (camBlocked(tgt.x + dx / len * t, tgt.y + dy / len * t, tgt.z + dz / len * t)) { const k = Math.max(0.9, t - 0.3) / len; L.camPos.set(tgt.x + dx * k, tgt.y + dy * k, tgt.z + dz * k); L.camPulled = true; break; }
   }
-  L.cam.position.copy(L.camPos); L.cam.lookAt(tgt);
+  L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, len / 7), tgt.z);   // aim a little above her head: more of the land ahead and tall landmarks stay in frame
 }
 function step(dt, raw) {
   const B = L.mods.B;

@@ -1,14 +1,15 @@
 # NEXT: resume notes for American Beginnings RPG
 
-- **Live:** v2.6.1 graphics pass 1 (scenery on Levels 1–4), on top of v2.6 Level 4 "Three Empires" (97b8346, live-verified Nov 1 ~1 AM ET:
-  every shipped file matches live, marker v2.6, Level 3 hull fix and "about five weeks from the Canaries" wording live).
-- Before/after shots: /workspace/abrpg-report/v26-gfx-before-*.png, v26-gfx-after-*.png, v26-gfx-compare-*.jpg.
+- **Live:** v2.6.2 graphics pass 2 (every element on Levels 1–4: light grade + rim light per era, ring glow, label fade,
+  motes, sewn sails, 2D paper grain, market stage vignette/shadow, floating joystick, clear-transients).
+  QC Nov 1 ~3:20–3:44 AM ET: world test ALL PASSED, smoke ALL PASSED, fps equal or better than v2.6.1 (0 page errors).
+- Shots: /workspace/abrpg-report/v27-gfx2-before-*.png, v27-gfx2-after-*.png, v27-gfx2-compare-*.jpg.
+- Lessons: /workspace/shared/abrpg-lessons/graphics-lessons.md. Not done in pass 2: animal gait polish, plant sway.
 
 ## Open items, in order
-1. Graphics pass 2 (every element, v2.6.2): world/polish.js (ring light, label fade, light grade, motes, QC freeze),
-   sails sewn from cloths, 2D panel finish (paper grain), floating joystick, clear-transients. Shots v27-gfx2-*.
-   Write graphics-lessons.md. **Report to John before Level 5.**
-2. Level 5 Jamestown and Plymouth (v2.7), then Level 6 Colonial growth (v2.8).
+1. Level 5 Jamestown and Plymouth (v2.7): built in worktree /workspace/abrpg-l5 (branch level5, merged with main).
+   Sketch: /workspace/abrpg-design/sketches/s5-jamestown-plymouth-level-map.jpg. Next: serve worktree on :8775, run its world test, fix, merge, push.
+2. Level 6 Colonial growth to 1754 (v2.8).
 3. Still deferred: the interior clear-line camera yaw.
 
 ## How to run heavy QC (only 1–3 AM or 3:15–7 AM ET unless John says otherwise)

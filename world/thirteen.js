@@ -171,7 +171,7 @@ export function buildThirteen({ mergeAO, rings: ringDefs, matLabels = {} }) {
   // ===== 1 · Charles Town, 1740s: the harbor wharf, a brick row, the rice field and indigo vats
   { const { x: cx, z: cz } = STATIONS.charleston;
     add(M([P(BOX(8, 0.3, 3), '#7a5a3a', 0, 0, 0)]), -54, cz + 2, 0, 1, true, 0.05); box(-58, -50, cz + 0.5, cz + 3.5);
-    add(shipGeo('nao', 'square'), -60, cz + 6, Math.PI / 2, 0.7, true, WATER_Y - 0.15); shipOcc('nao', -60, cz + 6, 0.7);
+    add(shipGeo('nao', 'square', { flag: 'britain', furled: true }), -60, cz + 6, Math.PI / 2, 0.7, true, WATER_Y - 0.15); shipOcc('nao', -60, cz + 6, 0.7);
     for (const [hx, hz] of [[-50, -41], [-45, -41], [-40, -41]]) building(brickHouseGeo(4, 3.4, 4.4, rnd, '#e0c8a0', '#6a5a4a'), hx, hz, Math.PI, 4, 3.4, 5.9);
     for (let r = 0; r < 6; r++) for (let i = 0; i < 9; i++) add(riceGeo(rnd), -37.5 + i * 1.1, -61.5 + r * 1.5, 0, 1, false);
     add(vatGeo(), -27, -58, 0.1); add(vatGeo(), -27, -60.2, 0.1); box(-28.3, -25.7, -61.2, -57.0);
@@ -219,7 +219,7 @@ export function buildThirteen({ mergeAO, rings: ringDefs, matLabels = {} }) {
   // ===== 6 · Boston: Long Wharf, King Street up to the Town House, a steepled meetinghouse, fishing boats
   { const { x: cx, z: cz } = STATIONS.boston;
     add(M([P(BOX(10, 0.3, 2.6, ), '#7a5a3a', 0, 0, 0)]), -55, cz, 0, 1, true, 0.05); box(-60, -50, cz - 1.3, cz + 1.3);
-    add(shipGeo('caravel', 'square'), -60, cz - 5, Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15); shipOcc('caravel', -60, cz - 5, 0.55); add(shipGeo('nao', 'square'), -62, cz + 6, Math.PI / 2 - 0.1, 0.65, true, WATER_Y - 0.15); shipOcc('nao', -62, cz + 6, 0.65);
+    add(shipGeo('caravel', 'square', { flag: 'britain', furled: true }), -60, cz - 5, Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15); shipOcc('caravel', -60, cz - 5, 0.55); add(shipGeo('nao', 'square', { flag: 'britain', furled: true }), -62, cz + 6, Math.PI / 2 - 0.1, 0.65, true, WATER_Y - 0.15); shipOcc('nao', -62, cz + 6, 0.65);
     building(brickHouseGeo(5, 3.6, 4.8, rnd, '#a8553a'), -48, cz + 3.5, Math.PI / 2, 5, 3.6, 6.3);   // the Town House (1713), at the head of King Street
     building(steepleGeo(5, 7, 3.6, rnd), -44, 34, Math.PI, 5, 9, 9.5);   // the meetinghouse
     for (const [hx, hz, ry] of [[-36, 52, Math.PI], [-30, 52, Math.PI], [-50, 37, 0]]) building(houseGeo(3.8, 3.2, 2.6, '#9a8a70', '#5a4a3a', rnd), hx, hz, ry, 3.8, 3.2, 4.4);

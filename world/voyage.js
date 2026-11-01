@@ -185,9 +185,12 @@ function shipGeo(kind, rig, opts = {}) {
     } else { const yl = mh * 1.15, ya = [0, fb + mh * 0.95, mz - yl * 0.45], yb = [0, fb + mh * 0.35, mz + yl * 0.55], clew = [0, fb + 1.2, mz - yl * 0.38];
       g.push(tube([ya, [(ya[0] + yb[0]) / 2, (ya[1] + yb[1]) / 2, (ya[2] + yb[2]) / 2], yb], 0.06, '#5a3d24', 2));
       if (!opts.furled) { const mid = [0.5, (ya[1] + clew[1]) / 2 + 0.2, (ya[2] + yb[2]) / 2 - 0.4]; g.push(tris([ya, yb, mid, ya, mid, clew, mid, yb, clew], p => p[1] > fb + mh * 0.5 ? SAIL : SAIL_D)); } }
-    if (mh === Math.max(...masts.map(m => m[1])) && !opts.wreck) {   // the Cross of Burgundy: a red ragged saltire on white, flown by Spanish ships
-      const fy = fb + mh + 0.35, fz = mz - 0.85; g.push(P(CYL(0.03, 0.03, 0.9, 4), '#5a3d24', 0, fy - 0.1, mz), P(BOX(0.03, 0.8, 1.3), '#f2eee2', 0, fy, fz));
-      for (const r of [-0.55, 0.55]) g.push(P(BOX(0.05, 0.13, 1.42), '#b0302a', 0, fy, fz, r, 0, 0));
+    if (mh === Math.max(...masts.map(m => m[1])) && !opts.wreck) {   // the ship's flag on the tallest mast (opts.flag)
+      const fy = fb + mh + 0.35, fz = mz - 0.85, fl = opts.flag || 'spain'; g.push(P(CYL(0.03, 0.03, 0.9, 4), '#5a3d24', 0, fy - 0.1, mz), P(BOX(0.03, 0.8, 1.3), fl === 'britain' ? '#22408a' : '#f2eee2', 0, fy, fz));
+      if (fl === 'england') g.push(P(BOX(0.05, 0.8, 0.2), '#b0302a', 0, fy, fz), P(BOX(0.05, 0.16, 1.3), '#b0302a', 0, fy, fz));   // St. George: a red cross on white (English ships, 1600s)
+      else if (fl === 'britain') { for (const r of [-0.55, 0.55]) g.push(P(BOX(0.05, 0.16, 1.42), '#f2eee2', 0, fy, fz, r, 0, 0));   // the 1707 Union Flag (colonial ships, 1700s)
+        g.push(P(BOX(0.06, 0.8, 0.34), '#f2eee2', 0, fy, fz), P(BOX(0.06, 0.26, 1.3), '#f2eee2', 0, fy, fz), P(BOX(0.07, 0.8, 0.18), '#b0302a', 0, fy, fz), P(BOX(0.07, 0.14, 1.3), '#b0302a', 0, fy, fz)); }
+      else for (const r of [-0.55, 0.55]) g.push(P(BOX(0.05, 0.13, 1.42), '#b0302a', 0, fy, fz, r, 0, 0));   // the Cross of Burgundy: a red ragged saltire on white, flown by Spanish ships
     } else g.push(P(BOX(0.04, 0.4, 0.9), '#b0302a', 0, fb + mh - 0.1, mz - 0.5));   // pennant
   });
   // shrouds (rigging lines) to the main mast

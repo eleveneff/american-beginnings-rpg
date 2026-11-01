@@ -65,6 +65,8 @@ export const STONES = [], FORD_ROWS = 0, FORD_RESPAWN = { x: -30, z: -32, yaw: 0
 export function onStone() { return null; }
 export function walkY(x, z) { return groundH(x, z); }
 export function solid(x, z) { return groundH(x, z) < WATER_Y + 0.25; }
+// v2.8: the three 1607 ships ride at anchor in mid-river, spaced apart; the ship that carries her waits downstream, clear of them
+export const JSHIPS = [[-6, -40], [-21, -40.4], [-34, -39.8]], RSHIP = [-48, -43];
 // the ship crossing of the James River (the "Sail" rings fade her across; nothing is saved but at.s5)
 export const HARBORS = {
   south: { x: -30, z: -51, yaw: Math.PI, label: 'Roanoke, the south shore' },
@@ -198,7 +200,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     add(crateGeo('#7a6a4a'), cx - 7.5, cz + 4.2, 0.4); add(barrelGeo(), cx - 8.8, cz + 3.4);
     labels.push([STATIONS.roanoke, '1 · Roanoke Island, 1587', 'the Lost Colony']);
     // the ship that carries her up the river to Jamestown, waiting off the south shore
-    add(shipGeo('caravel', 'square'), -24, -45.4, Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15); shipOcc('caravel', -24, -45.4, 0.55);
+    add(shipGeo('caravel', 'square', { flag: 'england' }), RSHIP[0], RSHIP[1], Math.PI / 2 + 0.1, 0.55, true, WATER_Y - 0.15); shipOcc('caravel', RSHIP[0], RSHIP[1], 0.55);
   }
   // ===== 2 · James Fort, 1607: a triangle of upright logs, a round bulwark at each corner, the three ships in the river
   { const A = [-33, -31], B = [-11, -31], T = [-22, -13];
@@ -213,8 +215,8 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     // the church outside the fort, where the General Assembly met on July 30, 1619
     building(M([englishHouseGeo(4, 7, 2.8, rnd, '#c0aa82'), P(BOX(1.2, 1.2, 1.2), '#8a6a46', 0, 4.6, 3.0), P(new THREE.ConeGeometry(0.95, 1.5, 4), '#5a4a3a', 0, 5.9, 3.0, 0, Math.PI / 4, 0)]), -38, -18.5, Math.PI, 4, 7, 6);
     // the three ships of 1607 at anchor in the James River: the Susan Constant, the Godspeed and the Discovery
-    const ships = [['nao', 'square', -12, -41.4, 'Susan Constant', 'about 120 tons', 0.72], ['caravel', 'square', -23, -41.9, 'Godspeed', 'about 40 tons', 0.6], ['caravel', 'square', -33, -42.4, 'Discovery', 'a small pinnace, about 20 tons', 0.45]];
-    for (const [k, rig, x, z, name, type, s] of ships) { add(shipGeo(k, rig), x, z, Math.PI / 2 + (rnd() - 0.5) * 0.1, s, true, WATER_Y - 0.15); shipOcc(k, x, z, s); const lab = labelSprite(name, 4.2, type); lab.position.set(x, 10.5 * s / 0.72, z); lab.name = 'ship-label'; scene.add(lab); }
+    const ships = [['nao', 'square', JSHIPS[0][0], JSHIPS[0][1], 'Susan Constant', 'about 120 tons', 0.72], ['caravel', 'square', JSHIPS[1][0], JSHIPS[1][1], 'Godspeed', 'about 40 tons', 0.6], ['caravel', 'square', JSHIPS[2][0], JSHIPS[2][1], 'Discovery', 'a small pinnace, about 20 tons', 0.45]];
+    for (const [k, rig, x, z, name, type, s] of ships) { add(shipGeo(k, rig, { flag: 'england', furled: true }), x, z, Math.PI / 2 + (rnd() - 0.5) * 0.1, s, true, WATER_Y - 0.15); shipOcc(k, x, z, s); const lab = labelSprite(name, 4.2, type); lab.position.set(x, 10.5 * s / 0.72, z); lab.name = 'ship-label'; scene.add(lab); }
   }
   // ===== 3 · Tobacco fields and a Powhatan town
   { for (let r = 0; r < 4; r++) for (let i = 0; i < 9; i++) add(tobaccoGeo(rnd), 8.5 + i * 1.4 + (r % 2) * 0.7, -30 + r * 1.3, rnd() * 6, 0.9 + rnd() * 0.2, false);
@@ -224,7 +226,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
     labels.push([STATIONS.fields, '3 · Tobacco fields', 'John Rolfe · the Powhatan']);
   }
   // ===== 4 · Cape Cod Harbor, November 1620: the Mayflower at anchor, her shallop pulled up on the beach
-  { add(shipGeo('nao', 'square'), -61, 22, Math.PI / 2 + 0.15, 0.85, true, WATER_Y - 0.15); shipOcc('nao', -61, 22, 0.85);
+  { add(shipGeo('nao', 'square', { flag: 'england', furled: true }), -61, 22, Math.PI / 2 + 0.15, 0.85, true, WATER_Y - 0.15); shipOcc('nao', -61, 22, 0.85);
     const lab = labelSprite('Mayflower', 4.6, 'a merchant ship · 102 passengers'); lab.position.set(-61, 13, 22); lab.name = 'ship-label'; scene.add(lab);
     add(M([P(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), '#5a3d24', 0, 0.45, 0, Math.PI, 0, 0, 0.9, 0.45, 2.6), P(BOX(1.6, 0.06, 0.2), '#7a5a38', 0, 0.42, 0.6)]), -51.5, 17, 0.4, 1, true, gy(-51.5, 17) + 0.02); circ(-51.5, 17, 1.0);
     add(barrelGeo(), -50, 27); add(crateGeo('#8a6a48'), -49.4, 28.2, 0.3);
@@ -274,7 +276,7 @@ export function buildColonies({ mergeAO, rings: ringDefs, matLabels = {} }) {
   // pines in New England
   const near = (x, z, pad) => { for (const k in STATIONS) { const s = STATIONS[k]; if (Math.hypot(x - s.x, z - s.z) < s.r + pad) return true; } return false; };
   const blocked = (x, z, pad) => { for (const c of colliders.out) { if (c.type === 'c' && Math.hypot(x - c.x, z - c.z) < c.r + pad) return true; if (c.type === 'b' && Math.abs(x - c.x) < c.hx + pad && Math.abs(z - c.z) < c.hz + pad) return true; } return false; };
-  const fieldZone = (x, z) => (x > 2 && x < 23 && z > -32 && z < -24) || (x > 13 && x < 27 && z > 15 && z < 26);
+  const fieldZone = (x, z) => (x > 2 && x < 23 && z > -32 && z < -24) || (x > 13 && x < 27 && z > 15 && z < 26) || (x > -42 && x < 4 && z > -51 && z < -44) || (x > -44 && x < -30 && z > -37 && z < -31); // last two: keep the banks clear around the ships at anchor
   const spots = (count, ok, minPath = 3, pad = 1.5) => { const out = []; let guard = 0; while (out.length < count && guard++ < count * 80) {
       const x = -92 + rnd() * 184, z = -92 + rnd() * 184, h = groundH(x, z);
       if (h < 0.15 || pathDist(x, z) < minPath || near(x, z, 2) || blocked(x, z, pad) || fieldZone(x, z) || !ok(x, z, h)) continue; out.push([x, z]); } return out; };

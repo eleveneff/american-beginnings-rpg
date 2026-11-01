@@ -286,7 +286,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert(/seen from outside/.test((await W()).card || '') && /Visitors stay outside/.test((await W()).card || '') && (await p.evaluate(() => __world.seen())).kiva, 'the kiva is shown from outside only, with a respectful card');
     await closeCards(); await tpRing('moundinfo'); await p.evaluate(() => __world.use()); await sleep(300);
     { const cd = (await W()).card || ''; assert(/largest city north of Mexico/.test(cd) && /about 1100/.test(cd) && /near present-day St\. Louis/.test(cd), 'mound card uses the same Cahokia wording as the scrolls'); }
-    await closeCards(); await tp(-44, -37); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(500); await shot('v24-mound.png');
+    await closeCards(); await tp(-44, -24); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(500); await shot('v24-mound.png');   // from 30 m back so the whole mound and its temple are in frame
     { const cs = await p.evaluate(() => { const out = []; const walk = o => { if (typeof o === 'string') { if (/Cahokia/.test(o) && /largest city/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k]); }; walk(GAME_CONTENT); return out; });   // Cahokia is taught in Section 1 scrolls and the market too
       const tp2 = await p.evaluate(() => JSON.stringify(GAME_CONTENT, (k, v) => k === 'accept' ? undefined : v).match(/\b(teepee|tipi)s?\b/gi));   // typed-answer accept lists may list other spellings
       assert(cs.length >= 1 && cs.every(t => /north of Mexico/.test(t)) && !tp2, 'wording: every "largest" Cahokia line says north of Mexico; "tepee" spelled one way (' + cs.length + ' lines)');

@@ -764,7 +764,7 @@ function setPhase(p) {
   document.body.classList.toggle("world-linked", p === "panel");
   if (stage) stage.hidden = p === "active";
   if (hud) hud.hidden = p !== "active";
-  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = (L.lvl && L.lvl.polish && L.lvl.polish.exposure) || 1.05; if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; }  requestAnimationFrame(layoutHud); }   // v2.6: ring states are right on the first frame back
+  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = (L.lvl && L.lvl.polish && L.lvl.polish.exposure) || 1.05; if (L.toon && L.toon.rimMat && L.lvl && L.lvl.polish && L.lvl.polish.rim) L.toon.rimMat.uniforms.uColor.value.set(L.lvl.polish.rim); if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; }  requestAnimationFrame(layoutHud); }   // v2.6: ring states are right on the first frame back
   if (p === "off") { renderer.toneMapping = THREE.NoToneMapping; renderer.shadowMap.enabled = false; renderer.setPixelRatio(BG_DPR); resize(); bgBuiltFor = null; bgDirty = true; }
   if (p === "panel") L.dirty = true;
   if (was !== p) syncChips();

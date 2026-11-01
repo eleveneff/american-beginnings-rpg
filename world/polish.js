@@ -8,10 +8,10 @@
 import * as THREE from 'three';
 
 const GRADE = {   // sun colour, sun intensity, hemisphere sky / ground, exposure
-  s1: { sun: '#fff1e0', si: 2.0, sky: '#e2ecf8', gr: '#a49a80', exp: 1.04, mote: '#ffffff', moteN: 70, size: 0.09 },
-  s2: { sun: '#ffe6c4', si: 2.1, sky: '#eaf0f6', gr: '#a08e6a', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 },
-  s3: { sun: '#ffe9c8', si: 2.1, sky: '#e8f2fa', gr: '#a8946c', exp: 1.06, mote: '#fff6d8', moteN: 50, size: 0.08 },
-  s4: { sun: '#ffe4bf', si: 2.1, sky: '#e9eff5', gr: '#9c8a66', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 }
+  s1: { rim: '#e8f1ff', sun: '#fff1e0', si: 2.0, sky: '#e2ecf8', gr: '#a49a80', exp: 1.04, mote: '#ffffff', moteN: 70, size: 0.09 },
+  s2: { rim: '#fff0d6', sun: '#ffe6c4', si: 2.1, sky: '#eaf0f6', gr: '#a08e6a', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 },
+  s3: { rim: '#fff0d6', sun: '#ffe9c8', si: 2.1, sky: '#e8f2fa', gr: '#a8946c', exp: 1.06, mote: '#fff6d8', moteN: 50, size: 0.08 },
+  s4: { rim: '#fff0d6', sun: '#ffe4bf', si: 2.1, sky: '#e9eff5', gr: '#9c8a66', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 }
 };
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 function dotTex() { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
@@ -27,7 +27,7 @@ export function enhancePolish({ lvl, sid, renderer, getCam, getFocus, groundH })
   // 1 · light grade (the level's sun and hemisphere; gfx.js keeps tone mapping)
   if (lvl.sun) { lvl.sun.color.set(G.sun); lvl.sun.intensity = G.si; }
   if (lvl.hemi) { lvl.hemi.color.set(G.sky); lvl.hemi.groundColor.set(G.gr); }
-  out.exposure = G.exp; out.parts.grade = true;
+  out.exposure = G.exp; out.rim = G.rim; out.parts.grade = true;   // rim: Abigail's rim-light tint (cool snow light in Beringia, warm sun later)
   // 2 · labels: overhead boards only (ship names, region labels, La Navidad): sprites at least 2.5 m wide standing more than
   // 3 m above the ground, never ring icons. Mat labels (1.7 m up) stay solid: she reads them while sorting. Opacity only;
   // the levels keep owning .visible (they hide a region label while she is inside that region).

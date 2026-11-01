@@ -213,6 +213,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   for (let i = 0; i < 24; i++) await answer(!(missLeft > 0 && i % 5 === 2 && missLeft--));
   s = await st(); assert(s.stars.balance - balT === 46, '23 first-time correct answers = 46 stars');
   await p.screenshot({ path: SHOTS + '6-results.png' });
+  assert(await p.$('#b-mailt') && /Send report to Dad/.test(await p.$eval('#b-mailt', e => e.textContent)), 'trial results offer a gentle "Send report to Dad" button');
   await click('#b-rev');
   while (await p.$('#b-ready')) { await click('#b-ready'); await answer(true); await sleep(60); }
   await p.screenshot({ path: SHOTS + '7-badge.png' });
@@ -431,6 +432,15 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   assert(/PRIMARY-SOURCE SCROLLS/.test(rp) && /MAP & TIMELINE CHALLENGES/.test(rp), 'Parent Report has source-scroll and map & timeline sections');
   const rs = await p.$$eval('#rep-skills tr', r => r.map(x => x.innerText));
   assert(rs.length >= 14 && rs.some(x => /Label the Thirteen Colonies/.test(x) && /%/.test(x)) && /Weak areas[\s\S]*(Map|Timeline)/.test(rp), 'Parent Report table shows map/timeline accuracy and weak areas');
+  { await p.evaluate(() => { window.__mailNav = []; }); await click('#b-mail'); await sleep(1900);
+    const m = await p.evaluate(() => window.__lastMail);
+    const body = decodeURIComponent((m.url.split('&body=')[1] || ''));
+    const subj = decodeURIComponent((m.url.match(/\?subject=([^&]*)/) || [])[1] || '');
+    assert(m.url.startsWith('mailto:history-tutor+reports@mail.grokbot.com?subject=') && m.url.length <= 1800, 'Send report to Dad builds a mailto to history-tutor+reports@mail.grokbot.com under 1,800 chars (' + m.url.length + ')');
+    assert(/^American Beginnings report – Progress – \w{3} \d{1,2}, \d{4}$/.test(subj), 'mail subject "American Beginnings report – Progress – <date>" (' + subj + ')');
+    const js = (body.split('REPORT-JSON-START\n')[1] || '').split('\nREPORT-JSON-END')[0]; let J = null; try { J = JSON.parse(js); } catch (e) { }
+    assert(/Overall: .*goal 95%/.test(body) && /Grand Trial: /.test(body) && /Stars \d/.test(body) && /Weak areas: /.test(body) && /Review queue: /.test(body) && /REPORT-JSON-END/.test(body) && J && J.goal === 95 && J.sec.length === 6 && J.ov.length === 2, 'mail body: plain-text report + JSON between REPORT-JSON-START / REPORT-JSON-END');
+    assert(!(await p.$eval('#mail-fallback', e => e.hidden)) && /history-tutor\+reports@mail\.grokbot\.com/.test(await p.$eval('#mail-fallback', e => e.textContent)) && await p.$('#b-mailcopy'), 'when no mail app opens, a Copy report fallback shows the address'); }
   await p.screenshot({ path: SHOTS + 'v21-report.png', fullPage: true });
   console.log('ALL PASSED');
   await b.close();

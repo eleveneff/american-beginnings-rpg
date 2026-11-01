@@ -593,7 +593,7 @@
     } else {
       h += "<p>🌟 A perfect trial. No misses to review!</p><button class=\"btn gold\" id=\"b-fin\">Claim your reward ▶</button>";
     }
-    h += "</div>"; show(h);
+    h += "</div>" + mailPrompt(r.sid); show(h); wireMail();
     on("b-rev", nextReview); on("b-fin", finishCheck);
     renderHero();
   }
@@ -671,8 +671,8 @@
       missed.forEach(function (id) { var x = qById(id), q = x.q; h += "<p>" + x.s.icon + " <b>" + esc(q.type === "vocab" ? "Define: " + q.term : q.q) + "</b><br>✔ " + esc(q.type === "mc" || q.type === "vocab" ? q.choices[0] : (q.display || q.accept[0])) + " · <i>" + esc(topicTitle(x.s, q.topic)) + "</i></p>"; });
       h += "</div>";
     }
-    h += '<div class="panel"><button class="btn gold" id="b-map">🗺️ Map</button><button class="btn" id="b-again">⚔️ Try the Grand Trial again</button><button class="btn alt" id="b-rep">📋 Parent Report</button></div>';
-    show(h); on("b-map", home); on("b-again", startFinal); on("b-rep", report);
+    h += '<div class="panel"><button class="btn gold" id="b-map">🗺️ Map</button><button class="btn" id="b-again">⚔️ Try the Grand Trial again</button><button class="btn alt" id="b-rep">📋 Parent Report</button></div>' + mailPrompt("final");
+    show(h); wireMail(); on("b-map", home); on("b-again", startFinal); on("b-rep", report);
   }
 
 
@@ -1264,6 +1264,69 @@
     if (S.gear.length) L.push(" Gear: " + S.gear.map(function (g) { return g.icon + " " + g.name; }).join(", "));
     return L.join("\n");
   }
+  /* ---------------- email report to Dad (v2.4): a mailto built only from the existing save; nothing new is stored ---------------- */
+  var REPORT_TO = "history-tutor+reports@mail.grokbot.com", MAIL_MAX = 1800;
+  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies" };
+  function secAcc(st) { var r = 0, t = 0; Object.keys((st && st.topics) || {}).forEach(function (k) { r += st.topics[k].right; t += st.topics[k].right + st.topics[k].wrong; }); return [r, t, pct(r, t)]; }
+  function mailParts(sid) {
+    var label = sid === "final" ? "Grand Trial" : (sid && sectionById(sid) ? sectionById(sid).title : "Progress");
+    var day = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    var mastered = [], weak = weakAreas().map(function (x) { return (x.label || topicTitle(x.s, x.topic)) + " " + x.p + "%"; }), rq = 0, rep = 0, sec = [];
+    C.sections.forEach(function (s, i) {
+      var st = S.sections[s.id], a = secAcc(st);
+      Object.keys((st && st.topics) || {}).forEach(function (t) { var x = st.topics[t], tot = x.right + x.wrong; if (tot >= 2 && pct(x.right, tot) >= C.passPercent) mastered.push(topicTitle(s, t)); });
+      var q = S.run && S.run.sid === s.id && S.run.phase === "review" && S.run.queue ? S.run.queue.length : 0; rq += q;
+      Object.keys((st && st.missed) || {}).forEach(function (id) { if (st.missed[id] >= 2) rep++; });
+      sec.push({ n: i + 1, id: s.id, t: s.title, st: st && st.completed ? "mastered" : (st && st.attempts ? "in progress" : (isUnlocked(i) ? "not started" : "locked")), acc: a, best: st ? st.bestPct : 0, last: st && st.history.length ? st.history[st.history.length - 1].pct : null, att: st ? st.attempts : 0, gear: [st ? st.gearEarned : 0, s.gear.length], rq: q });
+    });
+    var F = S.final, done = sec.filter(function (x) { return x.st === "mastered"; }).length;
+    function build(mt, wk, lv) {
+      var L = [];
+      L.push((currentPlayer().name || "Your hero") + ", " + day + ". Sections mastered: " + done + "/" + sec.length);
+      L.push("Overall: " + pct(S.totalCorrect, S.totalAnswered) + "% (" + S.totalCorrect + "/" + S.totalAnswered + "), goal " + C.passPercent + "%");
+      sec.forEach(function (x) { var t = lv > 1 ? x.id.toUpperCase() : lv ? (MAIL_SHORT[x.id] || x.t) : x.t;   // shorter names if the link is long
+        L.push(x.n + ". " + t + ": " + x.st + (x.att || x.acc[1] ? ", " + x.acc[2] + "%, best trial " + x.best + "%, tries " + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", review left " + x.rq : "")); });
+      L.push("Grand Trial: " + (F.passed ? "PASSED" : (allDone() ? "unlocked" : "locked")) + ", tries " + F.attempts + ", best " + F.bestPct + "%");
+      L.push("Stars " + S.stars.balance + " (earned " + S.stars.earned + "), gear " + S.gear.length + ", badges " + S.badges.length);
+      L.push("Mastered topics: " + (mt.length ? mt.join("; ") : (mastered.length ? "" : "none yet")) + (mt.length < mastered.length ? (mt.length ? " " : "") + "(+" + (mastered.length - mt.length) + " more)" : ""));
+      L.push("Weak areas: " + (wk.length ? wk.join("; ") : (weak.length ? "" : "none")) + (wk.length < weak.length ? (wk.length ? " " : "") + "(+" + (weak.length - wk.length) + " more)" : ""));
+      L.push("Review queue: " + rq + "; missed 2+ times: " + rep + ". Time played: not tracked.");
+      var J = { v: (window.ABRPG && window.ABRPG.version) || "", ov: [S.totalCorrect, S.totalAnswered], goal: C.passPercent,
+        sec: sec.map(function (x) { return [x.n, x.st.charAt(0).toUpperCase(), x.acc[2], x.best, x.att, x.gear[0], x.rq]; }), gt: [F.passed ? 1 : 0, F.attempts, F.bestPct], st: [S.stars.balance, S.stars.earned], gear: S.gear.length, mt: mastered.length, weak: weak.length, rq: rq };
+      var text = L.join("\n") + "\n\nREPORT-JSON-START\n" + JSON.stringify(J) + "\nREPORT-JSON-END\n";
+      var subject = "American Beginnings report – " + label + " – " + day;
+      return { to: REPORT_TO, subject: subject, text: text, url: "mailto:" + REPORT_TO + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text) };
+    }
+    var mt = mastered.slice(), wk = weak.slice(), lv = 0, m = build(mt, wk, lv);
+    // keep the link short: trim mastered topics, then shorten section titles, then trim weak areas, then the shortest section lines
+    while (m.url.length > MAIL_MAX && mt.length) { mt.pop(); m = build(mt, wk, lv); }
+    if (m.url.length > MAIL_MAX) m = build(mt, wk, lv = 1);
+    while (m.url.length > MAIL_MAX && wk.length > 3) { wk.pop(); m = build(mt, wk, lv); }
+    if (m.url.length > MAIL_MAX) m = build(mt, wk, lv = 2);
+    while (m.url.length > MAIL_MAX && wk.length) { wk.pop(); m = build(mt, wk, lv); }
+    return m;
+  }
+  function copyText(txt, ok) {
+    function fallback() { var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast(ok); } catch (e) { toast("Select the text and copy it manually."); } document.body.removeChild(ta); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast(ok); }, fallback); else fallback();
+  }
+  function sendReport(sid, boxId) {
+    var m = mailParts(sid), shown = false;
+    window.__lastMail = m;   // tests read the link from here
+    function offerCopy() { if (shown) return; shown = true;
+      var box = document.getElementById(boxId || "mail-fallback"); if (!box) return;
+      box.innerHTML = "<p>If no email app opened, copy the report and email it to <b>" + esc(m.to) + "</b>.</p><button class=\"btn alt\" id=\"b-mailcopy\">📋 Copy report</button>";
+      box.hidden = false; on("b-mailcopy", function () { copyText("To: " + m.to + "\nSubject: " + m.subject + "\n\n" + m.text, "📋 Report copied. Email it to " + esc(m.to)); }); }
+    var left = false, onBlur = function () { left = true; };
+    window.addEventListener("blur", onBlur, { once: true });
+    try { var a = document.createElement("a"); a.href = m.url; a.rel = "noopener"; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch (e) { offerCopy(); }
+    setTimeout(function () { window.removeEventListener("blur", onBlur); if (!left || document.hasFocus()) offerCopy(); }, 1500);
+    return m;
+  }
+  function mailPrompt(sid) {
+    return '<div class="panel mail-prompt"><p>📧 Want Dad to see how you did? Send him your report.</p><button class="btn alt" id="b-mailt" data-sid="' + esc(sid || "") + '">📧 Send report to Dad</button><div id="mail-fallback-t" hidden></div></div>';
+  }
+  function wireMail() { var b = document.getElementById("b-mailt"); if (b) b.onclick = function () { sendReport(b.getAttribute("data-sid") || null, "mail-fallback-t"); }; }
   function report() {
     var rows = "";
     C.sections.forEach(function (s, i) {
@@ -1283,14 +1346,11 @@
       "<h3>🏪 Purchases</h3>" + (S.purchases.length ? "<ul>" + S.purchases.map(function (x) { return "<li>" + esc(x.name) + " · ⭐ " + x.price + " · " + fmtDate(x.at) + "</li>"; }).join("") + "</ul>" : "<p>None yet.</p>") +
       "<h3>Weak areas</h3>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + x.s.icon + " " + esc(x.label || topicTitle(x.s, x.topic)) + ": " + x.p + "% (missed " + x.wrong + "×)</li>"; }).join("") + "</ul>" : "<p>None flagged yet.</p>") +
       '<h3>Full text report</h3><pre class="report" id="rep-text">' + esc(reportText()) + "</pre>" +
-      '<button class="btn gold" id="b-copy">📋 Copy report to clipboard</button><button class="btn alt" id="b-close">Close</button><button class="btn warn" id="b-reset">Reset all progress</button></div>';
+      '<button class="btn gold" id="b-mail">📧 Send report to Dad</button><button class="btn alt" id="b-copy">📋 Copy report to clipboard</button><button class="btn alt" id="b-close">Close</button><button class="btn warn" id="b-reset">Reset all progress</button><div id="mail-fallback" hidden></div></div>';
     modal(h);
     on("b-close", closeModal);
-    on("b-copy", function () {
-      var txt = reportText();
-      function fallback() { var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast("📋 Report copied!"); } catch (e) { toast("Select the text and copy it manually."); } document.body.removeChild(ta); }
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast("📋 Report copied!"); }, fallback); else fallback();
-    });
+    on("b-mail", function () { sendReport(null); });
+    on("b-copy", function () { copyText(reportText(), "📋 Report copied!"); });
     on("b-reset", function () {
       if (confirm("Erase ALL progress, gear, badges, stars, and purchases on this device? This cannot be undone.") && confirm("Are you really sure?")) { localStorage.removeItem(SAVE_KEY); try { localStorage.removeItem("americanBeginningsRPG_world"); } catch (e) { } load(); closeModal(); home(); toast("Progress reset."); }
     });
@@ -1304,7 +1364,7 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY,
+  window.ABRPG = { version: GAME_VERSION, mailReport: mailParts, reportTo: REPORT_TO, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY,
     /* v2.2 bridge for the walkable world (world.js). None of these add fields to the progress save. */
     enterSection: enterSection, sectionIntro: sectionIntro, startTrial: startTrial, nextQuestion: nextQuestion, nextReview: nextReview, sectionById: sectionById, toast: toast, closeModal: closeModal, renderHero: renderHero, save: save,
     touchSection: function (sid) { var st = sec(sid), ch = false; if (!st.startedAt) { st.startedAt = now(); ch = true; } if (!(S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) && !(S.run && S.run.sid === sid && S.run.phase === "lessons")) { S.run = { sid: sid, phase: "lessons" }; ch = true; } if (ch) save(); },

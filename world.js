@@ -210,7 +210,7 @@ function sortStart() {
 }
 function carryLabel(text) {
   if (SP.carry) { L.lvl.scene.remove(SP.carry.lab); SP.carry.lab.material.map.dispose(); }
-  const lab = L.mods.B.labelSprite(text, 4.6, "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
+  const lab = L.mods.B.labelSprite(text, 3.8, "carry it to its region mat"); lab.renderOrder = 7; lab.material.depthTest = false; L.lvl.scene.add(lab);
   if (!SP.carry) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: "#b08a5c", flatShading: true })); b.scale.set(1.2, 0.8, 1); b.userData.noMerge = true; L.lvl.scene.add(b); SP.carry = { lab, b }; }
   else SP.carry.lab = lab;
 }
@@ -224,7 +224,7 @@ function nextClue(first) {
 function sortStep(dt) {
   SP.dt = dt;
   if (!SP.active || L.sid !== "s2") return;
-  if (SP.carry) { SP.carry.lab.position.set(L.pos.x, L.pos.y + 2.75, L.pos.z); SP.carry.b.position.set(L.pos.x + Math.sin(L.yaw) * 0.32, L.pos.y + 0.95, L.pos.z + Math.cos(L.yaw) * 0.32); SP.carry.b.visible = SP.carry.lab.visible = true; }
+  if (SP.carry) { SP.carry.lab.position.set(L.pos.x, L.pos.y + 3.0, L.pos.z); SP.carry.b.position.set(L.pos.x + Math.sin(L.yaw) * 0.32, L.pos.y + 0.95, L.pos.z + Math.cos(L.yaw) * 0.32); SP.carry.b.visible = SP.carry.lab.visible = true; }
   if (L.cardOpen || L.frozen || !SP.cur) return;
   const B = L.mods.B, m = L.lvl.mats.find(q => Math.abs(L.pos.x - q.x) < B.MAT_HALF && Math.abs(L.pos.z - q.z) < B.MAT_HALF);
   // she sets a bundle down by standing on a mat for a moment, so just walking across one is not a guess

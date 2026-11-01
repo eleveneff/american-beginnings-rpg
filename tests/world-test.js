@@ -645,10 +645,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'she sails to the James Fort landing'); }
     { const bn = await p.evaluate(() => __world.banner); assert(/^Marker 2 · /.test(bn), 'at James Fort the banner names Marker 2 ("' + bn + '")'); }
     await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v27-jamesfort.png');
-    { const r = await ringAt('s5-l1'); await tp(r.x + 2, r.z - 18); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-jamesfort-ships.png'); }
+    { const r = await ringAt('s5-l1'); await tp(-16, -50.5); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-jamesfort-ships.png'); }
     await p.evaluate(() => __world.ship5('south')); await sleep(1300); w = await W();
     { const hb = await p.evaluate(() => __world._dbg().L.mods.B.HARBORS.south); assert(Math.hypot(w.pos.x - hb.x, w.pos.z - hb.z) < 1, 'and sails back to Roanoke'); }
-    { const r = await ringAt('compact'); await tp(-40, 18); await p.evaluate(() => __world.faceCam(Math.PI / 2)); await sleep(500); await shot('v27-mayflower.png'); }
+    { const r = await ringAt('compact'); await tp(-44, 19); await p.evaluate(() => __world.faceCam(-Math.PI / 2)); await sleep(3500); await shot('v27-mayflower.png'); }
     { await tp(-19, 34.5); await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v27-plymouth.png'); }
     { const r = await ringAt('wampanoag'); await tp(r.x - 5, r.z - 4); await p.evaluate(() => __world.faceCam(Math.atan2(5, 4))); await sleep(500); await shot('v27-wampanoag.png'); }
     { const r = await ringAt('market'); await tpRing('market'); await p.evaluate(() => __world.use()); await sleep(500);

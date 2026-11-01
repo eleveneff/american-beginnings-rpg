@@ -76,8 +76,8 @@ export const MATS = [];
 export const MAT_HALF = 1.2;
 export const RING_AT = {
   l0: [-48, -56], croatoan: [-40.6, -57.4], 'ship-south': [-27, -50],
-  'ship-north': [-38, -34], ships: [-16, -33.5], l1: [-22, -27.5], jamestown: [-26.8, -27.5], market: [-22, -23.2], l9: [-17.2, -27.5], starving: [-17.5, -24], fort5: [-26.4, -23.6],
-  assembly: [-33.5, -25.5], l7: [-38, -24.8],
+  'ship-north': [-38, -34], ships: [-16, -33.5], l1: [-22, -27.5], jamestown: [-26.8, -27.5], market: [-22, -24.1], l9: [-17.2, -27.5], starving: [-17.5, -24], fort5: [-26.4, -23.6],
+  assembly: [-34.6, -25.5], l7: [-38, -24.8],
   l2: [8, -18], l3: [12, -16.5], tobacco: [16, -24.5], powhatan: [20, -17],
   l4: [-43.5, 25], compact: [-48.5, 19], l8: [-43.5, 19], mayship: [-49, 25.5],
   l5: [-25, 40], plymouth: [-29, 37.5], colonies: [-17, 40],

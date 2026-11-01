@@ -28,7 +28,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.6.1' && (await p.evaluate(() => ABRPG.version)) === 'v2.6.1', 'version marker v2.6.1');
+  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.6.2' && (await p.evaluate(() => ABRPG.version)) === 'v2.6.2', 'version marker v2.6.2');
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
@@ -363,6 +363,18 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await p.evaluate(() => __world.faceCam(0)); await sleep(500); await shot('v25-palos.png');
     { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/"wool"/.test(hk), 'in 1492 Spain she wears the wool dress, not the hide tunic (' + hk + ')'); }
     { const sc = await p.evaluate(() => { const { L } = __world._dbg(), s = L.lvl.scene; const P = (L.lvl.scenery && L.lvl.scenery.parts) || {}; return { ok: !!L.lvl.scenery, det: !!s.getObjectByName('gfx-detail'), cl: !!s.getObjectByName('clouds'), bo: P['gfx-boulders'] || 0, gr: P['gfx-grass'] || 0, w: P.water || 0, mip: (L.lvl.scenery.water || []).some(t => t.generateMipmaps) }; }); assert(sc.ok && sc.det && sc.cl && sc.bo > 10 && sc.gr > 300 && sc.w > 0 && !sc.mip, 'graphics pass 1 scenery extras are built (grass, boulders and plants in one mesh, clouds, water ripples without mipmaps) ' + JSON.stringify(sc)); }
+    // v2.6.2 graphics pass 2: softer ring light, era light grade, motes, overhead labels that fade, QC freeze, clear-transients, floating stick
+    { const po = await p.evaluate(() => __world.polish()); assert(po && po.parts.grade && po.parts.motes >= 40 && po.parts.labels >= 3 && Math.abs(po.exposure - 1.06) < 1e-6, 'graphics pass 2 is on in 1492 Spain: light grade, ' + (po && po.parts.motes) + ' motes, ' + (po && po.parts.labels) + ' fading labels'); }
+    { const r = await p.evaluate(() => { const { L, renderer } = __world._dbg(); return { exp: renderer.toneMappingExposure, beam: Math.max(...L.lvl.rings.map(x => x.beam.material.opacity)), mats: L.lvl.scene.getObjectByName('gfx-motes') ? 1 : 0 }; });
+      assert(Math.abs(r.exp - 1.06) < 1e-6 && r.beam <= 0.39 && r.mats === 1, 'warm era exposure ' + r.exp + ', ring light softened (max beam opacity ' + r.beam.toFixed(2) + ' ≤ 0.39), one motes mesh'); }
+    { const fz = await p.evaluate(async () => { __world.qc(10); await new Promise(r => setTimeout(r, 250)); const m = () => Array.from(__world._dbg().L.lvl.scene.getObjectByName('gfx-motes').geometry.attributes.position.array.slice(0, 9)).join(); const a = m(); await new Promise(r => setTimeout(r, 400)); const b = m(); __world.freezeFx(false); await new Promise(r => setTimeout(r, 400)); const c = m(); return { same: a === b, moves: c !== b }; });
+      assert(fz.same && fz.moves, 'QC freeze pins the motes for matching shots, and they drift again after (' + JSON.stringify(fz) + ')'); }
+    { const tt = await p.evaluate(() => { window.ABRPG.toast('test toast'); const t = document.getElementById('toast'), a = !t.classList.contains('hidden'); __world.clearTransients(); return [a, t.classList.contains('hidden')]; }); assert(tt[0] && tt[1], 'the clear-transients helper hides a leftover toast'); }
+    { const gr = await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--grain')); assert(/svg/.test(gr), 'panels share the paper-grain tile (--grain)'); }
+    { const js = await p.evaluate(async () => { const c = document.getElementById('world'), h = innerHeight, ev = (t, x, y) => c.dispatchEvent(new PointerEvent(t, { pointerId: 77, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true }));
+        ev('pointerdown', 90, h - 140); const a = __world.joy; ev('pointermove', 130, h - 140); const b = __world.joy; ev('pointerup', 130, h - 140); const d = __world.joy;
+        const { L } = __world._dbg(); L.touch = false; document.body.classList.remove('touch'); return { a, b, d }; });
+      assert(js.a.float && js.a.id === 77 && js.a.left === '26px' && js.b.x > 0.5 && !js.d.float && js.d.id === null && js.d.x === 0, 'the floating stick appears under a lower-left thumb, steers, and returns home on release (' + JSON.stringify(js) + ')'); }
     // geography: north = +z, WEST = +x. Canaries south-west of Palos, the Bahamas far west, Hispaniola south-east of San Salvador
     { const S = await p.evaluate(() => __world.stations());
       assert(S.canary.x > S.pier.x && S.canary.z < S.pier.z && S.ss.x > S.canary.x + 40 && S.hisp.z < S.ss.z - 30 && S.hisp.x <= S.ss.x, 'the ports sit in their real directions (Canaries SW of Palos, San Salvador far west, Hispaniola south-east of it)'); }

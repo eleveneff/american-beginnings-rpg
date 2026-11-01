@@ -683,6 +683,11 @@ async function ensureBuilt(sid = L.sid) {
     // its own seeded random so the level layouts never move; no colliders, no save data). A failure only skips the extras.
     try { const SC = await import("./world/scenery.js"), sc = SC.enhanceScenery({ lvl, B, sid, rings }), up = lvl.update;
       lvl.update = (dt, pos) => { up.call(lvl, dt, pos); sc.update(dt); }; lvl.scenery = sc; } catch (e) { console.warn("[world] scenery extras skipped", e); }
+    // v2.6.2 graphics pass 2: softer ring light, labels that fade near the camera, a per-era light grade and drifting motes
+    // (world/polish.js). While QC freezes the effects (FX.frozen) the level's own animation steps with dt 0.
+    try { const PO = await import("./world/polish.js"), po = PO.enhancePolish({ lvl, sid, renderer, getCam: () => L.cam, getFocus: () => L.pos, groundH: B.groundH }), up2 = lvl.update;
+      lvl.update = (dt, pos) => { const d = FX.frozen != null ? 0 : dt; up2.call(lvl, d, pos); po.update(d); }; lvl.polish = po;
+      if (FX.frozen != null) { po.freeze(FX.frozen); if (lvl.scenery && lvl.scenery.setTime) lvl.scenery.setTime(FX.frozen); } } catch (e) { console.warn("[world] polish skipped", e); }
     LV[sid] = { B, lvl, cave, sparks, gfx, rings };
     useLevel(sid);
     buildHero();
@@ -759,7 +764,7 @@ function setPhase(p) {
   document.body.classList.toggle("world-linked", p === "panel");
   if (stage) stage.hidden = p === "active";
   if (hud) hud.hidden = p !== "active";
-  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; }  requestAnimationFrame(layoutHud); }   // v2.6: ring states are right on the first frame back
+  if (p === "active") { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = (L.lvl && L.lvl.polish && L.lvl.polish.exposure) || 1.05; if (L.gfx) L.gfx.apply(); L.dirty = true; L.clock = makeClock(); if (L.built && L.lvl) { try { refreshRings(); } catch (e) { } L._refT = 0.5; }  requestAnimationFrame(layoutHud); }   // v2.6: ring states are right on the first frame back
   if (p === "off") { renderer.toneMapping = THREE.NoToneMapping; renderer.shadowMap.enabled = false; renderer.setPixelRatio(BG_DPR); resize(); bgBuiltFor = null; bgDirty = true; }
   if (p === "panel") L.dirty = true;
   if (was !== p) syncChips();
@@ -775,6 +780,7 @@ window.addEventListener("pagehide", () => { if (L.phase !== "off") saveWorldPos(
 
 // ---- teleport (fade) between the steppe and the Trial Cave ----
 function teleport(zone, at) {
+  clearTransients();   // v2.6.2
   const f = document.getElementById("w-fade"); f.classList.add("on"); L.frozen = true;
   setTimeout(() => {
     const B = L.mods.B;
@@ -830,6 +836,13 @@ window.addEventListener("keyup", e => { if (KEYMAP[e.code]) keys.delete(KEYMAP[e
 window.addEventListener("blur", () => keys.clear());
 document.addEventListener("visibilitychange", () => { if (document.hidden) clearHeld(); });
 const joy = { id: null, x: 0, y: 0, cx: 0, cy: 0 };
+// v2.6.2 QC: FX.frozen pins clouds, ripples, motes and the levels' own animation to one moment, so before/after shots match
+const FX = { frozen: null };
+function freezeFx(t) { FX.frozen = (t === false || t == null) ? null : (typeof t === "number" ? t : 10);
+  for (const k of Object.keys(LV)) { const v = LV[k].lvl; if (v.polish) v.polish.freeze(FX.frozen); if (v.scenery && v.scenery.setTime && FX.frozen != null) v.scenery.setTime(FX.frozen); }
+  if (L.sparks && L.sparks.clear) try { L.sparks.clear(); } catch (e) { } L.dirty = true; return FX.frozen; }
+// v2.6.2: clear-transients helper: hide a leftover toast (it would otherwise sit over a new level or a QC shot for up to 3.2 s)
+function clearTransients() { const t = document.getElementById("toast"); if (t) t.classList.add("hidden"); }
 function clearHeld() { keys.clear(); joy.x = 0; joy.y = 0; }   // hoisted; only called from events / phase changes after init
 const drag = { id: null, x: 0 };
 function wireTouch() {
@@ -837,11 +850,17 @@ function wireTouch() {
   j.addEventListener("pointerdown", e => { L.touch = true; joy.id = e.pointerId; const r = j.getBoundingClientRect(); joy.cx = r.left + r.width / 2; joy.cy = r.top + r.height / 2; j.setPointerCapture(e.pointerId); moveJoy(e); e.preventDefault(); });
   const moveJoy = e => { if (e.pointerId !== joy.id) return; let dx = e.clientX - joy.cx, dy = e.clientY - joy.cy; const R = 48, d = Math.hypot(dx, dy); if (d > R) { dx *= R / d; dy *= R / d; } knob.style.transform = `translate(${dx}px,${dy}px)`; const m = Math.hypot(dx, dy) / R; const k = m < 0.12 ? 0 : (m - 0.12) / 0.88 / (m || 1); joy.x = dx / R * k; joy.y = -dy / R * k; };
   j.addEventListener("pointermove", moveJoy);
-  const end = e => { if (e.pointerId !== joy.id) return; joy.id = null; joy.x = joy.y = 0; knob.style.transform = ""; };
+  const end = e => { if (e.pointerId !== joy.id) return; joy.id = null; joy.x = joy.y = 0; knob.style.transform = "";
+    if (j.classList.contains("float")) { j.classList.remove("float"); j.style.left = j.style.top = j.style.bottom = ""; } };
+  // v2.6.2 floating joystick: a thumb that lands anywhere in the lower-left of the screen gets the stick right under it
+  const floatJoy = e => { if (e.pointerType !== "touch" || joy.id != null || L.phase !== "active" || L.cardOpen) return false;
+    if (e.clientX > window.innerWidth * 0.42 || e.clientY < window.innerHeight * 0.4) return false;
+    L.touch = true; document.body.classList.add("touch"); joy.id = e.pointerId; j.classList.add("float"); j.style.left = (e.clientX - 64) + "px"; j.style.top = (e.clientY - 64) + "px"; j.style.bottom = "auto";
+    joy.cx = e.clientX; joy.cy = e.clientY; knob.style.transform = ""; try { canvas.setPointerCapture(e.pointerId); } catch (er) { } e.preventDefault(); return true; };
   j.addEventListener("pointerup", end); j.addEventListener("pointercancel", end);
-  canvas.addEventListener("pointerdown", e => { if (L.phase !== "active") return; if (e.pointerType === "touch") L.touch = true; drag.id = e.pointerId; drag.x = e.clientX; canvas.setPointerCapture(e.pointerId); });
-  canvas.addEventListener("pointermove", e => { if (e.pointerId !== drag.id) return; const dx = e.clientX - drag.x; drag.x = e.clientX; L.camYaw = wrapA(L.camYaw - dx * 0.008); L.dz.snap(L.camYaw); L.manualT = 2.5; });
-  const dend = e => { if (e.pointerId === drag.id) drag.id = null; }; canvas.addEventListener("pointerup", dend); canvas.addEventListener("pointercancel", dend);
+  canvas.addEventListener("pointerdown", e => { if (L.phase !== "active") return; if (floatJoy(e)) return; if (e.pointerType === "touch") L.touch = true; drag.id = e.pointerId; drag.x = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointermove", e => { if (e.pointerId === joy.id) { moveJoy(e); return; } if (e.pointerId !== drag.id) return; const dx = e.clientX - drag.x; drag.x = e.clientX; L.camYaw = wrapA(L.camYaw - dx * 0.008); L.dz.snap(L.camYaw); L.manualT = 2.5; });
+  const dend = e => { end(e); if (e.pointerId === drag.id) drag.id = null; }; canvas.addEventListener("pointerup", dend); canvas.addEventListener("pointercancel", dend);
   window.addEventListener("touchstart", () => { if (!L.touch) { L.touch = true; document.body.classList.add("touch"); } }, { passive: true, once: true });
   if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) { L.touch = true; document.body.classList.add("touch"); }
 }
@@ -1030,5 +1049,9 @@ window.__world = {
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),
   _dbg: () => ({ L, renderer, THREE }),
+  freezeFx: t => freezeFx(t), clearTransients: () => clearTransients(),
+  qc: (t = 10) => { freezeFx(t); clearTransients(); return true; },   // v2.6.2: one call before every QC shot
+  polish: () => (L.built && L.lvl.polish ? { parts: L.lvl.polish.parts, exposure: L.lvl.polish.exposure, frozen: FX.frozen, labels: L.lvl.polish.labels.map(s => +s.material.opacity.toFixed(2)) } : null),
+  get joy() { const j = document.getElementById("w-joy"); return { id: joy.id, x: joy.x, y: joy.y, float: j.classList.contains("float"), left: j.style.left, top: j.style.top }; },
   bgStats, quiet: false
 };

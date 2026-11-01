@@ -177,8 +177,11 @@ function shipGeo(kind, rig, opts = {}) {
     if (opts.wreck && mi === 0) return;
     if (sk === 'sq') { const sw = (nao ? 5.6 : 4.8) * (mi === 1 ? 1.1 : 0.85), sh = mh * 0.48, yt = fb + mh - 1.0;
       g.push(P(CYL(0.08, 0.08, sw + 0.8, 5), '#5a3d24', 0, yt, mz + 0.18, 0, 0, Math.PI / 2));
-      const sp = [], R = 4, C = 4; for (let a = 0; a < R; a++) for (let b = 0; b < C; b++) { const pt = (u, v) => [(-0.5 + u / C) * sw * (1 - 0.06 * v / R), yt - 0.1 - v / R * sh, mz + 0.3 + (opts.furled ? 0 : 0.9 * Math.sin(Math.PI * u / C) * Math.sin(Math.PI * (0.15 + 0.85 * v / R)))]; quad(sp, pt(b, a), pt(b + 1, a), pt(b + 1, a + 1), pt(b, a + 1)); }
-      if (opts.furled) g.push(P(CYL(0.3, 0.3, sw, 6), SAIL.getStyle(), 0, yt - 0.3, mz + 0.18, 0, 0, Math.PI / 2)); else g.push(tris(sp, p => p[1] > yt - sh * 0.5 ? SAIL : SAIL_D));
+      // v2.6.2: a finer, smoother billow (6 × 8) sewn from vertical cloths of canvas (alternate cloths a shade apart, as real
+      // sails were), lighter where the belly catches the sun, with the bonnet (the laced-on strip at the foot) a shade darker.
+      const sp = [], sp2 = [], R = 6, C = 8; for (let a = 0; a < R; a++) for (let b = 0; b < C; b++) { const pt = (u, v) => [(-0.5 + u / C) * sw * (1 - 0.06 * v / R), yt - 0.1 - v / R * sh, mz + 0.3 + (opts.furled ? 0 : 0.9 * Math.sin(Math.PI * u / C) * Math.sin(Math.PI * (0.15 + 0.85 * v / R)))]; quad(b % 2 ? sp2 : sp, pt(b, a), pt(b + 1, a), pt(b + 1, a + 1), pt(b, a + 1)); }
+      if (opts.furled) g.push(P(CYL(0.3, 0.3, sw, 6), SAIL.getStyle(), 0, yt - 0.3, mz + 0.18, 0, 0, Math.PI / 2)); else { const sc = (k) => p => { const v = (yt - 0.1 - p[1]) / sh, belly = Math.max(0, p[2] - mz - 0.3) / 0.9; return SAIL.clone().lerp(SAIL_D, Math.min(1, v * 0.9)).multiplyScalar(k * (0.94 + 0.08 * belly) * (v > 0.84 ? 0.93 : 1)); };
+        g.push(tris(sp, sc(1)), tris(sp2, sc(0.965))); }
     } else { const yl = mh * 1.15, ya = [0, fb + mh * 0.95, mz - yl * 0.45], yb = [0, fb + mh * 0.35, mz + yl * 0.55], clew = [0, fb + 1.2, mz - yl * 0.38];
       g.push(tube([ya, [(ya[0] + yb[0]) / 2, (ya[1] + yb[1]) / 2, (ya[2] + yb[2]) / 2], yb], 0.06, '#5a3d24', 2));
       if (!opts.furled) { const mid = [0.5, (ya[1] + clew[1]) / 2 + 0.2, (ya[2] + yb[2]) / 2 - 0.4]; g.push(tris([ya, yb, mid, ya, mid, clew, mid, yb, clew], p => p[1] > fb + mh * 0.5 ? SAIL : SAIL_D)); } }

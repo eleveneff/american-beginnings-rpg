@@ -202,5 +202,6 @@ export function enhanceScenery({ lvl, B, sid, rings = [] }) {
   // animation: clouds creep round the sky; ripples drift
   let t = 0;
   out.update = dt => { t += dt || 0; if (out.clouds) out.clouds.rotation.y = t * 0.004; for (const w of out.water) { w.offset.x = t * 0.012; w.offset.y = t * 0.02; } };
+  out.setTime = v => { t = v; out.update(0); };   // v2.6.2 QC freeze
   return out;
 }

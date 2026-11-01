@@ -43,7 +43,9 @@ function groundH0(x, z) {
   h += (0.12 - h) * smooth(12, 6, s);
   h -= 0.85 * smooth(4.6, 3.2, s);
   const r = Math.max(0, BOUNDS.x0 - x, x - BOUNDS.x1, BOUNDS.z0 - z);
-  if (r > 0) h += r * 0.55 + r * r * 0.03;
+  // v2.4 QC: past the walkable edge the land used to curl up into a 130 m smooth bowl wall that showed as grey sweeps in the sky;
+  // now it rolls up into low, uneven hills (about 15-30 m) with the far snow mountains visible beyond
+  if (r > 0) h += 16 * smooth(0, 45, r) + r * 0.12 + 5 * smooth(0, 25, r) * (Math.sin(x * 0.071 + z * 0.043) * Math.cos(z * 0.061 - x * 0.02) + 0.5 * Math.sin(x * 0.17 + z * 0.13));
   return h;
 }
 // stepping stones across the ford: 8 rows, one per timeline event, oldest on the south bank. Rows 0–6 have two stones

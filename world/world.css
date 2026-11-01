@@ -48,3 +48,9 @@ body.touch:has(#w-prompt:not([hidden])) #toast{bottom:15rem}
   .w-card-in{padding-top:.6rem}.w-card-in p,.w-card-in li{line-height:1.35}
 }
 @media (max-width:600px){#w-era{white-space:normal;text-align:center;width:max-content;max-width:92vw;line-height:1.25}}
+/* v2.6: compact topbar on a portrait phone while walking (it wrapped to ~190 px and pushed a chip off screen) */
+@media (max-width:600px){
+  body.walking #topbar{flex-wrap:wrap;justify-content:center;gap:.3rem;padding:.3rem .4rem}
+  body.walking #hud{order:-1;flex:1 1 100%;flex-wrap:nowrap;gap:.6rem;font-size:.78rem}
+  body.walking #topbar .chip{font-size:.72rem;padding:.28rem .5rem;box-shadow:0 2px 0 #000}
+}

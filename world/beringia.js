@@ -25,7 +25,16 @@ function distSeg(px, pz, ax, az, bx, bz) { const dx = bx - ax, dz = bz - az, L =
 export function pathDist(x, z) { let d = 1e9; for (let i = 1; i < PATH.length; i++) d = Math.min(d, distSeg(x, z, PATH[i - 1][0], PATH[i - 1][1], PATH[i][0], PATH[i][1])); return d; }
 // play area (outdoors): south of the ice the steppe; north of z = 120 only the corridor x ∈ [-12, 2]
 export const BOUNDS = { x0: -56, x1: 78, z0: -18, z1: 189.4, iceZ: 120, cx0: -12, cx1: 2 };
+// v2.4 QC: hide tents sit on small flattened pads so no edge floats or sinks on the rolling steppe
+export const TENTS = [[-7.5, 7, 0.9], [7.5, 8, -0.7], [0, 14, 3.1], [-22, 80, 1.4]];
+let PADS = null;
 export function groundH(x, z) {
+  if (!PADS) PADS = TENTS.map(([tx, tz]) => [tx, tz, groundH0(tx, tz)]);
+  let h = groundH0(x, z);
+  for (const [tx, tz, th] of PADS) { const d = Math.hypot(x - tx, z - tz); if (d < 3.4) { const w = smooth(3.4, 2.2, d); h = h * (1 - w) + th * w; } }
+  return h;
+}
+function groundH0(x, z) {
   let h = 0.8 * Math.sin(x * 0.05 + 1) * Math.cos(z * 0.043) + 0.5 * Math.sin((x - z) * 0.031) + 0.25 * Math.sin(x * 0.13) * Math.sin(z * 0.11);
   for (const k in STATIONS) { const s = STATIONS[k]; if (!s.r) continue; const w = smooth(s.r, s.r * 0.45, Math.hypot(x - s.x, z - s.z)); h *= 1 - 0.85 * w; }
   const pd = pathDist(x, z); h *= 0.55 + 0.45 * smooth(1.5, 5, pd);
@@ -217,14 +226,14 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
 
   // 1 · camp
   const tent = tentGeo(rnd);
-  for (const [x, z, ry] of [[-7.5, 7, 0.9], [7.5, 8, -0.7], [0, 14, 3.1]]) { add(tent, x, z, ry); circ(x, z, 1.85); mergeAO.addAO({ x, z }, 2.3, 1.1); }
+  for (const [x, z, ry] of TENTS.slice(0, 3)) { add(tent, x, z, ry); circ(x, z, 1.85); mergeAO.addAO({ x, z }, 2.3, 1.1); }
   const fire = fireRing(rnd); add(fire, 0, 5, 0, 1, false); circ(0, 5, 0.9);
   add(rackGeo(), -6.5, -1.5, 0.5); box(-7.7, -5.3, -2.1, -0.9);
   add(boneToolsGeo(rnd), 5.5, -1, 0.4, 1, true); circ(5.5, -1, 0.6);
   // 4 · hearth (toolmakers)
   add(fireRing(rnd), -15, 85.5, 0, 1, false); circ(-15, 85.5, 0.9);
   add(boneToolsGeo(rnd), -19.5, 87.5, 1.2); circ(-19.5, 87.5, 0.6);
-  add(tent, -22, 80, 1.4); circ(-22, 80, 1.85); mergeAO.addAO({ x: -22, z: 80 }, 2.3, 1.1);
+  add(tent, -22, 80, TENTS[3][2]); circ(-22, 80, 1.85); mergeAO.addAO({ x: -22, z: 80 }, 2.3, 1.1);
   add(rackGeo(), -9.5, 89.5, -0.6); box(-10.7, -8.3, 88.9, 90.1);
   let flagMesh = null;
   // 6 · pole gate in the glacier pass (wooden poles, lashed cross-pole, hide flags; no planks)
@@ -317,8 +326,8 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     for (let i = 0; i < 1400; i++) { const r = 1.5 + gr() * 5.5, px = gr() * 256, py = gr() * 256, l = 120 + gr() * 110 | 0, w = gr() * 30 | 0;
       x.fillStyle = `rgb(${l + w * 0.4 | 0},${l | 0},${l - w * 0.5 | 0})`; x.beginPath(); x.ellipse(px, py, r, r * (0.6 + gr() * 0.4), gr() * 3, 0, Math.PI * 2); x.fill();
       x.fillStyle = 'rgba(40,34,28,0.25)'; x.beginPath(); x.ellipse(px + r * 0.25, py + r * 0.3, r, r * 0.5, 0, 0, Math.PI); x.fill(); }
-    const tex = new THREE.CanvasTexture(tc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(14 / 3, 70 / 3); tex.colorSpace = THREE.SRGBColorSpace;
-    const geo = new THREE.PlaneGeometry(14.6, 70, 15, 70); geo.rotateX(-Math.PI / 2); geo.translate(-5, 0, 155);
+    const tex = new THREE.CanvasTexture(tc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(14 / 3, 76 / 3); tex.colorSpace = THREE.SRGBColorSpace;
+    const geo = new THREE.PlaneGeometry(14.6, 76, 15, 76); geo.rotateX(-Math.PI / 2); geo.translate(-5, 0, 158);   // v2.4 QC: runs on under the cave hill so no snow strip shows below the rocks
     const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 4), c = new THREE.Color(), GRV = new THREE.Color('#a49a8a'), TUN = new THREE.Color('#7f8254'), MOSS = new THREE.Color('#6d7a4a'), SN = new THREE.Color('#f4f7fa'), WET = new THREE.Color('#7d776d'), TC = new THREE.Color();
     for (let i = 0; i < n; i++) { const X = p.getX(i), Z = p.getZ(i); p.setY(i, groundH(X, Z) + 0.06);
       const nz = Math.sin(X * 0.9 + Z * 0.31) * Math.cos(Z * 0.23 - X * 0.4) + 0.5 * Math.sin(Z * 0.71 + X * 1.7);
@@ -327,7 +336,7 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
       const mx = 0.9 + 0.35 * Math.sin(Z * 0.13); c.lerp(WET, (1 - smooth(0.4, 1.1, Math.abs(X - mx))) * 0.5);   // damp gravel by the runnel
       const wd = Math.min(X + 12, 2 - X); c.lerp(SN, smooth(1.6, 0.3, wd + 0.25 * Math.sin(Z * 0.8)) * 0.95);  // drifted snow at the ice foot
       // at both ends the floor turns into exactly the terrain colour with no pebble texture (alpha = texture amount), so it is opaque yet seamless
-      const a = smooth(120, 124, Z) * smooth(190.5, 188.5, Z); c.lerp(terrColor(X, Z, TC), 1 - a);
+      const a = smooth(120, 124, Z) * smooth(197, 194.5, Z); c.lerp(terrColor(X, Z, TC), 1 - a);
       col.set([c.r, c.g, c.b, a], i * 4); }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 4)); terrNormals(geo); geo.computeBoundingSphere();
     const fm = new THREE.MeshLambertMaterial({ map: tex, vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
@@ -346,9 +355,14 @@ export function buildBeringia({ mergeAO, rings: ringDefs }) {
     melt.userData.noMerge = true; melt.name = 'meltwater'; melt.renderOrder = 2; scene.add(melt); }
   // 8 · Trial Cave hill with a dark entrance at the corridor's end
   { const g = [];
-    for (let i = 0; i < 9; i++) g.push(P(new THREE.DodecahedronGeometry(3 + rnd() * 2.5, 1), '#7b7266', -5 + (i - 4) * 2.6, 2.5 + rnd() * 2, 194 + rnd() * 4, rnd(), rnd(), 0, 1, 0.9, 1, 0.12, rnd));
-    g.push(P(new THREE.CircleGeometry(1.6, 16, 0, Math.PI), '#140d08', -5, 0.2, 190.35));
-    g.push(P(new THREE.PlaneGeometry(3.2, 0.2), '#140d08', -5, 0.1, 190.35));
+    // v2.4 QC: rocks used to sit 2.5-4.5 m up and floated over a strip of sky; now they are bedded into the ground
+    // (same rnd() calls in the same order, so the rest of the seeded layout is unchanged) and the dark entrance sits on the hill's front face
+    let front = 196;
+    for (let i = 0; i < 9; i++) { const r = 3 + rnd() * 2.5, x = -5 + (i - 4) * 2.6, y = 0.9 + rnd() * 1.1, z = 195.6 + rnd() * 2.4;
+      g.push(P(new THREE.DodecahedronGeometry(r, 1), '#7b7266', x, y, z, rnd(), rnd(), 0, 1, 0.9, 1, 0.12, rnd));
+      const q = (r * 0.8) ** 2 - (x + 5) ** 2 - ((1 - y) / 0.9) ** 2; if (q > 0) front = Math.min(front, z - Math.sqrt(q)); }
+    g.push(P(new THREE.CircleGeometry(1.6, 16, 0, Math.PI), '#140d08', -5, 0.05, front - 1.5, 0, Math.PI, 0));   // turned to face the player (a circle faces +z, away from her)
+    g.push(P(new THREE.PlaneGeometry(3.2, 0.25), '#140d08', -5, -0.05, front - 1.5, 0, Math.PI, 0));
     const hill = new THREE.Mesh(M(g), lam); hill.castShadow = true; hill.receiveShadow = true; statics.add(hill);
     box(-200, 200, 190.2, 300); }
   // scattered boulders (collide), dwarf willow scrub and grass tufts (walk-through), far mountains

@@ -76,7 +76,7 @@ GAME_CONTENT.sections.push({
   gear: [
     { name: "Pilgrim Collar", icon: "🤍", slot: "neck", color: "#ffffff", desc: "Crisp white linen, neatly starched." },
     { name: "Iron Garden Hoe", icon: "⛏️", slot: "hand", color: "#5b5b5b", desc: "He that will not work shall not eat!" },
-    { name: "Capotain Hat", icon: "🎩", slot: "head", color: "#2b2b2b", desc: "A tall hat with a buckle band." },
+    { name: "Capotain Hat", icon: "🎩", slot: "head", color: "#2b2b2b", desc: "A tall-crowned felt hat with a plain band, as English men and women wore in the 1620s (the buckled \"Pilgrim hat\" was invented by artists much later)." },
     { name: "Quill and Charter", icon: "🪶", slot: "belt", color: "#e9d9a6", desc: "For signing agreements of self-government." }
   ],
   badge: { name: "Mayflower Badge", icon: "⛵", tunic: "#6b4a2b", desc: "Mastered Jamestown and Plymouth! Your tunic becomes a colonist's sturdy brown doublet." },

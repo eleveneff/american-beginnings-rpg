@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -106,13 +106,16 @@ function loadW() {
   if (w.season && Array.isArray(w.season.tracks)) d.season.tracks = [...new Set(w.season.tracks.filter(t => ["t1", "t2", "t3"].includes(t)))];
   if (w.read && Array.isArray(w.read.s1)) d.read.s1 = [...new Set(w.read.s1.filter(i => Number.isInteger(i) && i >= 0 && i < 8))].sort();
   for (const k of ["s2", "s3", "s4"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan"]) if (w.seen[k] === true) d.seen[k] = true;
+  if (w.read && Array.isArray(w.read.s5)) d.read.s5 = [...new Set(w.read.s5.filter(i => Number.isInteger(i) && i >= 0 && i < 10))].sort((a, b) => a - b);   // v2.7: Section 5 has 10 scrolls
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
   if (a3 && typeof a3 === "object" && Number.isFinite(a3.x) && Number.isFinite(a3.z) && a3.x > -92 && a3.x < 92 && a3.z > -72 && a3.z < 92) d.at.s3 = { x: a3.x, z: a3.z, yaw: Number.isFinite(a3.yaw) ? wrapA(a3.yaw) : 0 };
   const a4 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s4 : null;   // Three Empires bounds (world/empires.js BOUNDS)
   if (a4 && typeof a4 === "object" && Number.isFinite(a4.x) && Number.isFinite(a4.z) && a4.x > -68 && a4.x < 92 && a4.z > -72 && a4.z < 63) d.at.s4 = { x: a4.x, z: a4.z, yaw: Number.isFinite(a4.yaw) ? wrapA(a4.yaw) : 0 };
+  const a5 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s5 : null;   // Jamestown and Plymouth bounds (world/colonies.js BOUNDS)
+  if (a5 && typeof a5 === "object" && Number.isFinite(a5.x) && Number.isFinite(a5.z) && a5.x > -70 && a5.x < 70 && a5.z > -72 && a5.z < 70) d.at.s5 = { x: a5.x, z: a5.z, yaw: Number.isFinite(a5.yaw) ? wrapA(a5.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -122,15 +125,15 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2", "s3", "s4"];                                       // sections with a walkable level
+const WALK = ["s1", "s2", "s3", "s4", "s5"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [7, "src1"], s2: [6, "src2"], s3: [6, "src3"], s4: [6, "src4"] };      // the primary-source scroll also counts once its questions were played
-const scrollRead = (sid, i) => W.read[sid].includes(i) || (i === SRC_LESSON[sid][0] && !!(ST().srcQ && ST().srcQ[SRC_LESSON[sid][1]] && ST().srcQ[SRC_LESSON[sid][1]].plays > 0));
+const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
+const scrollRead = (sid, i) => W.read[sid].includes(i) || (SRC_LESSON[sid] || []).some(([j, t]) => i === j && !!(ST().srcQ && ST().srcQ[t] && ST().srcQ[t].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
 let RINGS = null;
@@ -350,6 +353,74 @@ function nextTargetS4() {
   return best && north(best.def.z) !== meN ? cross() : best;
 }
 
+// ---- v2.7 Level 5 (Jamestown and Plymouth): Roanoke 1587 → James Fort 1607 → the tobacco fields → Cape Cod Harbor 1620 →
+// Plymouth → a Wampanoag homesite → the fort-meetinghouse (Trial). The James River is crossed by ship (the "Sail" rings fade
+// her across; nothing is saved but at.s5). Info cards mark W.seen like the other levels; no new progress-save fields.
+function ringDefsS5(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L5 = (id, i, st) => lessonRing("s5-" + id, i, A[id][0], A[id][1], st, "s5");
+  const A5 = (id, actId, icon, title, st) => actRing("s5-" + id, actId, icon, title, A[id][0], A[id][1], st, "s5");
+  const ship = (side, station) => at("ship-" + side, { id: "ship-" + side, station, icon: "⛵", label: () => side === "south" ? "Sail north and up the James River to James Fort" : "Sail back to Roanoke Island", act: () => card(shipCardS5(side)), state: () => "done" });
+  return [
+    L5("l0", 0, "roanoke"), info("croatoan", "roanoke", "🪵", "CROATOAN: the Lost Colony", croatoanCard), ship("south", "roanoke"),
+    ship("north", "jamestown"), info("ships", "jamestown", "⛵", "The three ships of 1607", ships5Card), A5("jamestown", "s5-jamestown", "🏰", "Jamestown Survival", "jamestown"),
+    L5("l1", 1, "jamestown"), info("fort5", "jamestown", "🔺", "James Fort: a triangle of logs", jfortCard), L5("l9", 9, "jamestown"), info("starving", "jamestown", "🥀", "The Starving Time, 1609–1610", starvingCard),
+    at("market", { id: "market", station: "jamestown", icon: "🛍️", label: () => "The Jamestown Storehouse", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m4"); }), state: () => "done" }),
+    info("assembly", "jamestown", "🏛️", "The General Assembly, July 30, 1619", assemblyCard), L5("l7", 7, "jamestown"),
+    L5("l2", 2, "fields"), L5("l3", 3, "fields"), info("tobacco", "fields", "🌿", "John Rolfe’s tobacco", tobaccoCard), info("powhatan", "fields", "🏹", "The Powhatan people", powhatanCard),
+    L5("l4", 4, "mayflower"), A5("compact", "s5-compact", "📜", "Draft and sign the Mayflower Compact", "mayflower"), L5("l8", 8, "mayflower"), info("mayship", "mayflower", "⛵", "The Mayflower, 1620", mayshipCard),
+    L5("l5", 5, "plymouth"), info("plymouth", "plymouth", "🏡", "Plymouth’s first winter", plymouthCard), info("colonies", "plymouth", "⚖️", "Two colonies, two beginnings", coloniesCard),
+    A5("squanto", "s5-squanto", "🌽", "Talk with Tisquantum (Squanto)", "wampanoag"), info("wampanoag", "wampanoag", "🏠", "The Wampanoag, People of the First Light", wampanoagCard), info("cornhills", "wampanoag", "🌱", "The Three Sisters: corn, beans and squash", cornhillsCard),
+    L5("l6", 6, "gate"), A5("geomap", "s5-geomap", "🧭", "Map the First Colonies", "gate"), A5("timeline", "s5-timeline", "📓", "Timeline of Jamestown and Plymouth", "gate"),
+    at("trial", { id: "trial", station: "gate", icon: "⚔️", label: () => trialLabelS5(), act: () => gateOpenS5() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s5"); } finally { L.bypass = false; } }) : card(gateLockedCardS5()), state: () => !gateOpenS5() ? "locked" : (sec("s5").completed ? "star" : "new") })
+  ];
+}
+const S5_ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const missingS5 = () => S5_ALL.filter(i => !scrollRead("s5", i));
+const gateOpenS5 = () => missingS5().length === 0 || (sec("s5").attempts || 0) > 0 || !!sec("s5").completed || trialActive("s5");
+function trialLabelS5() { const st = sec("s5"); if (trialActive("s5")) return "Resume the Trial at the fort-meetinghouse"; if (st.completed) return "The fort-meetinghouse Trial (mastered " + st.bestPct + "%) — try again"; return "Enter the fort-meetinghouse: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCardS5() { return { title: "🏛️ The fort-meetinghouse", body: "<p>Plymouth’s fort on the hill was also its meetinghouse, where the colonists met to worship and to govern themselves. Its door opens for the Trial once you have read <b>all 10 scrolls</b> of Jamestown and Plymouth. Still to read:</p>", btns: missingS5().map(i => lessonBtnS("s5", i)) }; }
+function shipCardS5(side) {
+  if (side === "north") return { title: "⛵ Back to Roanoke", body: "<p>Ready to sail back to <b>Roanoke Island</b>, where John White’s colony vanished in the 1580s?</p>", btns: [{ t: "⛵ Sail to Roanoke Island", f: () => { closeCard(); shipToS5("south"); } }] };
+  return { title: "⛵ North to the James River", body: "<p>Roanoke failed, but England did not give up. Twenty years later, in <b>1607</b>, three ships of the <b>Virginia Company of London</b> sailed into Chesapeake Bay and up a broad river the colonists named the <b>James</b>, for King James I.</p><p>In real life that is a voyage of about 150 miles north along the coast. Here it is a short sail.</p>", btns: [{ t: "⛵ Sail up the James River", f: () => { closeCard(); shipToS5("north"); } }] };
+}
+const ARRIVE5 = {
+  north: "⚓ James Fort, 1607. On <b>May 14, 1607</b>, about 104 English men and boys came ashore here to build the first lasting English colony in America.",
+  south: "⛵ Roanoke Island, 1587: the Lost Colony."
+};
+function shipToS5(side) { const h = L.mods.B.HARBORS[side]; if (!h) return false; teleport("out", h); setTimeout(() => toast(ARRIVE5[side]), 600); return true; }
+function croatoanCard() { return { title: "🪵 CROATOAN: the Lost Colony", body: "<p>In <b>1587</b>, about <b>115</b> English men, women and children settled on <b>Roanoke Island</b>, in today’s North Carolina, with Governor <b>John White</b>. On <b>August 18, 1587</b>, his granddaughter <b>Virginia Dare</b> was born: the first English child born in the Americas.</p><p>White sailed home for supplies, but England’s war with the <b>Spanish Armada</b> kept him away for three years. When he came back in <b>August 1590</b>, the houses were gone and the place was closed in by a wall of posts. On a post by the entrance one word was carved: <b>CROATOAN</b>.</p><p>Croatoan was a nearby island, home of a friendly Native people and of <b>Manteo</b>, who had helped the English. The colonists had promised to carve a cross if they left in danger, and White found none. Storms kept him from searching Croatoan, and no one knows for sure what happened. It is still one of America’s great mysteries.</p>" }; }
+function ships5Card() { return { title: "⛵ The three ships of 1607", body: "<p>On <b>December 20, 1606</b>, three small ships left London: the <b>Susan Constant</b> (the largest, about 120 tons), the <b>Godspeed</b> and the little <b>Discovery</b>. Captain <b>Christopher Newport</b> commanded them for the <b>Virginia Company of London</b>, a business whose investors hoped to find gold, a passage to Asia and goods to trade.</p><p>After about four months at sea they reached Virginia in late April 1607. On <b>May 14, 1607</b>, about <b>104</b> men and boys came ashore on a narrow peninsula in the James River and began <b>James Towne</b>, the first permanent English settlement in America. The first two Englishwomen arrived in 1608.</p>" }; }
+function jfortCard() { return { title: "🔺 James Fort: a triangle of logs", body: "<p>On <b>May 26, 1607</b>, warriors attacked the new camp. The settlers worked fast, and in about <b>19 days</b> they finished a fort: a <b>triangle</b> of tall upright logs called a <b>palisade</b>, with a round <b>bulwark</b> at each corner where cannon could guard the walls. Its long side faced the river.</p><p>In 1610 the colonist <b>William Strachey</b> wrote that the fort was “cast almost into the form of a triangle.” For centuries people believed the river had washed it away. Then in <b>1994</b> the archaeologists of <b>Jamestown Rediscovery</b> began to dig, and they found the lines of the fort’s walls, its wells and buildings, and well over a million artifacts.</p>" }; }
+function starvingCard() { return { title: "🥀 The Starving Time, 1609–1610", body: "<p>Jamestown nearly failed. The swampy site had bad water, and many of the first settlers were gentlemen who had never farmed. Captain <b>John Smith</b> led the colony in 1608–1609 with a firm rule: <b>“He that will not work shall not eat.”</b> In the fall of 1609 he was badly burned by gunpowder and sailed home.</p><p>The winter of <b>1609–1610</b> is called the <b>Starving Time</b>. Powhatan’s warriors besieged the fort, and the food ran out. Of the roughly <b>240 to 300</b> people crowded into James Fort, only about <b>60</b> were still alive by <b>May 1610</b>.</p><p>In June 1610 the survivors were sailing away when they met <b>Lord De La Warr</b> arriving with new settlers and supplies, and they turned back. Jamestown survived, and it never gave up again.</p>" }; }
+function assemblyCard() { return { title: "🏛️ The General Assembly, July 30, 1619", body: "<p>On <b>July 30, 1619</b>, in the church at James Towne, the first elected lawmaking assembly in English America met: the <b>General Assembly</b> of Virginia. Its elected members were called <b>burgesses</b>, and the elected house later became known as the <b>House of Burgesses</b>.</p><p>Governor <b>George Yeardley</b> called it under the Virginia Company’s new rules. <b>22 burgesses</b>, two from each of 11 settlements, sat with the governor and his council for six hot summer days, and the speaker, <b>John Pory</b>, kept the record.</p><p>It was a first seed of <b>self-government</b> in America: colonists choosing representatives to help make their own laws. That idea grew into our state legislatures and the U.S. Congress.</p><p>The honest history: that same August, the first recorded <b>Africans</b> in English Virginia arrived, about 20 people captured from a Portuguese slave ship and brought against their will. Liberty and slavery both took root in Virginia, and it took Americans a long struggle to make freedom belong to all.</p>" }; }
+function tobaccoCard() { return { title: "🌿 John Rolfe’s tobacco", body: "<p>Jamestown needed a way to pay its own way. In <b>1612</b> <b>John Rolfe</b> planted a sweeter kind of tobacco grown from Caribbean seeds. English smokers loved it, and by 1617 Virginia shipped about <b>20,000 pounds</b> of it to England. Tobacco became Virginia’s <b>cash crop</b>, and hard work and enterprise kept the colony alive. (Today we know smoking is very harmful to health.)</p><p>In <b>1614</b> Rolfe married <b>Pocahontas</b>, daughter of the paramount chief Powhatan, and her marriage brought several years of peace.</p><p>Tobacco needed a lot of land and workers. Planters paid the voyage of <b>indentured servants</b>, who worked for several years and then went free, and later many planters used enslaved Africans.</p>" }; }
+function powhatanCard() { return { title: "🏹 The Powhatan people", body: "<p>Jamestown was built in <b>Tsenacommacah</b>, the homeland of the Powhatan. More than <b>14,000</b> Algonquian-speaking people lived in about 30 tribes led by the paramount chief <b>Wahunsenacah</b>, whom the English called <b>Powhatan</b>.</p><p>They lived in towns of long, rounded houses called <b>yehakins</b>, covered with bark or woven reed mats, like the ones here. They grew corn, beans and squash, and fished and hunted along the rivers. At first they traded corn to the hungry English for copper, glass beads and iron tools.</p><p>The two peoples traded, quarreled and fought. After Pocahontas married John Rolfe there was peace for a time, but war came again in <b>1622</b>. The Powhatan people never disappeared: the <b>Pamunkey</b>, <b>Mattaponi</b> and other Virginia tribes live there still.</p>" }; }
+function mayshipCard() { return { title: "⛵ The Mayflower, 1620", body: "<p>In <b>September 1620</b> the <b>Mayflower</b>, a three-masted merchant ship, sailed from Plymouth, England, with <b>102 passengers</b>. About 40 of them were <b>Separatists</b>, later called the <b>Pilgrims</b>, who wanted to worship God freely, apart from the Church of England. The others, called <b>Strangers</b>, came for land and a new start.</p><p>The crossing took <b>66 days</b> through autumn storms. A main beam cracked, and they forced it back into place with a great iron screw. A young man, <b>John Howland</b>, was swept overboard and saved himself by grabbing a rope.</p><p>On <b>November 11, 1620</b>, they anchored here in <b>Cape Cod Harbor</b>, far north of the land their charter covered. That is why they needed the Mayflower Compact.</p>" }; }
+function plymouthCard() { return { title: "🏡 Plymouth’s first winter", body: "<p>After exploring the coast, the Pilgrims chose <b>Plymouth</b> harbor in December 1620. It had fresh water, a hill for a fort and cleared fields. The fields were empty because a terrible sickness from 1616 to 1619 had killed most of the <b>Patuxet</b> people who had lived there.</p><p>The first winter was brutal. While they built their houses, about <b>half</b> of the 102 passengers died. When the Mayflower sailed home in April 1621, not one of the survivors went back with it. That is courage.</p><p><b>William Bradford</b> was chosen governor in 1621, and the colonists re-elected him again and again for about 30 years. His book <i>Of Plymouth Plantation</i> tells their story.</p>" }; }
+function coloniesCard() { return { title: "⚖️ Two colonies, two beginnings", body: "<p><b>Jamestown (1607)</b> was a business venture: men sent by the Virginia Company to make a profit. It survived through hard work and tobacco, and in 1619 it gave America its first elected assembly.</p><p><b>Plymouth (1620)</b> was settled by families who came for <b>faith</b> and freedom of worship. Before landing, the men signed the <b>Mayflower Compact</b>, agreeing to make “just and equal laws” for the good of all.</p><p>Plymouth learned a lesson about <b>enterprise</b> too. At first everyone farmed for one shared store. In <b>1623</b> Governor Bradford gave each family its own plot of land, and Bradford wrote that the colonists became much more industrious and planted far more corn.</p><p>Two different beginnings, one shared gift: Americans governing themselves.</p>" }; }
+function wampanoagCard() { return { title: "🏠 The Wampanoag, People of the First Light", body: "<p>The <b>Wampanoag</b>, “People of the First Light,” had lived in what is now southeastern Massachusetts and Rhode Island for thousands of years. They lived in domed houses called <b>wetus</b>, covered with bark or woven mats, and moved between summer fields by the coast and sheltered winter homes inland.</p><p>Their great sachem (leader) <b>Ousamequin</b>, known as <b>Massasoit</b>, visited Plymouth in <b>March 1621</b>. He and Governor <b>John Carver</b> agreed to a treaty of peace and to help defend each other. It lasted more than 50 years.</p><p>In the fall of 1621, about 90 Wampanoag men came to the Pilgrims’ harvest celebration and brought five deer. The Wampanoag Nation lives in Massachusetts today, including the Mashpee and Aquinnah tribes.</p>" }; }
+function cornhillsCard() { return { title: "🌱 The Three Sisters: corn, beans and squash", body: "<p>Native farmers planted <b>corn, beans and squash</b> together in low hills, the “Three Sisters.” The tall corn gives the beans a pole to climb, the beans help keep the soil rich, and the big squash leaves shade out weeds and hold in water.</p><p>In the spring of 1621, <b>Tisquantum (Squanto)</b> showed the Pilgrims how to plant corn in hills and put fish in each hill to feed the soil. He spoke English because, years before, he had been kidnapped and taken to Europe. When he came home, he found his Patuxet people gone. He chose to help the newcomers, and William Bradford called him “a special instrument sent of God.”</p>" }; }
+function helpCardS5() {
+  card({ title: "❔ How to explore Jamestown and Plymouth", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the first lasting English colonies in America. You will see the Lost Colony of <b>Roanoke</b> (1587), <b>James Fort</b> in Virginia (1607) and <b>Plymouth</b> in New England (1620). Here Americans first learned to <b>govern themselves</b>: the General Assembly of 1619 and the Mayflower Compact of 1620.</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life Virginia and New England are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start on Roanoke Island, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Sail across the <b>James River</b> at the landing. Read all <b>10 scrolls</b> to open the <b>fort-meetinghouse</b> for the Trial.</li></ul>" });
+  W.seen.help5 = true; saveW();
+}
+// Level 5 banner: like Level 4 (the station she stands in, else the lowest-numbered station with work left); across the James
+// River it points at the ship ring on her bank. With nothing left: the fort-meetinghouse.
+function nextTargetS5() {
+  const B = L.mods.B, rings = L.lvl.rings, S = B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const north = z => z > B.riverZ(L.pos.x), meN = north(L.pos.z);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const cross = () => { const r = byId(meN ? "ship-north" : "ship-south"); return { def: { ...r.def, text: "Marker " + (meN ? "2 · Sail back to Roanoke Island" : "1 · Sail up the James River to James Fort") } }; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  let best;
+  if (!todo.length) best = byId("trial");
+  else { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+    if (inSt && inSt.length) best = pick(inSt); else { const n0 = Math.min(...todo.map(r => S[r.def.station].n)); best = pick(todo.filter(r => S[r.def.station].n === n0)); } }
+  return best && north(best.def.z) !== meN ? cross() : best;
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
 const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
@@ -558,8 +629,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 // v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
 function layoutHud() {
@@ -603,6 +674,12 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s5") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s5") { enterLevel("s5"); return true; }
+        resume(); if (gateOpenS5()) setTimeout(() => toast("🏛️ The Trial waits at the <b>fort-meetinghouse</b> on the hill, marker 7. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCardS5()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s4") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s4") { enterLevel("s4"); return true; }
@@ -659,16 +736,16 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2" || sid === "s3" || sid === "s4") {
+    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5") {
       const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s4" ? "s4-goals" : sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -699,12 +776,12 @@ function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
-  const ok = L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  const ok = L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
@@ -715,7 +792,8 @@ function buildHero() {
 function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
-  if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }   // St. Augustine, facing north into town
+  if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }
+  if (L.sid === "s5") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Roanoke Island, facing north to the empty fort   // St. Augustine, facing north into town
   if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
   if (zone === "cave") { L.zone = "cave"; L.pos.set(B.CAVE_X, 0, 5); L.yaw = Math.PI; }
   else { L.zone = "out"; L.pos.set(0, B.groundH(0, -4), -4); L.yaw = 0; }
@@ -725,10 +803,11 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if ((sid === "s2" || sid === "s3" || sid === "s4") && (L.phase === "off" || from !== sid)) {
+  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5") && (L.phase === "off" || from !== sid)) {
     // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
     const a = W.at[sid], t = B.RING_AT.trial;
     if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid) && sid === "s5") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the fort-meetinghouse door to resume."), 300); }
     else if (trialActive(sid) && sid === "s4") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🚪 Your Trial is waiting. Step into the ring in the palisade gate to resume."), 300); }
     else if (trialActive(sid)) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
     else if (a && walkable(a.x, a.z)) { L.zone = "out"; L.pos.set(a.x, 0, a.z); L.yaw = a.yaw; }
@@ -742,9 +821,9 @@ async function enterLevel(sid = L.sid) {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -898,6 +977,7 @@ function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
   if (L.sid === "s3") return nextTargetS3();
   if (L.sid === "s4") return nextTargetS4();
+  if (L.sid === "s5") return nextTargetS5();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
   if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
@@ -1044,7 +1124,7 @@ window.__world = {
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
-  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), ship5: (side) => shipToS5(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

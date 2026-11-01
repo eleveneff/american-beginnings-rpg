@@ -1,4 +1,4 @@
-// world/polish.js — v2.6.2 graphics pass 2 (every element so far), shared by all four outdoor levels.
+// world/polish.js — v2.6.2 graphics pass 2 (every element so far), shared by all the outdoor levels.
 // Added on top of a built level, with no new save data, no colliders and (almost) no new draw calls:
 //  • rings: the light columns are softer (about 60% of the old glow, so sand and decks no longer wash out to white);
 //  • floating labels and region boards fade out as the camera comes close (they blocked the view in QC shots);
@@ -11,7 +11,8 @@ const GRADE = {   // sun colour, sun intensity, hemisphere sky / ground, exposur
   s1: { rim: '#e8f1ff', sun: '#fff1e0', si: 2.0, sky: '#e2ecf8', gr: '#a49a80', exp: 1.04, mote: '#ffffff', moteN: 70, size: 0.09 },
   s2: { rim: '#fff0d6', sun: '#ffe6c4', si: 2.1, sky: '#eaf0f6', gr: '#a08e6a', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 },
   s3: { rim: '#fff0d6', sun: '#ffe9c8', si: 2.1, sky: '#e8f2fa', gr: '#a8946c', exp: 1.06, mote: '#fff6d8', moteN: 50, size: 0.08 },
-  s4: { rim: '#fff0d6', sun: '#ffe4bf', si: 2.1, sky: '#e9eff5', gr: '#9c8a66', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 }
+  s4: { rim: '#fff0d6', sun: '#ffe4bf', si: 2.1, sky: '#e9eff5', gr: '#9c8a66', exp: 1.06, mote: '#fff4c8', moteN: 60, size: 0.08 },
+  s5: { rim: '#fff0d6', sun: '#ffe2b8', si: 2.05, sky: '#e6edf2', gr: '#948a62', exp: 1.06, mote: '#f6ead0', moteN: 55, size: 0.08 }   // v2.7: a clear autumn light (the Mayflower came in November)
 };
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 function dotTex() { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);

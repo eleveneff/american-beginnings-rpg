@@ -104,6 +104,25 @@ const GEAR = {
     const c = col || '#ffb703';
     return { body: [part(new THREE.CylinderGeometry(0.004, 0.004, 0.06, 4), '#3a3a3a', -0.19, 0.86, 0.04), part(new THREE.BoxGeometry(0.07, 0.09, 0.07), c, -0.19, 0.78, 0.04), part(new THREE.BoxGeometry(0.078, 0.012, 0.078), '#4a4a48', -0.19, 0.83, 0.04), part(new THREE.BoxGeometry(0.078, 0.012, 0.078), '#4a4a48', -0.19, 0.73, 0.04), part(new THREE.ConeGeometry(0.05, 0.04, 4), '#4a4a48', -0.19, 0.855, 0.04, 0, Math.PI / 4, 0)] };
   },
+  // ---- v2.7: Section 5 (Jamestown and Plymouth) art keys from content/v2-s5.js; drawn in Level 5 ----
+  'collar': (col) => {                // neck slot: a white linen falling band, laid flat over the shoulders, two points in front
+    const c = col || '#ffffff';
+    return { body: [part(new THREE.CylinderGeometry(0.135, 0.205, 0.05, 20, 1, true), c, 0, 1.215, 0), part(new THREE.CylinderGeometry(0.205, 0.205, 0.012, 20), c, 0, 1.19, 0, 0, 0, 0, 1, 1, 0.9),
+      part(new THREE.BoxGeometry(0.075, 0.09, 0.012), c, -0.045, 1.15, 0.155, 0.25, 0, 0.12), part(new THREE.BoxGeometry(0.075, 0.09, 0.012), c, 0.045, 1.15, 0.155, 0.25, 0, -0.12)] };
+  },
+  'hoe': (col) => {                   // right-hand slot: a garden hoe, ash handle and a flat iron blade
+    const c = col || '#5b5b5b';
+    return { rhand: [part(new THREE.CylinderGeometry(0.012, 0.014, 1.25, 6), '#8b6a43', 0, 0.35, 0), part(new THREE.BoxGeometry(0.16, 0.1, 0.012), c, 0, 0.98, 0.05, 0.35, 0, 0), part(new THREE.CylinderGeometry(0.016, 0.016, 0.06, 6), '#3a3a3a', 0, 0.96, 0.015, Math.PI / 2, 0, 0)] };
+  },
+  'capotain': (col) => {              // head slot: a tall-crowned felt hat with a plain band and a round brim (no buckle)
+    const c = col || '#2b2b2b';
+    return { body: [part(new THREE.CylinderGeometry(0.098, 0.118, 0.17, 18), c, 0, 1.53, -0.01, -0.1, 0, 0), part(new THREE.CylinderGeometry(0.2, 0.2, 0.014, 22), c, 0, 1.445, -0.005, -0.1, 0, 0),
+      part(new THREE.CylinderGeometry(0.117, 0.119, 0.03, 18), '#4a3a2a', 0, 1.47, -0.008, -0.1, 0, 0)] };
+  },
+  'charter': (col) => {               // off-hand slot: a rolled parchment charter tied with a ribbon and a red wax seal, at her left hip
+    const c = col || '#e8d9a8';
+    return { body: [part(new THREE.CylinderGeometry(0.026, 0.026, 0.2, 10), c, -0.19, 0.82, 0.05, 0, 0, 0.35), part(new THREE.CylinderGeometry(0.029, 0.029, 0.02, 10), '#7a2a22', -0.19, 0.82, 0.05, 0, 0, 0.35), part(new THREE.CylinderGeometry(0.022, 0.022, 0.01, 10), '#b3261e', -0.205, 0.78, 0.08, Math.PI / 2, 0, 0), part(new THREE.ConeGeometry(0.014, 0.16, 4), '#f4f1ea', -0.16, 0.93, 0.03, 0, 0, -0.3)] };
+  },
   'satchel': (col) => {               // back slot: a leather satchel at her hip, its strap across her chest
     const c = col || '#8d6e4a';
     return { body: [part(new THREE.BoxGeometry(0.2, 0.15, 0.07), c, -0.17, 0.82, -0.06, 0, 0, 0.05), part(new THREE.BoxGeometry(0.205, 0.07, 0.075), '#6e5236', -0.17, 0.87, -0.06, 0, 0, 0.05), part(new THREE.TorusGeometry(0.21, 0.012, 4, 28).scale(1, 0.62, 1).rotateX(Math.PI / 2).rotateZ(0.85), '#5a3d24', 0, 1.0, 0)] };
@@ -113,6 +132,7 @@ export const S1_ART = ['fur-cloak', 'spear', 'basket', 'shell-necklace', 'feathe
 export const S2_ART = ['wampum-belt', 'paddle', 'buffalo-robe', 'turquoise'];
 export const S3_ART = ['compass', 'astrolabe', 'map-tube', 'sounding-lead', 'nav-cap'];
 export const S4_ART = ['beaver-cap', 'journal', 'lantern', 'satchel'];
+export const S5_ART = ['collar', 'hoe', 'capotain', 'charter'];
 // outfits: the hide tunic of Levels 1–2, and (v2.5) a wool dress and linen collar for Spain in 1492
 const OUTFITS = { hide: { tunic: HIDE, hem: HIDE_D, fringe: true, sleeve: HIDE, leg: LEG, shoe: MOC }, wool: { tunic: '#3f5f7a', hem: '#2c4258', fringe: false, sleeve: '#ece3cf', leg: '#4a3a2e', shoe: '#2e2219' } };
 

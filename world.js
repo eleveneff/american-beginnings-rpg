@@ -1,4 +1,4 @@
-// world.js — v2.2–v2.6 3D layer for American Beginnings RPG.
+// world.js — v2.2–v2.7 3D layer for American Beginnings RPG.
 // (1) Classic: the low-poly N64-style background behind the screens (paused while panels / videos cover it).
 // (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js), Section 2 Native
 //     Nations (world/nations.js, v2.4) and, new in v2.5, Section 3 The Voyage of 1492 (world/voyage.js) and, new in v2.6, Section 4 Three Empires (world/empires.js). Each level keeps its own scene, rings, graphics and sparks (LV);
@@ -649,7 +649,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.6:</b> explore the Three Empires in 3D: Spanish St. Augustine and Santa Fe, French Quebec and Dutch New Amsterdam (plus the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.7:</b> explore Jamestown and Plymouth in 3D: the Lost Colony of Roanoke, triangular James Fort, the 1619 Assembly, the Mayflower and Plymouth (plus the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;

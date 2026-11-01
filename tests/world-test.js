@@ -260,6 +260,9 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       await tp(20, -22); await sleep(400);
       const exp = await p.evaluate(() => { const pos = __world.pos; let best = null, bd = 1e9; for (const r of __world.rings()) if (/^s2-/.test(r.id) && r.state === 'new') { const d = Math.hypot(r.x - pos.x, r.z - pos.z); if (d < bd) { bd = d; best = r.id; } } return best; });
       assert((await p.evaluate(() => __world.target)) === exp, 'between camps the banner points to the nearest unfinished marker (' + exp + ')'); }
+    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(300);
+    assert(/all 7 scrolls/.test((await W()).card || '') && (await W()).phase === 'active', 'the meeting-ground Trial ring stays locked until all 7 scrolls are read');
+    await closeCards();   // checked before any Section 2 scroll is read
     console.log('  rings open the existing panels:');
     { await tpRing('s2-l0'); w = await W(); assert(w.near === 's2-l0' && /Scroll 1/.test(await p.$eval('#w-prompt', e => e.textContent)), 'council fire ring = Scroll 1 (prompt names it)');
       await p.keyboard.press('KeyE'); await sleep(500);
@@ -311,9 +314,6 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert((await W()).phase === 'panel' && /Cahokia Trade Gathering/.test(await p.$eval('#screen', e => e.textContent)), 'the trade blanket ring opens the Cahokia Trade Gathering market');
     await p.evaluate(() => ABRPG.home()); await waitPhase('active');
     console.log('  meeting ground + Trial:');
-    await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(300);
-    assert(/all 7 scrolls/.test((await W()).card || '') && (await W()).phase === 'active', 'the meeting-ground Trial ring stays locked until all 7 scrolls are read');
-    await closeCards();
     for (const i of [0, 1, 2, 3, 4, 5, 6]) { await p.evaluate(i => ABRPG.lesson('s2', i, false), i); await sleep(80); }
     await p.evaluate(() => ABRPG.home()); await waitPhase('active');
     assert(await p.evaluate(() => __world.meetOpen()) && (await ringAt('trial')).state === 'new', 'with all 7 scrolls read the meeting-ground Trial ring opens');

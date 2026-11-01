@@ -1,4 +1,4 @@
-// world.js — v2.2–v2.7 3D layer for American Beginnings RPG.
+// world.js — v2.2–v2.8 3D layer for American Beginnings RPG.
 // (1) Classic: the low-poly N64-style background behind the screens (paused while panels / videos cover it).
 // (2) Walk: the walkable levels, loaded on first use: Section 1 Beringia (world/beringia.js), Section 2 Native
 //     Nations (world/nations.js, v2.4) and, new in v2.5, Section 3 The Voyage of 1492 (world/voyage.js) and, new in v2.6, Section 4 Three Empires (world/empires.js). Each level keeps its own scene, rings, graphics and sparks (LV);
@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [], s6: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -107,7 +107,8 @@ function loadW() {
   if (w.read && Array.isArray(w.read.s1)) d.read.s1 = [...new Set(w.read.s1.filter(i => Number.isInteger(i) && i >= 0 && i < 8))].sort();
   for (const k of ["s2", "s3", "s4"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
   if (w.read && Array.isArray(w.read.s5)) d.read.s5 = [...new Set(w.read.s5.filter(i => Number.isInteger(i) && i >= 0 && i < 10))].sort((a, b) => a - b);   // v2.7: Section 5 has 10 scrolls
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills"]) if (w.seen[k] === true) d.seen[k] = true;
+  if (w.read && Array.isArray(w.read.s6)) d.read.s6 = [...new Set(w.read.s6.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v2.8: Section 6 has 9 scrolls
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills", "help6", "rice", "indigo", "port6", "capitol", "trade6", "whitefield", "library", "penn", "hornbook", "townmeeting", "joinordie"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
@@ -116,6 +117,8 @@ function loadW() {
   if (a4 && typeof a4 === "object" && Number.isFinite(a4.x) && Number.isFinite(a4.z) && a4.x > -68 && a4.x < 92 && a4.z > -72 && a4.z < 63) d.at.s4 = { x: a4.x, z: a4.z, yaw: Number.isFinite(a4.yaw) ? wrapA(a4.yaw) : 0 };
   const a5 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s5 : null;   // Jamestown and Plymouth bounds (world/colonies.js BOUNDS)
   if (a5 && typeof a5 === "object" && Number.isFinite(a5.x) && Number.isFinite(a5.z) && a5.x > -70 && a5.x < 70 && a5.z > -72 && a5.z < 70) d.at.s5 = { x: a5.x, z: a5.z, yaw: Number.isFinite(a5.yaw) ? wrapA(a5.yaw) : 0 };
+  const a6 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s6 : null;   // Thirteen Colonies bounds (world/thirteen.js BOUNDS)
+  if (a6 && typeof a6 === "object" && Number.isFinite(a6.x) && Number.isFinite(a6.z) && a6.x > -70 && a6.x < 70 && a6.z > -72 && a6.z < 70) d.at.s6 = { x: a6.x, z: a6.z, yaw: Number.isFinite(a6.yaw) ? wrapA(a6.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -125,14 +128,14 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2", "s3", "s4", "s5"];                                       // sections with a walkable level
+const WALK = ["s1", "s2", "s3", "s4", "s5", "s6"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
+const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]], s6: [[7, "src6a"], [8, "src6b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
 const scrollRead = (sid, i) => W.read[sid].includes(i) || (SRC_LESSON[sid] || []).some(([j, t]) => i === j && !!(ST().srcQ && ST().srcQ[t] && ST().srcQ[t].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
@@ -421,6 +424,59 @@ function nextTargetS5() {
   return best && north(best.def.z) !== meN ? cross() : best;
 }
 
+// ---- v2.8 Level 6 (The Thirteen Colonies, to 1754): Charles Town → Williamsburg → a field meeting of 1740 → Philadelphia →
+// a village lane → Boston → Albany 1754 (Trial at the Stadt Huys). One walk on land, no ships to sail; nothing is saved but at.s6.
+// Info cards mark W.seen like the other levels; no new progress-save fields.
+function ringDefsS6(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L6 = (id, i, st) => lessonRing("s6-" + id, i, A[id][0], A[id][1], st, "s6");
+  const A6 = (id, actId, icon, title, st) => actRing("s6-" + id, actId, icon, title, A[id][0], A[id][1], st, "s6");
+  return [
+    L6("l2", 2, "charleston"), info("rice", "charleston", "🌾", "Carolina rice", riceCard), info("indigo", "charleston", "🫙", "Eliza Lucas and indigo", indigoCard), info("port6", "charleston", "⚓", "The port of Charles Town", port6Card),
+    L6("l3", 3, "williamsburg"), info("capitol", "williamsburg", "🏛️", "The Capitol at Williamsburg", capitolCard), info("trade6", "williamsburg", "⚖️", "Trade with England", trade6Card),
+    L6("l5", 5, "revival"), info("whitefield", "revival", "📣", "George Whitefield preaches, 1740", whitefieldCard),
+    L6("l1", 1, "philadelphia"), L6("l8", 8, "philadelphia"), A6("press", "s6-press", "🖨️", "Print a page like Ben Franklin", "philadelphia"), A6("franklin", "s6-franklin", "🪁", "Talk with Benjamin Franklin", "philadelphia"),
+    info("library", "philadelphia", "📚", "The Library Company, 1731", libraryCard), info("penn", "philadelphia", "🕊️", "William Penn and the Lenape", pennCard),
+    L6("l4", 4, "village"), A6("candle", "s6-candle", "🕯️", "Dip a colonial candle", "village"), info("hornbook", "village", "📜", "School and the hornbook", hornbookCard),
+    L6("l0", 0, "boston"), L6("l7", 7, "boston"), info("townmeeting", "boston", "🗳️", "The New England town meeting", townmeetingCard), A6("colonies", "s6-colonies", "🗂️", "Sort the Thirteen Colonies", "boston"),
+    at("market", { id: "market", station: "boston", icon: "🛍️", label: () => "Hale’s Shop on King Street", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m5"); }), state: () => "done" }),
+    L6("l6", 6, "gate"), A6("geomap", "s6-geomap", "🧭", "Label the Thirteen Colonies", "gate"), A6("timeline", "s6-timeline", "📓", "Timeline of the Thirteen Colonies", "gate"), info("joinordie", "gate", "🐍", "“JOIN, or DIE.” Albany, 1754", joinordieCard),
+    at("trial", { id: "trial", station: "gate", icon: "⚔️", label: () => trialLabelS6(), act: () => gateOpenS6() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s6"); } finally { L.bypass = false; } }) : card(gateLockedCardS6()), state: () => !gateOpenS6() ? "locked" : (sec("s6").completed ? "star" : "new") })
+  ];
+}
+const S6_ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const missingS6 = () => S6_ALL.filter(i => !scrollRead("s6", i));
+const gateOpenS6 = () => missingS6().length === 0 || (sec("s6").attempts || 0) > 0 || !!sec("s6").completed || trialActive("s6");
+function trialLabelS6() { const st = sec("s6"); if (trialActive("s6")) return "Resume the Trial at the Stadt Huys"; if (st.completed) return "The Stadt Huys Trial (mastered " + st.bestPct + "%) — try again"; return "Enter the Stadt Huys: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCardS6() { return { title: "🏛️ The Stadt Huys at Albany", body: "<p>In the summer of <b>1754</b>, delegates from seven colonies met in Albany’s town hall, the <b>Stadt Huys</b> (Dutch for “city house”), to talk about joining together. Its door opens for the Trial once you have read <b>all 9 scrolls</b> of the Thirteen Colonies. Still to read:</p>", btns: missingS6().map(i => lessonBtnS("s6", i)) }; }
+function riceCard() { return { title: "🌾 Carolina rice", body: "<p><b>Charles Town</b> (today’s Charleston, South Carolina) was founded in <b>1670</b>. In the warm, wet Lowcountry, planters found a crop that grew wonderfully in flooded fields: <b>rice</b>. By the 1740s South Carolina shipped tens of thousands of barrels of “Carolina Gold” rice a year, and Charles Town was the richest city in the southern colonies.</p><p>The truth has a hard side. The rice was planted, flooded, weeded and harvested by <b>enslaved Africans</b>, and many came from West African rice-growing regions. Their skill built the rice fields, but they were not free. By 1740 most people in South Carolina were enslaved. Americans would later fight a long struggle to end slavery and live up to the words “all men are created equal.”</p>" }; }
+function indigoCard() { return { title: "🫙 Eliza Lucas and indigo", body: "<p>In <b>1739</b>, when she was only <b>16</b>, <b>Eliza Lucas</b> was put in charge of her family’s plantations in South Carolina while her father served as an army officer in the West Indies. She loved botany and tried crop after crop.</p><p>Her best experiment was <b>indigo</b>, a plant that makes a deep blue dye prized by England’s cloth makers. Frost, failed batches and a dishonest dye-maker did not stop her. By <b>1744</b> she had a good crop and shared her seed with other planters. Indigo soon became South Carolina’s second great export, after rice. That is ingenuity and <b>enterprise</b>.</p><p>In these vats the leaves soaked in water, were beaten to bring out the color, and dried into blue cakes. Like the rice, most of the hard work was done by enslaved people.</p>" }; }
+function port6Card() { return { title: "⚓ The port of Charles Town", body: "<p>From wharves like this one, ships carried <b>rice, indigo</b> and deerskins (traded from the <b>Cherokee</b> and <b>Creek</b> peoples) across the Atlantic to England. They came back with cloth, tools, tea, books and fine furniture.</p><p>Charles Town was also the busiest port in North America for the cruel <b>slave trade</b>: ships brought thousands of captive Africans there to be sold. Telling the whole story helps us understand how much courage it took, later, to end slavery.</p>" }; }
+function capitolCard() { return { title: "🏛️ The Capitol at Williamsburg", body: "<p><b>Williamsburg</b> became the capital of Virginia in <b>1699</b>, after the statehouse at Jamestown burned. Its brick <b>Capitol</b>, finished in <b>1705</b>, was shaped like the letter <b>H</b>: two wings joined by a hall on the second floor.</p><p>One wing held the <b>House of Burgesses</b>, the elected assembly that began at Jamestown in 1619. The other held the <b>Governor’s Council</b>. Colonists who owned land elected the burgesses, who voted on taxes and laws. Young <b>George Washington</b> was elected a burgess in <b>1758</b>, and <b>Patrick Henry</b> and <b>Thomas Jefferson</b> later served here too.</p><p>Every colony had its own elected assembly like this. That is how Americans practiced <b>self-government</b> for more than 150 years before the Revolution.</p>" }; }
+function trade6Card() { return { title: "⚖️ Trade with England", body: "<p>England ran its colonies under a system called <b>mercantilism</b>: colonies should send raw materials (tobacco, rice, furs, lumber, fish) to the mother country and buy its manufactured goods. Laws called the <b>Navigation Acts</b> (from <b>1651</b>) said that many colonial goods could be shipped only to England, on English or colonial ships.</p><p>For many years England did not enforce these laws strictly. This is often called <b>salutary neglect</b> (“healthy neglect”). Colonial merchants, shipbuilders and farmers grew prosperous, and the colonists grew used to running their own affairs. When Britain later tried to tighten its grip, they resisted.</p>" }; }
+function whitefieldCard() { return { title: "📣 George Whitefield preaches, 1740", body: "<p>In the 1730s and 1740s a wave of religious revival called the <b>Great Awakening</b> swept the colonies. In Massachusetts the minister <b>Jonathan Edwards</b> led revivals, and in <b>1739–1740</b> the young English preacher <b>George Whitefield</b> toured from Georgia to New England.</p><p>Whitefield preached <b>outdoors</b> in fields like this one, because no church could hold the crowds. In Philadelphia <b>Benjamin Franklin</b>, who was not a revivalist, went to hear him and worked out that his voice could reach <b>more than 30,000 people</b> at once.</p><p>The Awakening taught that every person, rich or poor, could stand before God. People began to choose their own churches and question authority, and new colleges were founded, such as the College of New Jersey (today Princeton) in <b>1746</b>. <b>Faith</b> helped build a free people.</p>" }; }
+function libraryCard() { return { title: "📚 The Library Company, 1731", body: "<p>Books were expensive in the colonies. In <b>1731</b> <b>Benjamin Franklin</b> and his friends in a club called the <b>Junto</b> each paid in money to buy books from London and share them. They called it the <b>Library Company of Philadelphia</b>, and it was the first <b>subscription library</b> in America. It is still open today.</p><p>Franklin wrote that libraries made “the common tradesmen and farmers as intelligent as most gentlemen from other countries.” This love of learning, part of the <b>Enlightenment</b>, helped ordinary Americans think for themselves.</p>" }; }
+function pennCard() { return { title: "🕊️ William Penn and the Lenape", body: "<p>In <b>1681</b> King Charles II granted <b>William Penn</b>, a <b>Quaker</b>, a huge colony to repay a debt to Penn’s father. Penn called it a “holy experiment”: a colony where people of every faith could worship freely. He founded <b>Philadelphia</b>, “city of brotherly love,” in <b>1682</b>.</p><p>The land was the homeland of the <b>Lenape</b> (Delaware) people. Penn learned some of their language and bought land from them instead of simply taking it, and for many years the two peoples lived in peace. Sadly, after his death his sons tricked the Lenape in the <b>Walking Purchase</b> of <b>1737</b> and took far more land than had been agreed.</p><p>Penn’s <b>Charter of Privileges</b> of <b>1701</b> gave Pennsylvania an elected assembly and promised freedom of conscience. In 1751 the assembly ordered a bell for its statehouse with words from the Bible: “Proclaim liberty throughout all the land.” We call it the Liberty Bell.</p>" }; }
+function hornbookCard() { return { title: "📜 School and the hornbook", body: "<p>Colonial children learned their letters from a <b>hornbook</b>: a little wooden paddle holding a sheet with the alphabet and the Lord’s Prayer, covered with a thin, clear layer of cow’s horn to keep it clean.</p><p>New England cared a great deal about reading, so that everyone could read the Bible. A Massachusetts law of <b>1647</b> said that every town of <b>50 families</b> must hire a teacher, and every town of 100 families must have a grammar school. Children also learned from the <b>New England Primer</b>, which began “In Adam’s fall, we sinned all.”</p><p>Many girls learned to read at home or at “dame schools” and stitched <b>samplers</b> of letters and verses. By the 1700s New England had some of the highest reading rates in the world.</p>" }; }
+function townmeetingCard() { return { title: "🗳️ The New England town meeting", body: "<p>In New England towns, the voters gathered in the meetinghouse at a <b>town meeting</b>. They chose their own officers, set local taxes, and decided about roads, schools and the town’s minister, all by open debate and a vote.</p><p>Boston held its town meetings here, and in the <b>Town House</b> built in <b>1713</b> (today’s Old State House) the Massachusetts assembly met upstairs. Boston’s <b>Long Wharf</b> ran far out into the harbor, and its ships carried <b>cod</b>, lumber, ships and rum around the Atlantic world.</p><p>Thomas Jefferson later called town meetings “the wisest invention ever devised by the wit of man for the perfect exercise of self-government.”</p>" }; }
+function joinordieCard() { return { title: "🐍 “JOIN, or DIE.” Albany, 1754", body: "<p>By <b>1754</b> Britain and France were close to war over the Ohio Valley. On <b>May 9, 1754</b>, Benjamin Franklin printed America’s first famous political cartoon in his <b>Pennsylvania Gazette</b>: a snake cut into pieces labeled with the colonies, and the words <b>“JOIN, or DIE.”</b></p><p>That summer, delegates from <b>seven colonies</b> met here in <b>Albany</b> with leaders of the <b>Haudenosaunee</b> (Iroquois) Confederacy, the Six Nations, including the Mohawk leader <b>Hendrick Theyanoguin</b>. Franklin proposed the <b>Albany Plan of Union</b>: one council of delegates from all the colonies to handle defense and Native relations.</p><p>No colony accepted it. They were not yet ready to give up any of their own power. But the idea of the colonies <b>uniting</b> had been planted, and twenty-two years later it grew into the United States.</p>" }; }
+function helpCardS6() {
+  card({ title: "❔ How to explore the Thirteen Colonies", body: "<p>You are <b>" + esc(heroName()) + "</b>, traveling through the <b>Thirteen Colonies</b> in the 1740s and 1750s, from the rice fields of <b>Charles Town</b> to Williamsburg, Philadelphia and Boston, and on to <b>Albany</b> in 1754. You will see how the colonists worked, worshiped, learned and <b>governed themselves</b>.</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these towns are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start at Charles Town, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Follow the road north through markers 1 to 7. Read all <b>9 scrolls</b> to open the <b>Stadt Huys</b> at Albany for the Trial.</li></ul>" });
+  W.seen.help6 = true; saveW();
+}
+// Level 6 banner: like Level 5 without the river crossing (the station she stands in, else the lowest-numbered station
+// with work left). With nothing left: the Stadt Huys.
+function nextTargetS6() {
+  const rings = L.lvl.rings, S = L.mods.B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  if (!todo.length) return byId("trial");
+  const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+  if (inSt && inSt.length) return pick(inSt);
+  const n0 = Math.min(...todo.map(r => S[r.def.station].n)); return pick(todo.filter(r => S[r.def.station].n === n0));
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
 const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
@@ -629,8 +685,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 // v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
 function layoutHud() {
@@ -649,7 +705,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.7:</b> explore Jamestown and Plymouth in 3D: the Lost Colony of Roanoke, triangular James Fort, the 1619 Assembly, the Mayflower and Plymouth (plus the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.8:</b> walk the Thirteen Colonies in 3D: Charles Town, Williamsburg, a Great Awakening field meeting, Ben Franklin’s Philadelphia, a village lane, Boston and Albany in 1754 (plus Jamestown and Plymouth, the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
@@ -674,6 +730,12 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s6") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s6") { enterLevel("s6"); return true; }
+        resume(); if (gateOpenS6()) setTimeout(() => toast("🏛️ The Trial waits at the <b>Stadt Huys</b> in Albany, marker 7. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCardS6()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s5") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s5") { enterLevel("s5"); return true; }
@@ -736,16 +798,16 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5") {
+    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") {
       const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s4" ? "s4-goals" : sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s6" ? B.buildThirteen({ mergeAO, rings, matLabels }) : sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -776,12 +838,12 @@ function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
-  const ok = L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  const ok = L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" || L.sid === "s6" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
@@ -793,6 +855,7 @@ function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
   if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }
+  if (L.sid === "s6") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Charles Town, facing north up the road
   if (L.sid === "s5") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Roanoke Island, facing north to the empty fort   // St. Augustine, facing north into town
   if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
   if (zone === "cave") { L.zone = "cave"; L.pos.set(B.CAVE_X, 0, 5); L.yaw = Math.PI; }
@@ -803,10 +866,11 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5") && (L.phase === "off" || from !== sid)) {
+  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") && (L.phase === "off" || from !== sid)) {
     // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
     const a = W.at[sid], t = B.RING_AT.trial;
     if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid) && sid === "s6") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the Stadt Huys door to resume."), 300); }
     else if (trialActive(sid) && sid === "s5") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the fort-meetinghouse door to resume."), 300); }
     else if (trialActive(sid) && sid === "s4") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🚪 Your Trial is waiting. Step into the ring in the palisade gate to resume."), 300); }
     else if (trialActive(sid)) { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("⚔️ Your Trial is waiting. Step into the Elders’ ring at the meeting ground to resume."), 300); }
@@ -821,9 +885,9 @@ async function enterLevel(sid = L.sid) {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -977,6 +1041,7 @@ function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
   if (L.sid === "s3") return nextTargetS3();
   if (L.sid === "s4") return nextTargetS4();
+  if (L.sid === "s6") return nextTargetS6();
   if (L.sid === "s5") return nextTargetS5();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
@@ -1124,7 +1189,7 @@ window.__world = {
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
-  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), ship5: (side) => shipToS5(side),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), ship5: (side) => shipToS5(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

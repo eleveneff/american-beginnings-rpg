@@ -126,6 +126,31 @@ const GEAR = {
   'satchel': (col) => {               // back slot: a leather satchel at her hip, its strap across her chest
     const c = col || '#8d6e4a';
     return { body: [part(new THREE.BoxGeometry(0.2, 0.15, 0.07), c, -0.17, 0.82, -0.06, 0, 0, 0.05), part(new THREE.BoxGeometry(0.205, 0.07, 0.075), '#6e5236', -0.17, 0.87, -0.06, 0, 0, 0.05), part(new THREE.TorusGeometry(0.21, 0.012, 4, 28).scale(1, 0.62, 1).rotateX(Math.PI / 2).rotateZ(0.85), '#5a3d24', 0, 1.0, 0)] };
+  },
+  // ---- v2.8: Section 6 (The Thirteen Colonies) art keys from content/s6.js; drawn in Level 6 ----
+  'apron': (col) => {                 // belt slot: a linen apron tied at the waist, a little stitched sampler square on it
+    const c = col || '#e8d7b5';
+    return { body: [part(new THREE.CylinderGeometry(0.172, 0.215, 0.36, 18, 1, true, -Math.PI * 0.32, Math.PI * 0.64), c, 0, 0.74, 0.004), part(new THREE.TorusGeometry(0.168, 0.01, 4, 22), c, 0, 0.92, 0, Math.PI / 2, 0, 0),
+      part(new THREE.BoxGeometry(0.08, 0.07, 0.006), '#b3261e', 0.03, 0.76, 0.196, -0.12, 0, 0), part(new THREE.BoxGeometry(0.066, 0.056, 0.008), '#f6f0e0', 0.03, 0.76, 0.198, -0.12, 0, 0)] };
+  },
+  'candle': (col) => {                // right-hand slot: a hand-dipped beeswax candle in a pewter holder, its flame glowing
+    return { rhand: [part(new THREE.CylinderGeometry(0.05, 0.055, 0.014, 12), '#9aa0a6', 0, 0.0, 0.03), part(new THREE.TorusGeometry(0.03, 0.006, 4, 10), '#9aa0a6', 0.06, 0.0, 0.03, Math.PI / 2), part(new THREE.CylinderGeometry(0.016, 0.019, 0.16, 8), col || '#ffe08a', 0, 0.087, 0.03),
+      part(new THREE.ConeGeometry(0.012, 0.04, 6), '#ffb703', 0, 0.19, 0.03)] };
+  },
+  'almanack': (col) => {              // off-hand slot: a little almanack with a leather cover, tucked at her left hip
+    const c = col || '#6b3a2a';
+    return { body: [part(new THREE.BoxGeometry(0.03, 0.13, 0.095), c, -0.19, 0.82, 0.05, 0, 0, 0.12), part(new THREE.BoxGeometry(0.034, 0.122, 0.087), '#efe6cf', -0.193, 0.82, 0.05, 0, 0, 0.12)] };
+  },
+  'tricorn': (col) => {               // head slot: a three-cornered felt hat, the brim turned up on three sides
+    const c = col || '#1d1d2b', out = [part(new THREE.CylinderGeometry(0.11, 0.124, 0.1, 18), c, 0, 1.49, -0.01, -0.1, 0, 0)];
+    for (let i = 0; i < 3; i++) { const a = i * Math.PI * 2 / 3; out.push(part(new THREE.BoxGeometry(0.24, 0.085, 0.016), c, Math.sin(a) * 0.12, 1.475, Math.cos(a) * 0.12 - 0.01, -0.35 * Math.cos(a), a, 0)); }
+    out.push(part(new THREE.CylinderGeometry(0.125, 0.125, 0.012, 18), '#c99a3a', 0, 1.452, -0.01, -0.1, 0, 0));
+    return { body: out };
+  },
+  'kite': (col) => {                  // back slot: a diamond silk kite on her back with a key hanging from its string
+    const c = col || '#d94f4f';
+    return { body: [part(new THREE.OctahedronGeometry(0.22, 0).scale(0.75, 1.1, 0.05), c, 0, 1.05, -0.2), part(new THREE.BoxGeometry(0.008, 0.46, 0.008), '#5a3d24', 0, 1.05, -0.215), part(new THREE.BoxGeometry(0.32, 0.008, 0.008), '#5a3d24', 0, 1.08, -0.215),
+      part(new THREE.CylinderGeometry(0.003, 0.003, 0.3, 4), '#e8e2d0', 0, 0.7, -0.22), part(new THREE.TorusGeometry(0.018, 0.005, 4, 10), '#c99a3a', 0, 0.54, -0.22), part(new THREE.BoxGeometry(0.008, 0.05, 0.006), '#c99a3a', 0, 0.5, -0.22)] };
   }
 };
 export const S1_ART = ['fur-cloak', 'spear', 'basket', 'shell-necklace', 'feather-band'];
@@ -133,6 +158,7 @@ export const S2_ART = ['wampum-belt', 'paddle', 'buffalo-robe', 'turquoise'];
 export const S3_ART = ['compass', 'astrolabe', 'map-tube', 'sounding-lead', 'nav-cap'];
 export const S4_ART = ['beaver-cap', 'journal', 'lantern', 'satchel'];
 export const S5_ART = ['collar', 'hoe', 'capotain', 'charter'];
+export const S6_ART = ['apron', 'candle', 'almanack', 'tricorn', 'kite'];
 // outfits: the hide tunic of Levels 1–2, and (v2.5) a wool dress and linen collar for Spain in 1492
 const OUTFITS = { hide: { tunic: HIDE, hem: HIDE_D, fringe: true, sleeve: HIDE, leg: LEG, shoe: MOC }, wool: { tunic: '#3f5f7a', hem: '#2c4258', fringe: false, sleeve: '#ece3cf', leg: '#4a3a2e', shoe: '#2e2219' } };
 

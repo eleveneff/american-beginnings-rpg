@@ -562,7 +562,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await enterS4(); w = await W();
     assert(Math.abs(w.pos.x + 52) < 0.01 && Math.abs(w.pos.z - 10) < 0.01, 'a saved Section 4 spot is restored');
     { const hk = await p.evaluate(() => __world._dbg().L.heroKey); assert(/beaver-cap/.test(hk) && /lantern/.test(hk) && /satchel/.test(hk) && /journal/.test(hk) && /wool/.test(hk), 'the explorer gear shows on the wool dress (' + hk + ')'); }
-    await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(700); await shot('v26-hero.png');
+    await tp(-56, -52); await p.evaluate(() => __world.faceCam(Math.PI / 2)); await sleep(900); await shot('v26-hero.png');   // open plaza ground, side-back view of the gear
     assert(!/🇪🇸/.test(await p.evaluate(() => JSON.stringify(GAME_CONTENT.sections.find(s => s.id === 's4')))), 'no modern flag emoji in Section 4 content');
     console.log('  phone HUD (390x844 and 844x390):');
     for (const [vw, vh] of [[390, 844], [844, 390]]) {

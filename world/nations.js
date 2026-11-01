@@ -74,6 +74,7 @@ export function groundH(x, z) {
   { const w = smooth(13, 9, Math.max(Math.abs(x - MOUND.x) - MOUND.hx, Math.abs(z - MOUND.z) - MOUND.hz, 0) + 9); h = h * (1 - 0.9 * w) + 0.2 * w; }
   const pd = pathDist(x, z); h = h * (0.5 + 0.5 * smooth(1.5, 5, pd)) + 0.1 * (1 - smooth(1.5, 5, pd));
   h = Math.max(h, -0.3);
+  for (const m of MATS) { const w = smooth(MAT_HALF + 1.6, MAT_HALF + 0.3, Math.max(Math.abs(x - m.x), Math.abs(z - m.z))); h = h * (1 - w) + 0.15 * w; }   // the clue mats lie flat
   // beach slopes down into the sea
   const sz = shoreZ(x); h = h * (1 - smooth(sz - 9, sz - 3, z)) + smooth(sz - 9, sz - 3, z) * 0.12; h -= smooth(sz - 2.5, sz + 6, z) * 2.2;
   // hills beyond the edges (not on the sea side)
@@ -408,8 +409,8 @@ export function buildNations({ mergeAO, rings: ringDefs, matLabels = {} }) {
   { const g = [P(CYL(3.2, 3.45, 0.7, 22), '#b08b62', 0, 0.3, 0, 0, 0, 0, 1, 1, 1, 0.06, rnd), P(CYL(3.1, 3.1, 0.08, 22), '#a38058', 0, 0.68, 0), P(BOX(1.1, 0.06, 1.1), '#2a1c12', 0, 0.74, 0)];
     for (const s of [-0.32, 0.32]) g.push(P(CYL(0.05, 0.06, 4.4, 5), '#7a5a3a', s, 2.2, 0, -0.12, 0, 0));
     add(M(g), 28, -56); circ(28, -56, 3.5); occC(28, -56, 3.5, gy(28, -56) + 1.0); occC(28, -56, 0.5, gy(28, -56) + 4.4); }
-  { const g = []; for (let x = 17.5; x < 28; x += 2.6) for (let z = -45; z < -38.5; z += 2.6) for (let k = 0; k < 3; k++) { const c = cornGeo(rnd, 1.1 + rnd() * 0.3); c.translate(x + Math.cos(k * 2.1) * 0.25, 0, z + Math.sin(k * 2.1) * 0.25); g.push(c); } add(M(g), 0, 0, 0, 1, true, gy(22, -42)); }     // dry-farmed corn: wide-spaced clumps, planted deep
-  { const g = []; for (let x = 44.6; x < 56; x += 1.05) for (let z = -37.4; z < -30.4; z += 1.25) { const c = cornGeo(rnd, 1.6 + rnd() * 0.4); c.translate(x, 0, z); g.push(c); } add(M(g), 0, 0, 0, 1, true, gy(50, -34)); box(44, 56, -38, -30); }
+  { const g = []; for (let x = 17.5; x < 28; x += 2.6) for (let z = -45; z < -38.5; z += 2.6) for (let k = 0; k < 3; k++) { const c = cornGeo(rnd, 1.1 + rnd() * 0.3); const px = x + Math.cos(k * 2.1) * 0.25, pz = z + Math.sin(k * 2.1) * 0.25; c.translate(px, gy(px, pz), pz); g.push(c); } add(M(g), 0, 0, 0, 1, true, 0); }     // dry-farmed corn: wide-spaced clumps, planted deep
+  { const g = []; for (let x = 44.6; x < 56; x += 1.05) for (let z = -37.4; z < -30.4; z += 1.25) { const c = cornGeo(rnd, 1.6 + rnd() * 0.4); c.translate(x, gy(x, z), z); g.push(c); } add(M(g), 0, 0, 0, 1, true, 0); box(44, 56, -38, -30); }
   { const ditch = new THREE.Mesh(M([P(BOX(22, 0.04, 0.9), '#5d8fb0', 0, 0, 0), P(BOX(0.7, 0.04, 8), '#5d8fb0', -10.6, 0, -4), P(new THREE.CircleGeometry(1.8, 14), '#5d8fb0', 11.5, 0.01, 0, -Math.PI / 2, 0, 0)]), new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.9 }));
     ditch.position.set(55, gy(55, -29) + 0.03, -29); ditch.userData.noMerge = true; ditch.receiveShadow = true; ditch.name = 'irrigation'; scene.add(ditch);
     add(M([P(BOX(23, 0.12, 0.25), '#8a6a44', 0, 0.06, 0.6), P(BOX(23, 0.12, 0.25), '#8a6a44', 0, 0.06, -0.6)]), 55, -29, 0, 1, false); }
@@ -435,7 +436,7 @@ export function buildNations({ mergeAO, rings: ringDefs, matLabels = {} }) {
       for (const s of [-1, 1]) g.push(P(new THREE.PlaneGeometry(1.2, 2.0), '#1d140e', 0, 1.0, s * (L / 2 + 0.02), 0, s < 0 ? Math.PI : 0, 0), P(new THREE.PlaneGeometry(1.4, 1.8), '#9a7a58', 0.75, 1.0, s * (L / 2 + 0.05), 0, s < 0 ? Math.PI : 0, 0.05));
       const m = M(g); m.rotateY(Math.PI / 2); return m; };
     for (const [cx, cz, L] of [[-42, 54, 18], [-42, 42, 16]]) { add(longhouse(L), cx, cz); box(cx - L / 2 - 0.1, cx + L / 2 + 0.1, cz - 3.1, cz + 3.1); occBox(cx - L / 2, cx + L / 2, cz - 3.1, cz + 3.1, gy(cx, cz) + 5.3); mergeAO.addAO({ x: cx, z: cz }, L * 0.55, 1.0); } }
-  { const g = []; for (let x = -23; x < -14; x += 2.4) for (let z = 45; z < 58; z += 2.4) { const t = threeSistersGeo(rnd); t.translate(x, 0, z); g.push(t); } add(M(g), 0, 0, 0, 1, true, gy(-19, 51)); box(-24, -14, 44, 58); }
+  { const g = []; for (let x = -23; x < -14; x += 2.4) for (let z = 45; z < 58; z += 2.4) { const t = threeSistersGeo(rnd); t.translate(x, gy(x, z), z); g.push(t); } add(M(g), 0, 0, 0, 1, true, 0); box(-24, -14, 44, 58); }
   add(whitePineGeo(rnd), -22.5, 34.5); circ(-22.5, 34.5, 0.7); occC(-22.5, 34.5, 3.4, gy(-22.5, 34.5) + 14, gy(-22.5, 34.5) + 3.6); occC(-22.5, 34.5, 0.7, gy(-22.5, 34.5) + 4);
   labels.push([STATIONS.ew, '5 · Eastern Woodlands', 'longhouses · palisade · Three Sisters']);
 
@@ -450,7 +451,7 @@ export function buildNations({ mergeAO, rings: ringDefs, matLabels = {} }) {
     occBox(x - hx, x + hx, z - hz, z + hz, y + h * 0.8); occBox(x - hx * 0.5, x + hx * 0.5, z - hz * 0.5, z + hz * 0.5, y + h + 6.5); occBox(r.x0, r.x1, r.z0, r.z1, y + 2.5);
     mergeAO.addAO({ x, z }, 11, 1.0); }
   for (const [x, z, ry] of [[-29, -50, 0.3], [-31, -60, -0.2], [-58, -46, 0.1], [-57, -58, 0.5]]) { add(thatchHutGeo(rnd), x, z, ry); circ(x, z, 2.6); occC(x, z, 2.7, gy(x, z) + 4.5); }
-  { const g = []; for (let x = -25.5; x < -20; x += 1.1) for (let z = -46.5; z < -39.5; z += 1.2) { const c = cornGeo(rnd, 1.6 + rnd() * 0.4); c.translate(x, 0, z); g.push(c); } add(M(g), 0, 0, 0, 1, true, gy(-23, -43)); box(-26, -20, -47, -39); }
+  { const g = []; for (let x = -25.5; x < -20; x += 1.1) for (let z = -46.5; z < -39.5; z += 1.2) { const c = cornGeo(rnd, 1.6 + rnd() * 0.4); c.translate(x, gy(x, z), z); g.push(c); } add(M(g), 0, 0, 0, 1, true, 0); box(-26, -20, -47, -39); }
   labels.push([STATIONS.mound, '6 · Mound town', 'platform mound · temple · plaza']);
 
   // ===== 7 · trade plaza: pole-and-mat shades with goods traded over long distances, a chunkey yard, the six region mats

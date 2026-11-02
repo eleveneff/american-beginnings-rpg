@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v3.0";
+  var GAME_VERSION = "v3.1";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -1384,7 +1384,7 @@
   }
   /* ---------------- email report to Dad (v2.4): a mailto built only from the existing save; nothing new is stored ---------------- */
   var REPORT_TO = "history-tutor+reports@mail.grokbot.com", MAIL_MAX = 1800;
-  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies", s7: "French & Indian War" };
+  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies", s7: "French & Indian War", s8: "Road to Revolution" };
   function secAcc(st) { var r = 0, t = 0; Object.keys((st && st.topics) || {}).forEach(function (k) { r += st.topics[k].right; t += st.topics[k].right + st.topics[k].wrong; }); return [r, t, pct(r, t)]; }
   function mailParts(sid) {
     var label = sid === "final" ? "Grand Trial" : (sid && sectionById(sid) ? sectionById(sid).title : "Progress");

@@ -14,7 +14,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const url = () => BASE + (BASE.includes('?') ? '&' : '?') + 'cb=' + Date.now();
   const go = async () => { await p.goto(url(), { waitUntil: 'domcontentloaded' }); await sleep(1200); await p.evaluate(() => { if (window.__world) __world.quiet = true; }); };
   const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
-  const SIDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7'];
+  const SIDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
   const save = n => { const players = {}, sections = {}; SIDS.slice(0, n).forEach((s, i) => { players[s] = G; if (i < n - 1) sections[s] = DONE(); }); return { version: 3, players, sections, owned: [], equip: {} }; };
   const seen = { help: true, help2: true, help3: true, help4: true, help5: true, help6: true, help7: true };
   const W = () => p.evaluate(() => { const { L, THREE } = __world._dbg(); L.cam.updateMatrixWorld(); const r = new THREE.Vector3().setFromMatrixColumn(L.cam.matrixWorld, 0), f = new THREE.Vector3(); L.cam.getWorldDirection(f); return { x: L.pos.x, z: L.pos.z, rx: r.x, rz: r.z, fx: f.x, fz: f.z, cx: L.cam.position.x, cz: L.cam.position.z, yaw: L.camYaw }; });

@@ -27,7 +27,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   assert(cat.every(i => i.p >= 20), 'all ' + cat.length + ' items cost at least 20 stars');
   assert(cat.every(i => i.t.length >= 60), 'every item has a teaching card (60+ chars)');
   const per = {}; cat.filter(i => i.src === 'market').forEach(i => { const k = i.sec + '/' + (i.cat === 'clothing' ? 'clothing' : i.cat === 'hair' ? 'hair' : 'other'); per[k] = (per[k] || 0) + 1; });
-  for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7']) assert(per[s + '/clothing'] >= 4 && per[s + '/other'] >= 5 && per[s + '/hair'] >= 1, s + ' market: ' + per[s + '/clothing'] + ' clothing, ' + per[s + '/hair'] + ' hair, ' + per[s + '/other'] + ' gear/keepsakes');
+  for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']) assert(per[s + '/clothing'] >= 4 && per[s + '/other'] >= 5 && per[s + '/hair'] >= 1, s + ' market: ' + per[s + '/clothing'] + ' clothing, ' + per[s + '/hair'] + ' hair, ' + per[s + '/other'] + ' gear/keepsakes');
 
   console.log('migration v3 -> v4:');
   await p.evaluate(k => { localStorage.setItem(k, JSON.stringify({ version: 3, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Ava' }, s2: { gender: 'girl', name: 'Ava' } },

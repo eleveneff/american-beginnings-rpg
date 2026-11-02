@@ -153,12 +153,13 @@
   V["s7-braddock-pitt"] = {
     title: "Defeats, Then a Turning Point",
     cues: [
-      "1755: British General **Edward Braddock** marches on **Fort Duquesne** with redcoats and colonial militia.",
-      "July 9, 1755: near the Monongahela, **French and Native** fighters attack from the forest. Braddock is **killed**.",
-      "Washington rides through the battle and helps lead the survivors back.",
-      "1756: the war spreads to Europe and the world as the **Seven Years' War**.",
-      "1757: **William Pitt** takes charge. British and colonial forces take **Louisbourg**, **Fort Frontenac**, and the Forks in **1758**."
+      "In 1755, British General **Edward Braddock** marches on **Fort Duquesne** with redcoats and colonial militia, cutting a road through the forest.",
+      "On July 9, near the **Monongahela River**, French and Native fighters attack from the woods. **Braddock is killed**, and his army is crushed.",
+      "**Washington** rides through the battle with bullets through his coat, and helps lead the survivors back.",
+      "The war spreads to Europe and around the world as the **Seven Years' War**. In 1757, **William Pitt** takes charge in London.",
+      "Pitt pays for colonial troops and sends Britain's best generals. In 1758, the French blow up **Fort Duquesne** and leave. The British build **Fort Pitt**."
     ],
+    cueTimes: [0, 9.36, 18.05, 23.72, 32.14], // narration starts 0.5 s after each cue
     facts: [
       "Braddock's army cut a road through the mountains for its wagons and cannons. Parts of it later became a pioneer route west.",
       "Washington wrote that he had \"4 Bullets through my Coat, and two Horses shot under me.\"",

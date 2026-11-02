@@ -1,0 +1,44 @@
+/* world/minigames/mg.css — 3D mini-game HUD + cards. Sits on the world's z ladder: hud 8..11, card 12 (we use 13 so the
+   game card sits above the world HUD but under modal 20 / toast 30 / fade 60). Everything fits a 440 px tall landscape phone. */
+body.mg-on #w-obj,body.mg-on #w-era,body.mg-on #w-prompt,body.mg-on #w-tools,body.mg-on #w-keys,body.mg-on #w-use,body.mg-on #w-banner{display:none!important}
+body:not(.walking) #mg-ui{display:none}
+#mg-ui[hidden]{display:none}
+#mg-ui{position:fixed;inset:0;z-index:11;pointer-events:none;font-family:inherit;color:var(--ink)}
+#mg-ui>*{pointer-events:auto}
+#mg-top{position:absolute;top:3.9rem;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;align-items:center;background:linear-gradient(rgba(34,48,78,.86),rgba(16,24,42,.82));color:#fff;border:2px solid #3ee0b0;border-radius:999px;padding:.35rem .5rem .35rem .9rem;font-weight:bold;font-size:.95rem;text-shadow:0 1px 0 #000;white-space:nowrap;max-width:96vw}
+#mg-top .mg-t{color:#9ff5d8}
+#mg-top .mg-s{font-variant-numeric:tabular-nums}
+#mg-top button{border:2px solid #000;border-radius:999px;background:var(--parch);font:inherit;font-size:.85rem;font-weight:bold;padding:.25rem .6rem;min-height:34px;cursor:pointer;box-shadow:0 2px 0 #000;color:var(--ink);text-shadow:none}
+#mg-top button.q{background:#f2c4b8}
+#mg-meter{position:absolute;left:50%;bottom:6.2rem;transform:translateX(-50%);width:min(70vw,420px);height:26px;border:3px solid #000;border-radius:14px;background:#f8ecc9;overflow:hidden;box-shadow:0 3px 0 #000}
+#mg-meter[hidden],#mg-msg[hidden],#mg-act[hidden],#mg-card[hidden],#mg-top[hidden]{display:none}
+#mg-meter .z{position:absolute;top:0;bottom:0;background:linear-gradient(#6fdc8c,#3f8f5a)}
+#mg-meter .z2{position:absolute;top:0;bottom:0;background:#ffe27a}
+#mg-meter .n{position:absolute;top:-3px;bottom:-3px;width:6px;margin-left:-3px;background:#2a1d0e;border-radius:3px}
+#mg-meter .f{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#5ab0ff,#3ee0b0)}
+#mg-meter .lb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:bold;text-shadow:0 1px 0 #fff}
+#mg-msg{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2rem;font-weight:bold;color:#fff;text-shadow:0 3px 0 #000,0 0 12px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap;animation:mgpop .35s ease-out}
+#mg-msg.good{color:#9ff5a8}#mg-msg.bad{color:#ffb3a0}#mg-msg.info{font-size:1.15rem;white-space:normal;max-width:min(86vw,560px);text-align:center;background:rgba(20,30,50,.85);border:2px solid #3ee0b0;border-radius:14px;padding:.5rem .8rem;top:30%}
+@keyframes mgpop{from{transform:translate(-50%,-50%) scale(.6);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+#mg-act{position:absolute;right:1.2rem;bottom:1.6rem;min-width:96px;min-height:84px;border-radius:44px;border:3px solid #000;background:radial-gradient(circle at 40% 30%,#c9ffe9,#3ee0b0);font:inherit;font-weight:bold;font-size:1.05rem;box-shadow:0 4px 0 #000;cursor:pointer;touch-action:manipulation;padding:.3rem .9rem;line-height:1.15}
+#mg-act:active,#mg-act.hit{transform:translateY(3px);box-shadow:0 1px 0 #000}
+#mg-act .k,#mg-card kbd{display:inline-block;background:var(--gold);border:2px solid #000;border-radius:7px;padding:0 .35rem;font-size:.8rem;font-family:inherit;font-weight:bold;margin:0 .1rem}
+#mg-act .k{display:block;width:max-content;margin:0 auto .15rem}
+#mg-card{position:fixed;inset:0;z-index:13;display:flex;align-items:center;justify-content:center;background:rgba(10,15,30,.3);padding:.6rem}
+#mg-card .in{background:var(--grain,none),linear-gradient(#fbf2d6,var(--parch));border:4px solid #000;border-radius:18px;box-shadow:var(--shadow);max-width:540px;width:100%;max-height:calc(100dvh - 1.2rem);overflow:auto;padding:.8rem 1.1rem .2rem}
+#mg-card h3{margin:.1rem 0 .35rem;font-size:1.2rem}
+#mg-card .era{font-size:.8rem;font-weight:bold;color:#7a5a2a;margin:-.2rem 0 .3rem}
+#mg-card p{margin:.3rem 0;line-height:1.4;font-size:.95rem}
+#mg-card .how{background:rgba(62,224,176,.18);border:2px dashed #3f8f5a;border-radius:10px;padding:.3rem .55rem}
+#mg-card .pay{font-size:.85rem;font-weight:bold;color:#5a4a1a}
+#mg-card .big{font-size:1.15rem;font-weight:bold;color:#2b7a3a}
+#mg-card .btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;position:sticky;bottom:0;background:var(--parch);padding:.45rem 0 .8rem}
+#mg-card .btns .btn{min-height:44px}
+@media (max-width:600px){#mg-top{top:5.6rem;font-size:.8rem;gap:.35rem}#mg-top button{font-size:.75rem;padding:.2rem .45rem}}
+@media (max-height:460px){
+  #mg-top{top:3.1rem;font-size:.8rem;padding:.2rem .4rem .2rem .7rem}#mg-top button{min-height:30px;font-size:.75rem}
+  #mg-meter{bottom:1.2rem;height:22px}#mg-act{min-width:78px;min-height:64px;right:.8rem;bottom:.8rem;font-size:.9rem}
+  #mg-card .in{padding:.5rem .9rem 0}#mg-card h3{font-size:1.05rem;margin:0 0 .2rem}#mg-card p{font-size:.85rem;line-height:1.3;margin:.2rem 0}
+  #mg-card .btns{padding:.35rem 0 .5rem;margin-top:.3rem}#mg-card .btns .btn{min-height:40px;padding:.3rem .7rem}
+  #mg-msg{font-size:1.5rem}
+}

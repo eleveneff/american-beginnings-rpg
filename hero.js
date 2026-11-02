@@ -243,8 +243,8 @@
     front: frontPart(h) + P("M114,92 Q104,140 108,190 Q100,214 110,236 Q124,214 124,186 Q126,140 122,98Z", h) + P("M186,92 Q196,140 192,190 Q200,214 190,236 Q176,214 176,186 Q174,140 178,98Z", h) + L("M112,150 Q108,190 112,220 M188,150 Q192,190 188,220", sh(h, -30), 1.4) }; };
   HAIR["one-braid"] = function (h) { var b = ""; for (var i = 0; i < 7; i++) b += E(188 - i * .6, 112 + i * 18, 9 - i * .4, 11, h, 'stroke-width="1.6"');
     return { back: shortBack(h), front: frontPart(h) + b + L("M180,232 Q186,226 192,232", "#a8452c", 4) + P("M182,234 Q186,252 180,262 Q190,256 192,236Z", h) }; };
-  HAIR["tranzado"] = function (h) { var w = ""; for (var i = 0; i < 9; i++) w += L("M" + (206 + i * 1.6) + "," + (124 + i * 22) + " l11,9", "#c8b89a", 1.4);
-    return { back: shortBack(h) + P("M190,100 Q216,180 220,330 L232,330 Q230,180 200,96Z", "#f6f1e6") + w + P("M218,330 L234,330 L230,352 L222,352Z", h), front: frontPart(h) }; };
+  HAIR["tranzado"] = function (h) { var w = ""; for (var i = 0; i < 9; i++) w += L("M" + (205 + i * 1.6) + "," + (122 + i * 20) + " l14,9", "#b8a888", 1.6);
+    return { back: shortBack(h) + P("M184,94 Q212,170 216,304 L232,304 Q228,170 200,90Z", "#f6f1e6") + w + P("M216,304 L232,304 L228,326 L220,326Z", h), front: frontPart(h) }; };
   HAIR["bun"] = function (h, hat) { return { back: shortBack(h) + (hat ? "" : E(170, 40, 19, 15, sh(h, -10)) + L("M156,40 Q170,30 186,42", sh(h, 25), 1.6)), front: frontTop(h) + L("M130,52 Q150,46 170,54", sh(h, 30), 2.5) }; };
   HAIR["pinned"] = function (h, hat) { return { back: shortBack(h) + (hat ? "" : C(150, 30, 13, sh(h, -8)) + L("M140,22 L162,38", "#c9a227", 2)), front: frontPart(h) + L("M120,74 Q130,58 146,52 M180,74 Q170,58 154,52", sh(h, 25), 1.6) }; };
   HAIR["ribbon"] = function (h) { return { back: P("M110,80 Q98,140 106,186 Q150,198 194,186 Q202,140 190,80Z", sh(h, -22)),

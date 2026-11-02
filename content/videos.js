@@ -590,6 +590,32 @@ GAME_CONTENT.videos = {
         choices: ["Many were enslaved, and harsh treatment and disease made their population fall sharply", "They sailed to Spain and became rulers there", "Nothing changed in their lives", "They moved to the Great Plains"],
         explain: "Columbus's voyage linked two worlds, but it brought great suffering to the Taíno." }
     ]
+  },
+  "s3-after-columbus": {
+    title: "A New World on the Map",
+    cueTimes: [0, 8.35, 17.4, 25.79, 32.9], // narration starts 0.5 s after each cue
+    cues: [
+      "In **1494**, Spain and Portugal signed the **Treaty of Tordesillas**, drawing a line to divide the newly found lands between them.",
+      "**Amerigo Vespucci**, an Italian explorer, argued that these lands were a **New World**, not Asia. A mapmaker named them **America** after him.",
+      "In **1497**, **John Cabot**, sailing for **England**, reached the coast of North America, probably **Newfoundland**, giving England a claim.",
+      "In **1519**, **Ferdinand Magellan** led five Spanish ships west to find a way around **South America**.",
+      "Magellan was killed in the **Philippines**, but in **1522** one ship, the **Victoria**, made it home: the **first voyage all the way around the world**."
+    ],
+    facts: [
+      "The **Treaty of Tordesillas** (**1494**) divided newly found lands between **Spain** and **Portugal**.",
+      "On a **1507** map, **Martin Waldseemüller** named the new lands **America** after **Amerigo Vespucci**.",
+      "**John Cabot** reached North America for **England** in **1497**.",
+      "**Magellan's** expedition (**1519–1522**) was the first to sail around the world.",
+      "Only one of Magellan's five ships, the **Victoria**, made it back to Spain."
+    ],
+    check: [
+      { q: "Who were the lands of the Americas named after?",
+        choices: ["Amerigo Vespucci", "Christopher Columbus", "John Cabot", "Ferdinand Magellan"],
+        explain: "Vespucci argued the lands were a New World, and a 1507 map named them America." },
+      { q: "What did Magellan's expedition accomplish?",
+        choices: ["The first voyage all the way around the world", "The first landing in the Bahamas", "The first sea route to India", "The founding of Jamestown"],
+        explain: "Magellan died in the Philippines, but the Victoria returned to Spain in 1522." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

@@ -37,6 +37,7 @@ GAME_CONTENT.sections.push({
         "Columbus believed he had reached islands near Asia, the \"Indies,\" which is why he called the people \"Indians.\" He made four voyages and never accepted that he had reached lands unknown to Europeans."
       ] },
     { topic: "afterColumbus", title: "Scroll 4: A New World on the Map", video: null,
+      videoKey: "s3-after-columbus", videoTitle: "A New World on the Map",
       videoIdea: "Low-poly N64-style globe spinning as a ship sails all the way around it.",
       text: [
         "To avoid conflict over new lands, Spain and Portugal signed the **Treaty of Tordesillas (1494)**, drawing a line that divided the newly found lands between them.",

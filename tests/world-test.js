@@ -344,7 +344,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await enterS2(); w = await W();
     assert(Math.abs(w.pos.x - 46) < 0.01 && Math.abs(w.pos.z - 2.2) < 0.01, 'a saved Section 2 spot is restored');
     await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'boy', name: 'Sam' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 24, totalAnswered: 25 }, null);
-    await enterS2(); assert((await p.evaluate(() => __world.level)) === 's2' && (await p.evaluate(() => ABRPG.state().version)) === 3, 'a v1 save with Section 1 mastered walks into Section 2');
+    await enterS2(); assert((await p.evaluate(() => __world.level)) === 's2' && (await p.evaluate(() => ABRPG.state().version)) >= 3, 'a v1 save with Section 1 mastered walks into Section 2');
   }
 
   console.log('v2.5 Section 3: The Voyage of 1492:');
@@ -773,7 +773,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('old saves + world key safety:');
   await seed({ version: 1, created: '2026-10-01T00:00:00Z', players: { s1: { gender: 'girl', name: 'Abigail' } }, sections: { s1: { attempts: 1, history: [{ pct: 90 }], bestPct: 90, completed: false, correctCount: 5, gearEarned: 1, topics: {}, missed: {} } }, gear: [{ name: 'Fur Cloak', section: 's1' }], badges: [], totalCorrect: 5, totalAnswered: 6 }, null);
-  s = await p.evaluate(() => ABRPG.state()); assert(s.version === 3 && s.owned.includes('fur-cloak'), 'v1 save loads (gear mapped)');
+  s = await p.evaluate(() => ABRPG.state()); assert(s.version >= 3 && s.owned.includes('fur-cloak'), 'v1 save loads (gear mapped)');
   await enterS1(); assert((await p.evaluate(() => __world.gateOpen())), 'v1 save: earned Fur Cloak opens the glacier pass');
   assert((await p.evaluate(() => __world.caveOpen())), 'a section with past attempts keeps the Trial Cave open');
   await seed(base({ version: 2 }), '{not json');

@@ -164,6 +164,15 @@ pre.report{white-space:pre-wrap;background:#fffdf5;border:2px solid #b08a50;bord
 .mk-item .tier{text-transform:capitalize;opacity:.8}
 .mk-item .price{font-weight:bold;font-size:1.15rem;color:#8a5a00}
 .mk-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:.2rem;margin-top:auto}
+.mk-cats{display:flex;flex-wrap:wrap;gap:.3rem;margin:.2rem 0 .6rem;border-bottom:3px solid #5b3a1a}
+.mk-cat{font:inherit;font-size:.95rem;font-weight:bold;border:2px solid #5b3a1a;border-bottom:0;background:#f3e6c4;border-radius:10px 10px 0 0;padding:.35rem .7rem;cursor:pointer}
+.mk-cat.sel{background:var(--gold);border-color:#000}.mk-cat small{opacity:.7}
+.mk-item.locked{filter:grayscale(.55);opacity:.85}.mk-item .lock,.teach-card .lock{color:#7a3a10;font-weight:bold;font-size:.82rem}
+.mk-item .swatch{display:inline-block;width:2.1rem;height:2.1rem;border-radius:50%;border:3px solid #5b3a1a;vertical-align:middle}
+.teach-card,.buy-card,.unlock-card{max-height:420px;overflow:hidden}.teach-card .price{font-weight:bold;color:#8a5a00}
+.teach{margin:.35rem 0;font-size:.95rem;line-height:1.35;text-align:left}
+.reward-hero.sm{width:72px}.unlock-card{padding-top:.6rem;padding-bottom:.6rem}.unlock-card .btn{margin:.2rem}.unlock-card h2{margin:.2rem 0}.unlock-card p{margin:.3rem 0}
+.study-words{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.4rem}.study-words div{background:#fffaf0;border:2px solid #b08a50;border-radius:8px;padding:.35rem .5rem}
 .btn.poor{background:#9a9a9a;color:#fff;text-shadow:0 1px 0 #000;cursor:not-allowed}
 .owned-tag{font-weight:bold;color:#2f9e44;align-self:center}
 
@@ -291,3 +300,5 @@ table.rep{background:var(--grain),#fffaf0}
 .mk-keeper svg{position:relative}
 .mk-bubble{z-index:1;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 -6px 10px rgba(122,84,40,.08)}
 .mk-bal{z-index:1}
+/* v2.9: shop cards stay within 440px on phones (hero beside the text, smaller headings) */
+@media (max-width:560px){.unlock-card .reward-hero.sm,.buy-card .reward-hero.sm{width:54px;float:left;margin:0 .5rem .2rem 0}.unlock-card h2,.buy-card h2,.teach-card h2{font-size:1.05rem}.unlock-card p,.buy-card p,.teach-card p{font-size:.88rem;margin:.25rem 0}.unlock-card .star-pop{font-size:.9rem}.unlock-card .btn,.buy-card .btn,.teach-card .btn{padding:.45rem .8rem;font-size:.9rem}}

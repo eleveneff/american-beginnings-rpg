@@ -25,6 +25,19 @@
   slowly after a 0.35 s hold (hysteresis), min distance 1.2 m, look-up scales with distance. tests/camera-test.js (tree/building
   hugging walks on every level): old code 60 in/out reversals, 5–6 m single-frame jumps, 22/90 runs failing; new 8 reversals,
   ≤10.1 m/s extra camera speed, 90/90 ok.
+- **v2.9 wardrobe market (Nov 1 evening, John: "clothes and modifications cost stars", "more choices in the market", "hair options"):**
+  every look change is bought once with stars (20+), then worn free. Paid now (free before): the 27 section gear items (every 5 correct
+  answers now UNLOCKS the item and pays +10 stars; the unlock card offers "Buy it now"), the badge tunic dyes (a badge unlocks its dye,
+  30 stars, final gold 40), wardrobe changes to anything not owned. New: Beringia Camp Trade Circle (m0, open from the start; the glacier
+  gate card links to it for the Fur Cloak, 20), 4–6 period clothes + 5–8 gear/keepsakes + 1–2 hairstyles per era market (content/market.js,
+  each with made/who or fact teaching card), natural hair colors (20, sold everywhere), Clothing/Hair/Gear/Keepsakes tabs, "Need N more"
+  + keeper tells where stars are earned, Ask = teaching-card modal, confirm card (Yes/Not now). Her own braids and own hair color are
+  always free. Caps/coifs/hoods hide hair (2D and 3D). Cahokia market now opens at Section 2 (m0 covers Section 1).
+  **Save:** still version-key americanBeginningsRPG_v1, format v4, NO new fields (owned/equip/purchases reused). Migration v3→v4:
+  everything owned stays owned; each earned badge's dye is granted and the latest worn; no charge or refund.
+  Tests: tests/market-test.js (new, ALL PASSED: locks, tabs, cards ≤440px desktop + phone, can't afford, back out, idempotent, hair,
+  unlock Buy-now, migration), smoke ALL PASSED, keys-test PASSED. world-test: all non-camera checks pass; the camera-inside-object
+  checks fail on 5a0c04c too (owned by the camera job, not touched here). Shots: /workspace/abrpg-report/v29-wardrobe-*.png.
 
 ## Open items, in order
 1. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.

@@ -31,7 +31,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   console.log('migration:');
   assert(s.version >= 2, 'version upgraded');
   assert(s.sections.s1.completed && s.sections.s2.completed, 'section progress kept');
-  assert(s.owned.length === 6 && s.owned.includes('sounding-lead') && s.owned.includes('fur-cloak'), 'v1 gear names mapped to item keys (Spyglass -> sounding-lead)');
+  assert(s.owned.length === 8 && s.owned.includes('sounding-lead') && s.owned.includes('fur-cloak'), 'v1 gear names mapped to item keys (Spyglass -> sounding-lead), already-owned items stay owned');
+  assert(s.owned.includes('dye-s1') && s.owned.includes('dye-s2') && s.equip.dye === 'dye-s2', 'v2.9 (format 4): each earned badge grants its tunic dye, latest worn');
   assert(s.equip.cloak === 'fur-cloak' && s.equip.head === 'feather-band', 'migrated gear is worn');
   assert(s.stars.balance === 60 + 60 && s.stars.bySource.carried === 120, 'retro stars = totalCorrect + 30/badge (120)');
   assert(s.badges.length === 2 && s.migratedFrom === 1, 'badges kept, migratedFrom set');
@@ -40,13 +41,13 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await p.screenshot({ path: SHOTS + 'm-migrated-map.png' });
   await go(); s = await st();
   assert(s.stars.balance === 120, 'no double retro stars after second load');
-  assert(s.version === 3 && s.srcQ && s.skills, 'v1 save lands on save format v3 (srcQ + skills added)');
+  assert(s.version === 4 && s.srcQ && s.skills, 'v1 save lands on save format v4 (srcQ + skills added, badge dyes owned)');
 
   /* 1b. a v2.0 save (format 2: no srcQ / skills) loads in v2.1 with nothing lost */
   await p.evaluate(k => { const d = JSON.parse(localStorage.getItem(k)); d.version = 2; delete d.srcQ; delete d.skills; d.stars.balance = 77; d.owned.push('moccasins'); localStorage.setItem(k, JSON.stringify(d)); }, KEY);
   await go(); s = await st();
   console.log('v2.0 save:');
-  assert(s.version === 3 && typeof s.srcQ === 'object' && typeof s.skills === 'object', 'v2 save upgraded to format 3 with empty srcQ and skills');
+  assert(s.version === 4 && typeof s.srcQ === 'object' && typeof s.skills === 'object', 'v2 save upgraded to format 4 with empty srcQ and skills');
   assert(s.stars.balance === 77 && s.owned.includes('moccasins') && s.sections.s1.completed && s.badges.length === 2, 'v2 save keeps stars, items, progress and badges');
   assert(errs.length === 0, 'old saves load without page errors ' + JSON.stringify(errs));
 
@@ -211,7 +212,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const balT = (await st()).stars.balance;
   let missLeft = 1;   /* 23 of 24 = 95.8%: exactly the pass mark (95% -> 23 of 24) */
   for (let i = 0; i < 24; i++) await answer(!(missLeft > 0 && i % 5 === 2 && missLeft--));
-  s = await st(); assert(s.stars.balance - balT === 46, '23 first-time correct answers = 46 stars');
+  s = await st(); assert(s.stars.balance - balT === 46 + 10 * gearN, '23 first-time correct answers = 46 stars, +10 per gear unlock (' + gearN + ')');
   await p.screenshot({ path: SHOTS + '6-results.png' });
   assert(await p.$('#b-mailt') && /Send report to Dad/.test(await p.$eval('#b-mailt', e => e.textContent)), 'trial results offer a gentle "Send report to Dad" button');
   await click('#b-rev');
@@ -220,27 +221,53 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   s = await st();
   assert(s.sections.s1.completed && s.badges.length === 1, 's1 mastered with badge');
   assert(s.stars.bySource.badge === 30, 'badge bonus 30 stars');
-  assert(gearN === 4 && s.owned.length === 4, '4 gear items from 24 correct (1 per 5)');
+  assert(gearN === 4 && s.sections.s1.gearEarned === 4 && s.owned.length === 0, '4 gear unlocks from 24 correct (1 per 5); v2.9: unlocked to buy, not given free');
 
-  /* market */
+  /* market (v2.9: everything is bought; category tabs; can't afford -> where to earn; back out; idempotent) */
+  console.log('market:');
   await click('#b-map'); await click('#btn-market'); await sleep(200);
   await p.screenshot({ path: SHOTS + 'mk-1-cahokia.png', fullPage: true });
-  assert(await p.$eval('.mk-tab[data-mid="m2"]', e => e.classList.contains('locked')), 'Seville market locked until s2');
+  assert(await p.$eval('.mk-tab[data-mid="m2"]', e => e.classList.contains('locked')), 'Seville market locked until s3');
+  await click('.mk-tab[data-mid="m0"]'); await sleep(150);
+  assert((await p.$$eval('.mk-cat', e => e.map(x => x.dataset.cat))).join() === 'clothing,hair,gear,keepsake', 'market has Clothing / Hair / Gear / Keepsakes tabs');
   const bal = (await st()).stars.balance;
-  const items = await p.evaluate(() => GAME_CONTENT.markets[0].items.map(i => ({ key: i.key, price: i.price })));
-  const cheap = items.filter(i => i.price <= bal).sort((a, b) => a.price - b.price)[0];
-  const dear = items.filter(i => i.price > bal)[0];
-  await click('[data-ask="' + cheap.key + '"]');
-  assert((await p.$eval('#mk-say', e => e.innerText)).length > 60, 'shopkeeper tells a fact');
-  if (dear) {
-    await click('[data-buy="' + dear.key + '"]'); s = await st();
-    assert(s.stars.balance === bal && !s.owned.includes(dear.key) && !(await p.$('#modal:not(.hidden)')), 'cannot buy without enough stars (no charge)');
-  }
+  const cheap = { key: 'fur-cloak', price: await p.evaluate(() => ABRPG.items['fur-cloak'].price) };
+  assert(cheap.price >= 20 && !(await p.evaluate(() => ABRPG.itemLock(ABRPG.items['fur-cloak']))) && bal >= cheap.price, 'Fur Cloak unlocked by answers, costs ⭐' + cheap.price + ' (balance ' + bal + ')');
+  assert(!!(await p.evaluate(() => ABRPG.itemLock(ABRPG.items['feather-band']))) && !(await p.evaluate(() => ABRPG.buy('feather-band'))), 'a gear item not yet unlocked cannot be bought');
+  await click('[data-ask="' + cheap.key + '"]'); await sleep(100);
+  const tc = await p.$eval('#modal .teach-card', e => ({ h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight, t: e.innerText }));
+  assert(/Made of/i.test(tc.t) && /Who/i.test(tc.t) && tc.h <= 440 && tc.sh <= tc.ch + 1, 'teaching card (made of / who wore it) fits 440px without scrolling (' + Math.round(tc.h) + 'px)');
+  await click('#b-ask-close');
+  // can't afford: shows where stars are earned, no charge, no confirm
+  await p.evaluate(p0 => { ABRPG.state().stars.balance = p0 - 1; }, cheap.price); await click('.mk-tab[data-mid="m0"]'); await sleep(100);
+  await click('[data-buy="' + cheap.key + '"]'); await sleep(100); s = await st();
+  assert(s.stars.balance === cheap.price - 1 && !s.owned.includes(cheap.key) && !(await p.$('#modal:not(.hidden) .buy-card')) && /answer|activit|badge/i.test(await p.$eval('#mk-say', e => e.innerText)), 'cannot afford: no charge, no confirm, points to where stars are earned');
+  await p.evaluate(b => { ABRPG.state().stars.balance = b; }, bal); await click('.mk-tab[data-mid="m0"]'); await sleep(100);
+  // back out of the confirm step
+  await click('[data-buy="' + cheap.key + '"]'); await sleep(100);
+  const bc = await p.$eval('#modal .buy-card', e => e.getBoundingClientRect().height); assert(bc <= 440, 'buy confirm card fits 440px (' + Math.round(bc) + 'px)');
+  await click('#b-buy-no'); await sleep(100); s = await st();
+  assert(s.stars.balance === bal && !s.owned.includes(cheap.key), 'backing out of the confirm charges nothing');
   await click('[data-buy="' + cheap.key + '"]'); await p.screenshot({ path: SHOTS + 'mk-2-confirm.png' });
   await click('#b-buy-yes'); await sleep(150); s = await st();
   assert(s.stars.balance === bal - cheap.price && s.owned.includes(cheap.key) && s.purchases.length === 1, 'purchase deducts ' + cheap.price + ' stars and adds item');
-  const it = await p.evaluate(k => ({ slot: ABRPG.items[k].slot, art: !!ABRPG.items[k].art }), cheap.key);
-  if (it.art && it.slot !== 'pack') assert(s.equip[it.slot] === cheap.key, 'bought item is worn on hero');
+  assert(s.equip.cloak === cheap.key, 'bought item is worn on hero');
+  assert(!(await p.evaluate(k => ABRPG.buy(k), cheap.key)) && (await st()).stars.balance === bal - cheap.price, 'buying an owned item is refused (idempotent, no charge)');
+  // hair: free own look, bought colour, switch back free
+  await click('[data-cat="hair"]'); await sleep(100);
+  assert((await p.$$('[data-free]')).length === 2, 'Hair tab: her own braids and own colour are free');
+  await p.evaluate(() => { ABRPG.state().stars.balance += 40; }); await click('[data-cat="hair"]'); await sleep(100);
+  const b2 = (await st()).stars.balance;
+  await click('[data-buy="hc-auburn"]'); await click('#b-buy-yes'); await sleep(120); s = await st();
+  assert(s.owned.includes('hc-auburn') && s.equip.haircolor === 'hc-auburn' && s.stars.balance === b2 - 20, 'auburn hair colour bought for ⭐20 and worn');
+  await p.screenshot({ path: SHOTS + 'mk-hair.png', fullPage: true });
+  await click('[data-free="haircolor"]'); await sleep(100); s = await st();
+  assert(!s.equip.haircolor && s.owned.includes('hc-auburn'), 'back to her own colour for free; the colour stays owned');
+  await click('[data-cat="gear"]'); await sleep(100);
+  assert((await p.$$('.mk-item')).length >= 3, 'Gear tab lists tools');
+  await click('[data-cat="keepsake"]'); await sleep(100);
+  assert((await p.$$('.mk-item')).length >= 2, 'Keepsakes tab lists keepsakes');
+  await click('[data-cat="clothing"]'); await sleep(100);
   await p.screenshot({ path: SHOTS + 'mk-3-bought.png', fullPage: true });
   assert(!(await p.evaluate(() => ABRPG.buy('moccasins') && ABRPG.buy('moccasins'))), 'cannot buy same item twice');
   assert((await st()).stars.balance >= 0, 'balance never negative');
@@ -288,7 +315,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   /* persistence */
   await go(); s = await st();
-  assert(s.sections.s1.completed && s.owned.includes(cheap.key) && s.purchases.length === 1 && Object.keys(s.acts).length === 8, 'progress, purchases, activities persist after reload');
+  assert(s.sections.s1.completed && s.owned.includes(cheap.key) && s.purchases.length === 3 && Object.keys(s.acts).length === 8, 'progress, purchases, activities persist after reload ' + JSON.stringify([s.sections.s1.completed, s.owned, s.purchases.length, Object.keys(s.acts)]));
 
   /* under-95% path in s2: miss 2 of 24 (22/24 = 91.7%, a pass under the old 80% mark) -> must review, then retake */
   await click('.node[data-sid="s2"]'); if (await p.$('#pn button')) { await click('#pn button'); await click('#b-go'); }

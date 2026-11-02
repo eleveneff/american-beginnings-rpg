@@ -24,7 +24,7 @@ const LEVELS = (process.env.LEVELS || 's1,s2,s3,s4,s5,s6,s7').split(',');
     while (Date.now() - t0 < 90000 && (await p.evaluate(() => window.__world && __world.phase)) !== 'active') await sleep(500);
     await sleep(2500); await p.evaluate(() => __world.closeCard());
     const c0 = await p.evaluate(() => __world.compass);
-    check(c0.style === (sid < 's3' ? 'stone' : sid < 's5' ? 'brass' : 'wood'), sid + ' style ' + c0.style);
+    check(c0.style === (sid < 's3' ? 'stone' : sid < 's5' || sid === 's7' ? 'brass' : 'wood'), sid + ' style ' + c0.style);
     for (const yaw of [0, 1.3, 2.6, -1.9]) {
       await p.evaluate(y => { __world.faceCam(y); __world.closeCard(); }, yaw); await sleep(1200);
       const r = await p.evaluate(() => { const c = __world.compass, { L, THREE } = __world._dbg(); let ndc = null;

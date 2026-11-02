@@ -87,10 +87,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     const cd = await useCard(id); assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
   { const cd = await useCard('engraving'); assert(/not what happened/.test(cd) && /defended the soldiers/.test(cd), 'the engraving card is honest that the print was misleading, and that Adams defended the soldiers'); await closeCards(); }
   { const cd = await useCard('tree'); assert(/Hutchinson/.test(cd) && /too far/.test(cd), 'the Liberty Tree card is honest that some protests turned violent'); await closeCards(); }
-  { await tp(2, -2); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(600); await shot('v31-king-street.png'); }
+  { await tp(0, -19); await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v31-king-street.png'); }
   { await tp(-20, 22); await p.evaluate(() => __world.faceCam(-Math.PI / 2)); await sleep(600); await shot('v31-tea-ships.png'); }
-  { await tp(28, 18); await p.evaluate(() => __world.faceCam(Math.PI)); await sleep(600); await shot('v31-old-south.png'); }
-  { await tp(-22, -30); await p.evaluate(() => __world.faceCam(-Math.PI / 2)); await sleep(600); await shot('v31-long-wharf.png'); }
+  { await tp(26, 1); await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v31-old-south.png'); }
+  { await tp(-17, -37); await p.evaluate(() => __world.faceCam(-Math.PI / 2)); await sleep(600); await shot('v31-long-wharf.png'); }
   { await tp(8, 64); await p.evaluate(() => __world.faceCam(0)); await sleep(600); await shot('v31-carpenters-hall.png'); }
   { await tpRing('market'); await p.evaluate(() => __world.use()); await sleep(500);
     assert((await W()).phase === 'panel' && /Long Wharf/.test(await p.$eval('#screen', e => e.textContent)), 'the market ring opens Mistress Crane’s Shop on Long Wharf');

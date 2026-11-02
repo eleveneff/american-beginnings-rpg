@@ -6,7 +6,11 @@ body.walking #stage{display:none}
 #w-hud{position:fixed;inset:0;z-index:8;pointer-events:none;font-family:inherit}
 #w-hud>*{pointer-events:auto}
 #w-obj{position:absolute;top:4.1rem;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;max-width:min(80vw,820px);background:rgba(20,30,50,.72);color:#fff;border:2px solid var(--gold);border-radius:999px;padding:.4rem .95rem;font-weight:bold;font-size:.95rem;text-shadow:0 1px 0 #000;pointer-events:none}
-#w-arrow{display:inline-block;color:var(--gold);font-size:1.2rem;transition:transform .15s linear}
+/* v2.8.2 compass dial at the left end of the objective banner (it overhangs the pill a little, so the banner stays one line) */
+#w-comp{flex:0 0 auto;width:2.9rem;height:2.9rem;margin:-.55rem 0 -.55rem -.75rem;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+#w-comp svg{display:block}
+#w-dist{flex:0 0 auto;background:rgba(255,215,94,.18);border:1px solid rgba(255,215,94,.6);border-radius:999px;padding:0 .45rem;font-size:.82em;color:#ffe7a0;white-space:nowrap}
+#w-dist[hidden],#w-dist:empty{display:none}
 #w-era{position:absolute;top:6.7rem;left:50%;transform:translateX(-50%);color:#fff;font-size:.8rem;font-weight:bold;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap}
 #w-prompt{position:absolute;left:50%;bottom:5.6rem;transform:translateX(-50%);z-index:9;min-height:48px;max-width:min(92vw,560px);background:var(--parch);color:var(--ink);border:3px solid #000;border-radius:14px;padding:.55rem 1rem;font:inherit;font-weight:bold;font-size:1rem;cursor:pointer;box-shadow:0 4px 0 #000}
 #w-prompt .w-key{display:inline-block;margin-left:.4rem;background:var(--gold);border:2px solid #000;border-radius:7px;padding:0 .4rem;font-size:.85rem}
@@ -60,3 +64,14 @@ body.touch:has(#w-prompt:not([hidden])) #toast{bottom:15rem}
 #w-joy{background:radial-gradient(circle,rgba(255,255,255,.08) 40%,rgba(255,255,255,.24));box-shadow:0 3px 10px rgba(0,0,0,.25)}
 #w-joy.float{position:fixed;transition:none}
 #w-knob{background:radial-gradient(circle at 40% 35%,#fffaf0,rgba(248,236,201,.95) 60%,#e6cf98)}
+@media (max-height:500px){#w-comp{width:2.3rem;height:2.3rem;margin:-.4rem 0 -.4rem -.65rem}}
+/* v2.8.3 ford timeline strip: older → newer, lit rows show their dates, the row to step on pulses */
+#w-ford{position:absolute;top:8rem;left:50%;transform:translateX(-50%);display:flex;gap:.25rem;align-items:center;pointer-events:none;max-width:96vw;flex-wrap:nowrap}
+#w-ford[hidden]{display:none}
+#w-ford .wf-s{background:rgba(20,30,50,.72);color:#cfd8e6;border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:.1rem .4rem;font-size:.74rem;font-weight:bold;white-space:nowrap}
+#w-ford .wf-s.done{background:rgba(32,74,40,.88);color:#e9ffd9;border-color:#9fe08a}
+#w-ford .wf-s.now{background:rgba(140,96,10,.92);color:#fff;border:2px solid var(--gold);animation:wfp 1s ease-in-out infinite alternate}
+#w-ford .wf-end{color:#fff;font-size:.68rem;font-weight:bold;text-shadow:0 1px 2px #000;opacity:.9}
+@keyframes wfp{from{transform:scale(1)}to{transform:scale(1.12)}}
+@media (max-width:760px),(max-height:500px){#w-ford .wf-s{font-size:.62rem;padding:.05rem .3rem}#w-ford .wf-end{display:none}}
+

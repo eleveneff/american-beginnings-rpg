@@ -69,3 +69,15 @@
 - No new save fields. The save key is americanBeginningsRPG_v1; the world key americanBeginningsRPG_world holds read/seen/at only.
 - Copy from the shared graphics kit only; never modify it or other bots' folders.
 - Never force-push.
+
+## Teaching videos: the 27 scrolls with no clip (John, Nov 1: "Make all 27 missing videos, one per scroll")
+Live-action (Grok Imagine), fact cards, Piper en_GB-aru-medium speaker 3 narration, ambience beds. Pipeline: /workspace/abrpg-audio
+(scripts.json, hints.json, takes3.py with /home/box/piper-venv/bin/python, cards.py, build.py <key>); work files /workspace/abrpg-videos/l<N>/
+(stills, takes, review, frames, research-brief.md, script.md, manifest.md, accuracy-log.md). Wire each scroll with videoKey + videoTitle (s5 style).
+- [x] L1 s1 (4): paleo → s1-paleo-indians, meso → s1-olmec-maya-aztec, inca → s1-inca-empire, mounds → s1-mound-builders
+- [ ] L2 s2 (6): regions, northwest, plains, southwest, iroquois, southeast
+- [ ] L3 s3 (5): motives, navigation, columbus, afterColumbus, exchange
+- [ ] L4 s4 (5): conquest, spanishNA, spanishLife, france, dutch
+- [ ] L5 s5 (1): roanoke
+- [ ] L6 s6 (6): newengland, middle, southern, government, dailylife, ideas
+- After the last level: run world-test.js once; add a lessons-learned note for Princess Prep.

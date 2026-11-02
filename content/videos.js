@@ -69,6 +69,118 @@ GAME_CONTENT.videos = {
         explain: "Clovis points have been found with mammoth and bison bones." }
     ]
   },
+  "s1-paleo-indians": {
+    title: "The Paleo-Indians: America's First Pioneers",
+    cueTimes: [0, 9.83, 15.91, 23.36, 32.67], // narration starts 0.5 s after each cue
+    cues: [
+      "The first Americans are called **Paleo-Indians**. *Paleo* means **ancient**. They were **nomads**, moving from camp to camp.",
+      "They hunted **woolly mammoths, mastodons, and bison**, and gathered **nuts, berries, and roots**.",
+      "We learn about them from **archaeologists**, scientists who study **artifacts**: tools, beads, and other objects people made.",
+      "At **Monte Verde**, in southern **Chile**, archaeologists found a camp about **14,500 years old**: older than Clovis.",
+      "At **White Sands, New Mexico**, ancient footprints may be **21,000–23,000 years old**. Scientists are still testing the evidence."
+    ],
+    facts: [
+      "The first Americans are called **Paleo-Indians**; *paleo* means **ancient**.",
+      "They were **nomads** who followed herds and moved from camp to camp.",
+      "They hunted **mammoths, mastodons, and bison** and gathered **nuts, berries, and roots**.",
+      "**Archaeologists** study **artifacts** (objects people made) to learn about the past.",
+      "**Monte Verde, Chile**: a camp about **14,500 years old**, widely accepted as **older than Clovis**.",
+      "**White Sands, New Mexico**: footprints that may be **21,000–23,000 years old**; scientists are still testing that date.",
+      "Why it matters: bold, resourceful pioneers spread across **two whole continents**."
+    ],
+    check: [
+      { q: "Why is the Monte Verde site in southern Chile important?",
+        choices: ["It is a camp about 14,500 years old, older than Clovis", "It is where the Aztec built Tenochtitlán", "It is the oldest Inca city", "It is where Columbus first landed"],
+        explain: "Monte Verde shows that people had reached far into South America very early, before the Clovis culture." },
+      { q: "What does an archaeologist study?",
+        choices: ["Artifacts: tools, beads, and other objects people made", "Only living animals", "Stars and planets", "Modern laws and courts"],
+        explain: "Archaeologists study artifacts to learn how people lived long ago." }
+    ]
+  },
+  "s1-olmec-maya-aztec": {
+    title: "Olmec, Maya, and Aztec",
+    cueTimes: [0, 9.56, 16.48, 24.03, 33.02], // narration starts 0.5 s after each cue
+    cues: [
+      "About **3,000 years ago**, the **Olmec** of Mexico's Gulf Coast carved **giant stone heads**: the \"mother culture\" of Mesoamerica.",
+      "The **Maya** built **stone pyramids** and great cities, such as **Tikal**, in southern Mexico and Central America.",
+      "Maya scholars created **glyph writing**, a very accurate **calendar**, and used **zero** in math.",
+      "In **1325**, the **Aztec** founded **Tenochtitlán** on an island in **Lake Texcoco**, where Mexico City stands today.",
+      "Aztec farmers grew crops on **chinampas**, \"floating gardens.\" Their empire collected **tribute** from conquered peoples."
+    ],
+    facts: [
+      "The **Olmec** (Gulf Coast of Mexico, about **3,000 years ago**) carved **giant stone heads** and are called the **\"mother culture\"** of Mesoamerica.",
+      "The **Maya** built **stone pyramids** and cities such as **Tikal** (Classic Age, about **250–900 CE**).",
+      "The Maya had **glyph writing**, a very accurate **calendar**, and the idea of **zero**.",
+      "The **Aztec** founded **Tenochtitlán** in **1325** on an island in **Lake Texcoco** (today's **Mexico City**).",
+      "**Chinampas** were \"floating gardens\" built up from the lake bed.",
+      "The Aztec Empire collected **tribute** (payments) from conquered peoples.",
+      "The page of glyphs shown is from the real **Dresden Codex**, one of the few Maya books that survive."
+    ],
+    check: [
+      { q: "Which group is often called the \"mother culture\" of Mesoamerica?",
+        choices: ["The Olmec", "The Aztec", "The Inca", "The Hohokam"],
+        explain: "The Olmec came first, about 3,000 years ago, and later peoples borrowed their ideas." },
+      { q: "What were chinampas?",
+        choices: ["\"Floating gardens\" built up from a lake bed", "Rope bridges over canyons", "Knotted cords for keeping records", "Stone heads carved by the Olmec"],
+        explain: "Aztec farmers built chinampas in Lake Texcoco to grow crops." }
+    ]
+  },
+  "s1-inca-empire": {
+    title: "The Inca: Empire of the Andes",
+    cueTimes: [0, 7.04, 17.57, 24.39, 32.87], // narration starts 0.5 s after each cue
+    cues: [
+      "The **Inca** built the **largest empire in the Americas**, along the **Andes Mountains**. Their capital was **Cusco**.",
+      "In the **1400s**, the emperor **Pachacuti** expanded the empire. Inca roads stretched more than **20,000 miles**, with **rope bridges**.",
+      "Inca engineers carved **terraces** into steep mountainsides to farm, and built **Machu Picchu**.",
+      "No written alphabet: relay runners called **chasquis** carried messages and **quipus**, knotted, colored cords.",
+      "Instead of paying taxes in money, people paid a **labor tax**, the **mit'a**, working on roads, farms, and buildings."
+    ],
+    facts: [
+      "The **Inca** built the **largest empire in the Americas** along the **Andes Mountains** of South America.",
+      "Their capital was **Cusco**.",
+      "Emperor **Pachacuti** greatly expanded the empire in the **1400s**.",
+      "Inca roads ran more than **20,000 miles**, with **rope bridges** over deep canyons.",
+      "**Terraces** (flat steps) turned steep mountainsides into farmland; **Machu Picchu** still stands today.",
+      "With no written alphabet, the Inca kept records on **quipus** (knotted, colored cords), carried by relay runners called **chasquis**.",
+      "The **mit'a** was a **labor tax**: people worked on roads, farms, and buildings."
+    ],
+    check: [
+      { q: "How did the Inca keep records without a written alphabet?",
+        choices: ["With quipus, sets of knotted, colored cords", "With glyphs carved on pyramids", "With printed books", "With clay tablets"],
+        explain: "Quipus used knots and colors to record numbers and information; chasquis carried them along Inca roads." },
+      { q: "What was the Inca mit'a?",
+        choices: ["A labor tax: work on roads, farms, and buildings", "A floating garden", "A type of rope bridge", "The Inca capital city"],
+        explain: "Instead of paying money, people paid the government with their work." }
+    ]
+  },
+  "s1-mound-builders": {
+    title: "Mound Builders and Ancestral Puebloans",
+    cueTimes: [0, 8.82, 19.94, 26.47, 34.71], // narration starts 0.5 s after each cue
+    cues: [
+      "In the **Ohio and Mississippi River valleys**, the **Adena**, **Hopewell**, and later **Mississippians** built huge earthen **mounds**.",
+      "Around **1100**, **Cahokia**, near present-day St. Louis, may have held **10,000–20,000 people**. **Monks Mound** is the largest earthen mound in North America.",
+      "In the **Arizona** desert, the **Hohokam** dug long **irrigation canals** to bring river water to their crops.",
+      "In the **Four Corners**, **Ancestral Puebloans** built many-story stone **pueblos**, such as **Pueblo Bonito** at **Chaco Canyon**.",
+      "Later they built **cliff dwellings** at **Mesa Verde**. Their descendants, the **Pueblo peoples**, live in the Southwest today."
+    ],
+    facts: [
+      "The **Mound Builders** (**Adena**, **Hopewell**, and later **Mississippians**) built earthen mounds for burials and ceremonies.",
+      "**Cahokia**, near present-day **St. Louis**, may have held **10,000–20,000 people** around **1100**.",
+      "**Monks Mound** at Cahokia is the **largest earthen mound in North America** (about 100 feet tall).",
+      "The **Hohokam** of **Arizona** dug long **irrigation canals** to water their crops.",
+      "The **Ancestral Puebloans** of the **Four Corners** built **pueblos** such as **Pueblo Bonito** at **Chaco Canyon**, with hundreds of rooms.",
+      "They later built **cliff dwellings** at **Mesa Verde**, such as **Cliff Palace** (1200s, about 150 rooms).",
+      "Their descendants, the **Pueblo peoples**, still live in the Southwest today."
+    ],
+    check: [
+      { q: "Which Mississippian city near present-day St. Louis may have held 10,000–20,000 people around 1100?",
+        choices: ["Cahokia", "Tenochtitlán", "Cusco", "Tikal"],
+        explain: "Cahokia's Monks Mound is the largest earthen mound in North America." },
+      { q: "How did the Hohokam farm in the dry Arizona desert?",
+        choices: ["They dug long irrigation canals to bring river water", "They built chinampas in a lake", "They waited for monsoon floods only", "They traded for all their food"],
+        explain: "Hohokam canals carried river water to fields of corn, beans, squash, and cotton." }
+    ]
+  },
   "s1-early-maize": {
     title: "Early Maize: The Gift of Farming",
     cueTimes: [0, 5.37, 13.7, 20.52, 26.93], // narration starts 0.5 s after each cue
@@ -248,7 +360,7 @@ GAME_CONTENT.videos = {
     ]
   }
 };
-GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } };
+GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson
 /* Attach entries to lessons and add check questions to each trial pool. */
 (function () {
   var V = GAME_CONTENT.videos, A = GAME_CONTENT.videoAttach;

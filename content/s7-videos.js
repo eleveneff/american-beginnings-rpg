@@ -5,12 +5,13 @@
   V["s7-fort-necessity"] = {
     title: "Washington at Fort Necessity",
     cues: [
-      "1753: Major **George Washington**, age 21, carries Virginia's letter to the French at **Fort Le Boeuf**.",
-      "He judges the **Forks of the Ohio** perfect for a fort, but in 1754 the French build **Fort Duquesne** there.",
-      "May 28, 1754: at **Jumonville Glen**, Washington and the Seneca leader **Tanacharison** clash with a French party.",
-      "Washington builds a small round fort of upright logs: **Fort Necessity**, at Great Meadows.",
-      "July 3, 1754: a larger French and Native force attacks in the rain. Washington **surrenders**, and his men march home."
+      "In 1753, a young Major **George Washington**, just 21 years old, carries Virginia's letter to the French at **Fort Le Boeuf**. The French refuse to leave.",
+      "Heading home, he tumbles off a raft into the icy **Allegheny River**. Then, in 1754, the French grab the **Forks of the Ohio** first.",
+      "May 28, 1754. At **Jumonville Glen**, Washington and the Seneca leader **Tanacharison** attack a small French party. Its commander, **Jumonville**, is killed.",
+      "Expecting revenge, Washington builds a small round fort of upright logs, **Fort Necessity**. But it sits in a **low, wet meadow**, too close to the woods.",
+      "July 3: a larger French and Native force attacks in pouring rain. Washington **surrenders**, and his men march home. He will **learn from defeat**."
     ],
+    cueTimes: [0, 10.31, 19.33, 30.21, 39.36], // narration starts 0.5 s after each cue
     facts: [
       "Fort Necessity was a **circle of upright logs** about **53 feet** across, with a small storehouse inside.",
       "Washington's men were Virginia **militia**: ordinary citizens trained to fight in emergencies.",

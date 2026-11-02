@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v2.8";
+  var GAME_VERSION = "v2.9";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -56,24 +56,50 @@
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   /* ---------------- item registry (section gear + market goods) ---------------- */
-  var SLOTS = ["head", "cloak", "neck", "body", "back", "belt", "hand", "offhand", "feet"];
-  var SLOT_LABEL = { head: "Head", cloak: "Cloak", neck: "Neck", body: "Body", back: "Back", belt: "Belt", hand: "Right hand", offhand: "Left hand", feet: "Feet", pack: "Pack" };
-  var ITEMS = {}, BY_NAME = {};
+  /* v2.9 wardrobe: every look change costs stars. New equip slots (no new save fields): dress (clothes),
+     dye (badge tunic dye), hair (style) and haircolor. Her own look (two braids, her own hair color,
+     the plain tunic) is free; everything else is bought once with stars and then worn free. */
+  var SLOTS = ["hair", "haircolor", "head", "dress", "dye", "cloak", "neck", "body", "back", "belt", "hand", "offhand", "feet"];
+  var SLOT_LABEL = { hair: "Hair style", haircolor: "Hair color", head: "Head", dress: "Clothes", dye: "Tunic dye", cloak: "Cloak", neck: "Neck", body: "Body", back: "Back", belt: "Belt", hand: "Right hand", offhand: "Left hand", feet: "Feet", pack: "Pack" };
+  var SLOT_NONE = { hair: "Two braids (her own)", haircolor: "Her own color", dye: "Plain tunic", dress: "Her tunic" };
+  var CLOTHING_SLOTS = { head: 1, dress: 1, dye: 1, cloak: 1, neck: 1, body: 1, belt: 1, feet: 1 };
+  var PRICES = C.prices || {}, ITEMS = {}, BY_NAME = {}, SEC_MARKET = {};
+  (C.markets || []).forEach(function (m) { if (m.era) SEC_MARKET[m.era] = m.id; });
   C.sections.forEach(function (s) {
-    s.gear.forEach(function (g) {
-      var it = { key: g.key, name: g.name, icon: g.icon, slot: g.slot, art: g.art, color: g.color, desc: g.desc, section: s.id, source: "gear" };
+    s.gear.forEach(function (g, gi) {
+      var it = { key: g.key, name: g.name, icon: g.icon, slot: g.slot, art: g.art, color: g.color, desc: g.desc, fact: g.desc, section: s.id, source: "gear",
+        idx: gi, price: PRICES[g.key] || 25, tier: "earned", market: SEC_MARKET[s.id], cat: CLOTHING_SLOTS[g.slot] ? "clothing" : "gear",
+        made: (C.gearTeach && C.gearTeach[g.key] || [])[0], who: (C.gearTeach && C.gearTeach[g.key] || [])[1] };
       ITEMS[g.key] = it; BY_NAME[s.id + "|" + g.name] = it; BY_NAME["*|" + g.name] = BY_NAME["*|" + g.name] || it;
       (g.oldNames || []).forEach(function (n) { BY_NAME[s.id + "|" + n] = it; BY_NAME["*|" + n] = it; });
     });
   });
   (C.markets || []).forEach(function (m) {
-    m.items.forEach(function (x) { ITEMS[x.key] = { key: x.key, name: x.name, icon: x.icon, slot: x.slot, art: x.art, color: x.color, desc: x.fact, fact: x.fact, price: x.price, tier: x.tier, market: m.id, source: "market" }; });
+    m.items.forEach(function (x) { ITEMS[x.key] = { key: x.key, name: x.name, icon: x.icon, slot: x.slot, art: x.art, color: x.color, top: x.top, skirt: x.skirt, desc: x.fact, fact: x.fact, made: x.made, who: x.who, study: x.study, price: PRICES[x.key] || x.price, tier: x.tier, cat: x.cat || "gear", section: m.era, market: m.id, source: "market" }; });
+  });
+  var DYE_SECT = {};
+  (C.dyes || []).forEach(function (d) {
+    var s = d.badge === "final" ? C.final : sectionById(d.badge), b = s && s.badge; if (!b) return;
+    DYE_SECT[d.badge] = d.key;
+    ITEMS[d.key] = { key: d.key, name: d.name, icon: d.icon, slot: "dye", art: "dye", color: b.tunic, desc: d.fact, fact: d.fact, price: PRICES[d.key] || 30, tier: "earned", cat: "clothing", badge: d.badge, market: d.market, allEras: true, source: "dye" };
+  });
+  (C.hairColors || []).forEach(function (h) {
+    ITEMS[h.key] = { key: h.key, name: h.name, icon: "🎨", slot: "haircolor", art: "haircolor", color: h.color, desc: "A natural hair color. Her own color is always free.", fact: "A natural hair color, sold in every market. Her own color is always free to go back to.", price: PRICES[h.key] || 20, tier: "basic", cat: "hair", anyMarket: true, allEras: true, source: "haircolor" };
   });
   function marketById(id) { var r = null; (C.markets || []).forEach(function (m) { if (m.id === id) r = m; }); return r; }
+  /* where each item can be bought: its market must be open, gear needs its 5-correct milestone, dyes their badge */
+  function itemLock(it) {
+    if (!it) return "Not for sale.";
+    if (it.source === "gear") { var s = sectionById(it.section), st = sec(it.section), need = (it.idx + 1) * C.correctPerGear - st.correctCount;
+      return st.gearEarned > it.idx ? "" : "🔒 Unlocks after " + Math.max(1, need) + " more correct answer" + (Math.max(1, need) === 1 ? "" : "s") + " in " + s.title + "."; }
+    if (it.source === "dye") return S.badges.some(function (b) { return b.section === it.badge; }) ? "" : "🔒 Unlocks when you earn the " + ((it.badge === "final" ? C.final : sectionById(it.badge)).badge.name) + ".";
+    if (it.source === "market") { var mm = marketById(it.market); if (mm && !marketOpen(mm)) return "🔒 This market opens when you reach " + sectionById(mm.unlock).title + "."; }
+    return "";
+  }
 
   /* ---------------- save data ---------------- */
   function blankSave() {
-    return { version: 3, created: now(), lastPlayed: now(), players: {}, sections: {}, final: { attempts: 0, bestPct: 0, passed: false, passedAt: null, history: [] }, gear: [], badges: [], totalCorrect: 0, totalAnswered: 0, run: null,
+    return { version: 4, created: now(), lastPlayed: now(), players: {}, sections: {}, final: { attempts: 0, bestPct: 0, passed: false, passedAt: null, history: [] }, gear: [], badges: [], totalCorrect: 0, totalAnswered: 0, run: null,
       stars: { balance: 0, earned: 0, spent: 0, bySource: {} }, starLog: [], qStar: {}, acts: {}, owned: [], equip: {}, purchases: [], videos: {}, vidQ: {}, srcQ: {}, skills: {} };
   }
   var S;
@@ -108,7 +134,15 @@
     /* v2 -> v3 (v2.1): adds srcQ (source-scroll quizzes) and skills (map & timeline stats). The blank-key fill above creates them. */
     if (!d.srcQ || typeof d.srcQ !== "object") d.srcQ = {};
     if (!d.skills || typeof d.skills !== "object") d.skills = {};
-    d.version = Math.max(3, d.version); return d;
+    /* v3 -> v4 (v2.9): looks cost stars. Everything already owned stays owned and worn. Badges earned before
+       v2.9 recolored the tunic for free, so those saves get each earned badge's dye (owned) and wear the latest
+       one, so her look does not change. New gear is no longer pushed to d.gear (it is unlocked, then bought). */
+    if (d.version < 4) {
+      var lastDye = null;
+      d.badges.forEach(function (x) { var k = DYE_SECT[x.section]; if (k && ITEMS[k]) { if (d.owned.indexOf(k) < 0) d.owned.push(k); lastDye = k; } });
+      if (lastDye && !d.equip.dye) d.equip.dye = lastDye;
+    }
+    d.version = Math.max(4, d.version); return d;
   }
   function save() { S.lastPlayed = now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { } }
   function sec(id) {
@@ -123,7 +157,7 @@
   function allDone() { return C.sections.every(function (s) { return S.sections[s.id] && S.sections[s.id].completed; }); }
 
   /* ---------------- stars economy ---------------- */
-  var SRC_LABEL = { question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)", skill: "Map & timeline placements (first time right)" };
+  var SRC_LABEL = { gear: "Gear milestones (every 5 correct)", question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)", skill: "Map & timeline placements (first time right)" };
   function addStars(n, src, note) {
     n = Math.max(0, Math.floor(n || 0)); if (!n) return 0;
     S.stars.balance += n; S.stars.earned += n; S.stars.bySource[src] = (S.stars.bySource[src] || 0) + n;
@@ -151,8 +185,9 @@
     var last = null; Object.keys(S.players).forEach(function (k) { var p = S.players[k]; if (!last || (p.at || "") > (last.at || "")) last = p; });
     return last || { gender: "girl", name: "Adventurer" };
   }
-  function heroTunic() { var t = DEFAULT_TUNIC; if (S.badges.length) t = S.badges[S.badges.length - 1].tunic || t; return t; }
-  function equipArt(eq) { var o = {}; Object.keys(eq || {}).forEach(function (sl) { var it = ITEMS[eq[sl]]; if (it && it.art) o[sl] = { art: it.art, color: it.color }; }); return o; }
+  /* v2.9: the tunic color comes from the bought dye (or a bought dress); badges no longer recolor it for free */
+  function heroTunic() { return DEFAULT_TUNIC; }
+  function equipArt(eq) { var o = {}; Object.keys(eq || {}).forEach(function (sl) { var it = ITEMS[eq[sl]]; if (it && it.art) { o[sl] = { art: it.art, color: it.color }; if (it.top) o[sl].top = it.top; if (it.skirt) o[sl].skirt = it.skirt; } }); return o; }
   function heroSVG(over) {
     var p = currentPlayer(); over = over || {};
     return window.HeroArt.render({ gender: over.gender || (p.gender === "boy" ? "boy" : "girl"), tunic: heroTunic(), equip: equipArt(over.equip || S.equip) });
@@ -167,8 +202,8 @@
       var s = sectionById(S.run.sid), st = sec(s.id), per = C.correctPerGear;
       if (st.gearEarned < s.gear.length) {
         var into = st.correctCount - st.gearEarned * per;
-        gp.innerHTML = "Next gear: " + Math.max(0, per - into) + " more correct" + '<div class="bar"><i style="width:' + Math.min(100, (into / per) * 100) + '%"></i></div>';
-      } else gp.innerHTML = "All " + esc(s.title) + " gear earned! ✨";
+        gp.innerHTML = "Next unlock: " + Math.max(0, per - into) + " more correct" + '<div class="bar"><i style="width:' + Math.min(100, (into / per) * 100) + '%"></i></div>';
+      } else gp.innerHTML = "All " + esc(s.title) + " gear unlocked! ✨";
     } else gp.innerHTML = S.owned.length + " items · " + S.badges.length + " badges";
     renderHUD();
   }
@@ -301,7 +336,7 @@
     if (window.ABWorld && window.ABWorld.claim("home")) return;
     setWorld(null);
     var h = '<div class="panel map-head"><div><h1>🗺️ ' + esc(C.title) + "</h1><p>" + esc(C.subtitle) + "</p>" +
-      "<p>Pick a glowing land. Read the lesson scrolls, play the <b>activities</b>, then pass the Trial. Master a land with <b>" + C.passPercent + "% or better</b> and by clearing every missed question. Every <b>" + C.correctPerGear + " correct answers</b> earns new gear, and every new right answer, activity, and badge earns <b>⭐ stars</b> to spend in the marketplace!</p>" +
+      "<p>Pick a glowing land. Read the lesson scrolls, play the <b>activities</b>, then pass the Trial. Master a land with <b>" + C.passPercent + "% or better</b> and by clearing every missed question. Every <b>" + C.correctPerGear + " correct answers</b> unlocks new gear, and every new right answer, activity, and badge earns <b>⭐ stars</b> to spend in the marketplace on clothes, hair, and gear!</p>" +
       '<button class="btn gold" id="b-market">🏪 Visit the Marketplace</button><button class="btn alt" id="b-char">🧍 My Character</button></div>' +
       '<div class="map-stars"><div class="big">⭐ ' + S.stars.balance + '</div><small>stars to spend</small></div></div>';
     h += '<div class="map">';
@@ -468,7 +503,7 @@
     try { window.dispatchEvent(new CustomEvent("ab:lesson", { detail: { sid: sid, i: i } })); } catch (e) { } /* v2.2: the world marks scrolls read (its own storage key) */
     var acts = (s.activities || []).filter(function (a) { return a.topic === l.topic; });
     var h = '<div class="panel"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + "</span><span>Scroll " + (i + 1) + " of " + s.lessons.length + "</span></div><h2>📜 " + esc(l.title) + "</h2>" + scrollBody(l);
-    if (l.source && !resumeAfter) { var sq = srcQs(s, l.topic), sr = S.srcQ[l.topic]; if (sq.length) h += '<div class="try-act src-q">📜 <button class="btn small gold" id="b-srcq">Answer the source questions (' + sq.length + ")</button> <small>" + (sr && sr.plays ? "Best: " + sr.best + "/" + sq.length : "Counts toward stars and gear!") + "</small></div>"; }
+    if (l.source && !resumeAfter) { var sq = srcQs(s, l.topic), sr = S.srcQ[l.topic]; if (sq.length) h += '<div class="try-act src-q">📜 <button class="btn small gold" id="b-srcq">Answer the source questions (' + sq.length + ")</button> <small>" + (sr && sr.plays ? "Best: " + sr.best + "/" + sq.length : "Counts toward stars and gear unlocks!") + "</small></div>"; }
     if (acts.length && !resumeAfter) h += '<div class="try-act">🎮 Try it: ' + acts.map(function (a) { return '<button class="btn alt small" data-act="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") + "</div>";
     h += '<div class="scroll-nav"><span>' + (i > 0 ? '<button class="btn alt" id="b-prev">◀ Back</button>' : "") + "</span><span>" +
       (i < s.lessons.length - 1 ? '<button class="btn" id="b-next">Next scroll ▶</button>' : '<button class="btn gold" id="b-trial">⚔️ ' + (resumeAfter ? "Return to my trial" : "Begin the Trial!") + "</button>") + "</span></div></div>";
@@ -502,9 +537,10 @@
     var s = sectionById(sid), st = sec(sid), per = C.correctPerGear;
     st.correctCount++;
     if (st.gearEarned < s.gear.length && st.correctCount >= (st.gearEarned + 1) * per) {
+      /* v2.9: a milestone pays stars and UNLOCKS the gear for sale (it is no longer free).
+         Unlocked = gearEarned > its index, so no new save field. It does not push to S.gear. */
       var g = s.gear[st.gearEarned]; st.gearEarned++;
-      S.gear.push({ key: g.key, name: g.name, icon: g.icon, slot: g.slot, color: g.color, desc: g.desc, section: sid, at: now() });
-      grantItem(g.key, true);
+      addStars(C.stars.gear || 10, "gear", g.key);
       return g;
     }
     return null;
@@ -558,10 +594,20 @@
     if (ok) questionStar(q);
     var g = ok ? awardGear(sid) : null;
     save(); renderHero();
-    if (g) {
-      modal('<div class="panel big-reward"><div class="reward-hero">' + heroSVG() + '</div><h2>' + g.icon + " New gear: " + esc(g.name) + "!</h2><p>" + esc(g.desc) + "</p><p>You earned it with " + C.correctPerGear + " more correct answers. It's on your hero now!</p><button class=\"btn gold\" id=\"b-ok\">Awesome! ▶</button></div>");
-      on("b-ok", function () { closeModal(); next(); });
-    } else next();
+    if (g) gearUnlockedModal(g, next); else next();
+  }
+  /* v2.9: a 5-correct milestone pays stars and unlocks an item for sale. Affordability is checked before the
+     "Buy it now" button is offered; "#b-ok" always continues without buying. */
+  function gearUnlockedN() { return C.sections.reduce(function (n, s) { return n + ((S.sections[s.id] || {}).gearEarned || 0); }, 0); }
+  function gearUnlockedModal(g, next) {
+    var it = ITEMS[g.key], can = S.stars.balance >= it.price, mk = marketById(it.market), eq = Object.assign({}, S.equip);
+    if (it.art && it.slot !== "pack") eq[it.slot] = it.key;
+    modal('<div class="panel big-reward unlock-card"><div class="reward-hero sm">' + heroSVG({ equip: eq }) + '</div><h2>🔓 Unlocked: ' + it.icon + " " + esc(it.name) + '!</h2><p class="star-pop">+' + (C.stars.gear || 10) + " ⭐ for " + C.correctPerGear + " more correct answers</p><p>" + esc(it.desc || "") + "</p><p>" +
+      (can ? "It costs <b>⭐ " + it.price + "</b> (you have ⭐ " + S.stars.balance + "). Buy it now, or later at the " + esc(mk ? mk.name : "market") + "."
+        : "It costs <b>⭐ " + it.price + "</b>. You have ⭐ " + S.stars.balance + ", so you need ⭐ " + (it.price - S.stars.balance) + " more. Keep answering, playing activities, and earning badges; it waits for you at the " + esc(mk ? mk.name : "market") + ".") + "</p>" +
+      (can ? '<button class="btn gold" id="b-buy-now">Buy it now ⭐ ' + it.price + "</button>" : "") + '<button class="btn alt" id="b-ok">' + (can ? "Later ▶" : "Keep going ▶") + "</button></div>");
+    on("b-ok", function () { closeModal(); next(); });
+    on("b-buy-now", function () { closeModal(); confirmBuy(it, function () { renderHero(); next(); }, next); });
   }
   function nextQuestion() {
     var r = S.run, s = sectionById(r.sid);
@@ -900,7 +946,7 @@
     if (!r.credited[key]) {
       r.credited[key] = now(); addStars(C.stars.perQuestion, "skill", a.id + ":" + key);
       var gs = skillSid(sid, item), g = gs ? awardGear(gs) : null;
-      if (g) toast(g.icon + " <b>New gear: " + esc(g.name) + "!</b> It's on your hero now.");
+      if (g) toast("🔓 <b>Unlocked: " + g.icon + " " + esc(g.name) + "!</b> +" + (C.stars.gear || 10) + " ⭐. Buy it in the 🏪 market for ⭐ " + ITEMS[g.key].price + ".");
       save(); renderHero(); return '<span class="star-pop">+' + C.stars.perQuestion + " ⭐</span> ";
     }
     save(); return "";
@@ -1079,38 +1125,56 @@
   }
 
   /* ---------------- character screen ---------------- */
+  /* v2.9: she can only wear what she owns. Every look change is bought once in a market, then switched here
+     for free. Her own look (two braids, her own hair color, her plain tunic) is always free. */
   function character() {
     closeModal(); setWorld(null);
     var p = currentPlayer();
     var h = '<div class="panel char"><h2>🧍 ' + esc(p.name) + "'s Character</h2><div class=\"char-grid\"><div class=\"char-hero\" id=\"char-hero\">" + heroSVG() + '<div class="hero-stars">⭐ ' + S.stars.balance + " stars</div></div><div class=\"char-slots\">";
     SLOTS.forEach(function (sl) {
       var mine = S.owned.filter(function (k) { return ITEMS[k].slot === sl && ITEMS[k].art; });
+      if (!mine.length && !SLOT_NONE[sl]) return;
       h += '<div class="slot-row"><div class="slot-name">' + SLOT_LABEL[sl] + '</div><div class="slot-opts">';
-      if (!mine.length) h += '<span class="dim">empty: earn or buy an item</span>';
-      else {
-        h += '<button class="eq-btn' + (!S.equip[sl] ? " sel" : "") + '" data-slot="' + sl + '" data-key="">None</button>';
-        mine.forEach(function (k) { var it = ITEMS[k]; h += '<button class="eq-btn' + (S.equip[sl] === k ? " sel" : "") + '" data-slot="' + sl + '" data-key="' + k + '" title="' + esc(it.desc || "") + '">' + it.icon + " " + esc(it.name) + "</button>"; });
-      }
+      h += '<button class="eq-btn' + (!S.equip[sl] ? " sel" : "") + '" data-slot="' + sl + '" data-key="">' + esc(SLOT_NONE[sl] || "None") + "</button>";
+      mine.forEach(function (k) { var it = ITEMS[k]; h += '<button class="eq-btn' + (S.equip[sl] === k ? " sel" : "") + '" data-slot="' + sl + '" data-key="' + k + '" title="' + esc(it.desc || "") + '">' + it.icon + " " + esc(it.name) + "</button>"; });
+      if (!mine.length) h += ' <span class="dim">more at the 🏪 market</span>';
       h += "</div></div>";
     });
-    h += "</div></div>";
+    h += '<p class="dim">Clothes, hair, and gear are bought with ⭐ stars in the market. Once bought, you can switch them here for free.</p></div></div>';
     var pack = S.owned.filter(function (k) { return ITEMS[k].slot === "pack" || !ITEMS[k].art; });
-    h += "<h3>🎒 Pack</h3>" + (pack.length ? '<div class="inv">' + pack.map(function (k) { var it = ITEMS[k]; return '<div class="item"><div class="ic">' + it.icon + "</div><b>" + esc(it.name) + "</b><small>" + esc(it.desc || "") + "</small></div>"; }).join("") + "</div>" : "<p class=\"dim\">Nothing in your pack yet. Some market goods (like trade goods and books) are carried in the pack.</p>");
-    h += "<h3>🏅 Badges</h3>" + (S.badges.length ? '<div class="inv">' + S.badges.map(function (b) { return '<div class="item badge"><div class="ic">' + b.icon + "</div><b>" + esc(b.name) + "</b><small>" + fmtDate(b.at) + "</small></div>"; }).join("") + "</div>" : "<p class=\"dim\">Master a land to earn a badge (and dye your tunic!).</p>");
+    h += "<h3>🎒 Pack</h3>" + (pack.length ? '<div class="inv">' + pack.map(function (k) { var it = ITEMS[k]; return '<div class="item"><div class="ic">' + it.icon + "</div><b>" + esc(it.name) + "</b><small>" + esc(it.desc || "") + "</small>" + (it.study ? '<button class="btn small" data-study="' + it.study + '">📖 Study</button>' : "") + "</div>"; }).join("") + "</div>" : "<p class=\"dim\">Nothing in your pack yet. Some market goods (like tools, books, and keepsakes) are carried in the pack.</p>");
+    h += "<h3>🏅 Badges</h3>" + (S.badges.length ? '<div class="inv">' + S.badges.map(function (b) { return '<div class="item badge"><div class="ic">' + b.icon + "</div><b>" + esc(b.name) + "</b><small>" + fmtDate(b.at) + "</small></div>"; }).join("") + "</div>" : "<p class=\"dim\">Master a land to earn a badge (and unlock its tunic dye in the market!).</p>");
     h += '<p><button class="btn gold" id="b-market">🏪 Marketplace</button><button class="btn alt" id="b-map">🗺️ Map</button></p></div>';
     show(h);
-    $all(".eq-btn", $screen).forEach(function (b) { b.onclick = function () { var sl = b.getAttribute("data-slot"), k = b.getAttribute("data-key"); if (k) S.equip[sl] = k; else delete S.equip[sl]; save(); character(); }; });
+    $all(".eq-btn", $screen).forEach(function (b) { b.onclick = function () { var sl = b.getAttribute("data-slot"), k = b.getAttribute("data-key"); if (k && own(k)) S.equip[sl] = k; else delete S.equip[sl]; save(); character(); }; });
+    $all("[data-study]", $screen).forEach(function (b) { b.onclick = function () { study(b.getAttribute("data-study"), character); }; });
     on("b-market", function () { market(); }); on("b-map", home);
     renderHero();
   }
   function inventory() { character(); }
+  /* v2.9: "study" items (rutter, ledger, copybook, speller) open a key-words card for their land. It is review
+     only: it changes no score, star, or the 95% mastery mark. */
+  function study(sid, back) {
+    var s = sectionById(sid); if (!s) return;
+    var words = s.questions.filter(function (q) { return q.type === "vocab"; }).map(function (q) { return [q.term, q.choices[0]]; });
+    var h = '<div class="panel"><h2>📖 Key words: ' + esc(s.title) + '</h2><p class="dim">Review only: this does not change your Trial score.</p><div class="study-words">' +
+      words.map(function (w) { return "<div><b>" + esc(w[0]) + "</b>: " + esc(w[1]) + "</div>"; }).join("") + "</div>" +
+      '<p><button class="btn gold" id="b-study-back">◀ Back</button></p></div>';
+    show(h); on("b-study-back", back || character);
+  }
 
   /* ---------------- marketplace ---------------- */
   function marketOpen(m) { var i = C.sections.indexOf(sectionById(m.unlock)); return i >= 0 && isUnlocked(i); }
   function marketScene(m) {
-    var o = [], sc = m.scene, sky = { cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"] }[sc] || ["#ffe6b0", "#9fd3f5"];
+    var o = [], sc = m.scene, sky = { steppe: ["#e8eef4", "#9bb8d6"], cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"] }[sc] || ["#ffe6b0", "#9fd3f5"];
     o.push('<defs><linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[0] + '"/></linearGradient></defs><rect width="600" height="220" fill="url(#msky)"/>');
-    if (sc === "cahokia") {
+    if (sc === "steppe") {
+      /* v2.9: Ice Age camp: snowy hills, hide tents, a distant mammoth herd, a hearth */
+      o.push(pg("0,130 90,96 200,120 300,90 420,118 520,94 600,112 600,160 0,160", "#dfe7ee"), pg("0,150 600,146 600,220 0,220", "#cfd9d2"));
+      [[70, "#8a6a48"], [530, "#7a5a3c"]].forEach(function (g) { var x = g[0]; o.push(pg((x - 40) + ",150 " + x + ",86 " + (x + 40) + ",150", g[1]), pg((x - 10) + ",150 " + x + ",118 " + (x + 10) + ",150", "#3a2a1c"), ln(x - 6, 84, x - 14, 72, "#5a4026", 3), ln(x + 6, 84, x + 14, 72, "#5a4026", 3)); });
+      [[300, 1], [350, .8], [392, .65]].forEach(function (g) { var x = g[0], k = g[1]; o.push('<ellipse cx="' + x + '" cy="' + (98 - 6 * k) + '" rx="' + 20 * k + '" ry="' + 13 * k + '" fill="#5a4030"/>', '<circle cx="' + (x - 18 * k) + '" cy="' + (94 - 6 * k) + '" r="' + 8 * k + '" fill="#5a4030"/>', ln(x - 22 * k, 100 - 6 * k, x - 30 * k, 112 - 4 * k, "#efe6cf", 3 * k)); });
+      o.push(pg("140,150 160,140 180,150", "#e8892b"), pg("150,150 160,132 170,150", "#ffd36a"));
+    } else if (sc === "cahokia") {
       o.push(pg("300,120 340,70 470,70 520,120", "#8a6a3a"), pg("370,70 380,52 430,52 440,70", "#7a5a2a"), pg("392,52 405,34 418,52", "#c8a060"));
       [60, 130, 540].forEach(function (x) { o.push(pg((x - 24) + ",150 " + (x + 24) + ",150 " + (x + 20) + ",124 " + (x - 20) + ",124", "#b08a5a"), pg((x - 28) + ",126 " + x + ",96 " + (x + 28) + ",126", "#d9b36a")); });
       o.push(pg("0,150 600,146 600,220 0,220", "#a6884f"));
@@ -1133,13 +1197,34 @@
     for (var s2 = 0; s2 < 9; s2++) o.push(pg((160 + s2 * 50) + ",104 " + (210 + s2 * 50) + ",104 " + (205 + s2 * 50) + ",122 " + (165 + s2 * 50) + ",122", s2 % 2 ? "#e8d9b0" : (sc === "cahokia" ? "#b5543a" : "#c0392b")));
     return svgWrap(o.join(""), "0 0 600 220");
   }
-  var marketTab = null;
-  function market(mid, say) {
+  var marketTab = null, marketCat = "clothing";
+  var CATS = [["clothing", "👗 Clothing"], ["hair", "🪞 Hair"], ["gear", "🧰 Gear"], ["keepsake", "🎁 Keepsakes"]];
+  var STAR_HELP = "Earn stars with first-time right Trial answers (+2), activities, scroll and video questions, map and timeline games, every 5 correct answers (+" + (C.stars.gear || 10) + "), and badges (+" + C.stars.badge + ").";
+  /* what a market sells: its own goods, its era's earned gear (unlocked every 5 correct), its era's badge dye, and (Hair tab) hair colors */
+  function marketGoods(m) {
+    var out = m.items.map(function (x) { return ITEMS[x.key]; });
+    Object.keys(ITEMS).forEach(function (k) { var it = ITEMS[k]; if ((it.source === "gear" || it.source === "dye") && it.market === m.id) out.push(it); });
+    Object.keys(ITEMS).forEach(function (k) { if (ITEMS[k].anyMarket) out.push(ITEMS[k]); });
+    return out;
+  }
+  function teachHTML(it) {
+    return (it.made ? '<p class="teach"><b>🧵 Made of:</b> ' + esc(it.made) + '</p><p class="teach"><b>👧 Who ' + (it.cat === "clothing" || it.cat === "hair" ? "wore" : "used") + ' it:</b> ' + esc(it.who) + "</p>" : '<p class="teach">' + esc(it.fact || it.desc || "") + "</p>") +
+      (it.study ? '<p class="teach"><b>📖 Use:</b> open it from your pack to review this land\'s key words.</p>' : "");
+  }
+  /* one confirm flow for every purchase: lock and affordability are checked BEFORE the confirm card opens */
+  function confirmBuy(it, done, poor) {
+    var lk = itemLock(it); if (lk) { toast(lk); return; }
+    if (S.stars.balance < it.price) { toast("You need ⭐ " + (it.price - S.stars.balance) + " more stars for the " + esc(it.name) + ". " + STAR_HELP); if (poor) poor(); return; }
+    modal('<div class="panel buy-card"><h2>' + it.icon + " Buy the " + esc(it.name) + "?</h2><p>Price: <b>⭐ " + it.price + "</b>. You have ⭐ " + S.stars.balance + " and will have <b>⭐ " + (S.stars.balance - it.price) + "</b> left. Once bought, it is yours to wear for free.</p>" + teachHTML(it) + '<button class="btn gold" id="b-buy-yes">Yes, buy it!</button><button class="btn alt" id="b-buy-no">Not now</button></div>');
+    on("b-buy-no", function () { closeModal(); done(false); });
+    on("b-buy-yes", function () { closeModal(); var ok = buy(it.key); if (ok) toast(it.icon + " You bought the " + esc(it.name) + "!" + (it.slot !== "pack" && it.art ? " You're wearing it now." : " It's in your pack.")); done(ok); });
+  }
+  function market(mid, say, cat) {
     closeModal();
     var ms = C.markets || [];
     var open = ms.filter(marketOpen);
-    if (!mid) mid = (marketTab && marketOpen(marketById(marketTab))) ? marketTab : (open.length ? open[open.length - 1].id : ms[0].id);
-    var m = marketById(mid); marketTab = mid;
+    if (!mid) mid = (marketTab && marketById(marketTab) && marketOpen(marketById(marketTab))) ? marketTab : (open.length ? open[open.length - 1].id : ms[0].id);
+    var m = marketById(mid); if (!m) { m = ms[0]; mid = m.id; } marketTab = mid; if (cat) marketCat = cat;
     var sIdx = C.sections.indexOf(sectionById(m.unlock)); setWorld(C.sections[sIdx].palette);
     var h = '<div class="panel market"><div class="mk-tabs">';
     ms.forEach(function (x) { var op = marketOpen(x); h += '<button class="mk-tab' + (x.id === mid ? " sel" : "") + (op ? "" : " locked") + '" data-mid="' + x.id + '">' + x.icon + " " + esc(x.name) + (op ? "" : " 🔒") + "</button>"; });
@@ -1148,40 +1233,59 @@
       h += "<h2>" + m.icon + " " + esc(m.name) + " 🔒</h2><p>This market opens when you reach <b>" + esc(C.sections[sIdx].title) + "</b> (Section " + (sIdx + 1) + ").</p></div>";
       show(h); wireTabs(); renderHero(); return;
     }
-    var k = m.keeper;
+    var k = m.keeper, goods = marketGoods(m);
     h += "<h2>" + m.icon + " " + esc(m.name) + "</h2><div class=\"mk-sub\">📍 " + esc(m.place) + " · " + esc(m.year) + '</div><div class="mk-scene">' + marketScene(m) +
       '<div class="mk-keeper">' + window.HeroArt.render(k.look) + '</div><div class="mk-bubble" id="mk-say"><b>' + esc(k.name) + "</b> <small>(" + esc(k.role) + ")</small><br>“" + esc(say || k.greet) + "”</div>" +
-      '<div class="mk-bal">⭐ <span id="mk-balance">' + S.stars.balance + "</span></div></div><p class=\"mk-blurb\">" + md(m.blurb) + "</p><div class=\"mk-items\">";
-    m.items.forEach(function (x) {
-      var have = own(x.key), can = S.stars.balance >= x.price, worn = S.equip[x.slot] === x.key;
-      h += '<div class="mk-item tier-' + x.tier + (have ? " owned" : "") + '" data-key="' + x.key + '"><div class="ic">' + x.icon + '</div><b>' + esc(x.name) + '</b><small class="tier">' + esc(x.tier) + " · " + (x.slot === "pack" ? "carried in pack" : "worn: " + SLOT_LABEL[x.slot]) + '</small><div class="price">⭐ ' + x.price + "</div>" +
-        '<div class="mk-btns"><button class="btn small alt" data-ask="' + x.key + '">💬 Ask about it</button>' + (x.art && !have ? '<button class="btn small" data-try="' + x.key + '">👀 Try on</button>' : "") +
+      '<div class="mk-bal">⭐ <span id="mk-balance">' + S.stars.balance + "</span></div></div><p class=\"mk-blurb\">" + md(m.blurb) + "</p>";
+    h += '<div class="mk-cats" role="tablist">' + CATS.map(function (c) { var n = goods.filter(function (it) { return it.cat === c[0]; }).length; return '<button class="mk-cat' + (c[0] === marketCat ? " sel" : "") + '" role="tab" data-cat="' + c[0] + '">' + c[1] + " <small>" + n + "</small></button>"; }).join("") + "</div><div class=\"mk-items\">";
+    if (marketCat === "hair") {
+      [["hair", "💇‍♀️", "Two braids (her own)"], ["haircolor", "🎨", "Her own hair color"]].forEach(function (f) {
+        var worn = !S.equip[f[0]];
+        h += '<div class="mk-item tier-basic owned"><div class="ic">' + f[1] + "</div><b>" + f[2] + '</b><small class="tier">her own look</small><div class="price">Free</div><div class="mk-btns"><button class="btn small gold" data-free="' + f[0] + '">' + (worn ? "✓ Wearing" : "Wear it") + "</button></div></div>";
+      });
+    }
+    goods.filter(function (it) { return it.cat === marketCat; }).forEach(function (x) {
+      var have = own(x.key), lk = have ? "" : itemLock(x), can = S.stars.balance >= x.price, worn = S.equip[x.slot] === x.key;
+      h += '<div class="mk-item tier-' + x.tier + (have ? " owned" : "") + (lk ? " locked" : "") + '" data-key="' + x.key + '"><div class="ic">' + (x.source === "haircolor" ? '<span class="swatch" style="background:' + x.color + '"></span>' : x.icon) + '</div><b>' + esc(x.name) + '</b><small class="tier">' + esc(x.tier === "earned" ? "earned reward" : x.tier) + " · " + (x.slot === "pack" ? "carried in pack" : "worn: " + SLOT_LABEL[x.slot]) + '</small><div class="price">⭐ ' + x.price + "</div>" +
+        (lk ? '<small class="lock">' + esc(lk) + "</small>" : "") +
+        '<div class="mk-btns"><button class="btn small alt" data-ask="' + x.key + '">💬 Ask</button>' + (x.art && x.slot !== "pack" && !have ? '<button class="btn small" data-try="' + x.key + '">👀 Try on</button>' : "") +
         (have ? (x.art && x.slot !== "pack" ? '<button class="btn small gold" data-wear="' + x.key + '">' + (worn ? "✓ Wearing" : "Wear it") + "</button>" : "") + '<span class="owned-tag">✓ Owned</span>'
+          : lk ? '<button class="btn small buy poor" data-buy="' + x.key + '" aria-disabled="true">🔒 Locked</button>'
           : '<button class="btn small gold buy' + (can ? "" : " poor") + '" data-buy="' + x.key + '" aria-disabled="' + (!can) + '">' + (can ? "Buy ⭐ " + x.price : "Need ⭐ " + (x.price - S.stars.balance) + " more") + "</button>") + "</div></div>";
     });
     h += '</div><p><button class="btn alt" id="b-char">🧍 My Character</button><button class="btn alt" id="b-map">🗺️ Leave the market</button></p></div>';
     show(h); wireTabs();
     function sayIt(t) { document.getElementById("mk-say").innerHTML = "<b>" + esc(k.name) + "</b> <small>(" + esc(k.role) + ")</small><br>“" + esc(t) + "”"; }
-    $all("[data-ask]", $screen).forEach(function (b) { b.onclick = function () { sayIt(ITEMS[b.getAttribute("data-ask")].fact); }; });
-    $all("[data-try]", $screen).forEach(function (b) { b.onclick = function () { var it = ITEMS[b.getAttribute("data-try")], eq = Object.assign({}, S.equip); eq[it.slot] = it.key; document.getElementById("hero").innerHTML = heroSVG({ equip: eq }); document.getElementById("gear-progress").innerHTML = "👀 Trying on: " + esc(it.name); }; });
-    $all("[data-wear]", $screen).forEach(function (b) { b.onclick = function () { var it = ITEMS[b.getAttribute("data-wear")]; S.equip[it.slot] = it.key; save(); market(mid, "That looks very fine on you!"); }; });
-    $all("[data-buy]", $screen).forEach(function (b) { b.onclick = function () {
-      var it = ITEMS[b.getAttribute("data-buy")];
-      if (S.stars.balance < it.price) { sayIt(k.poor); toast("You need ⭐ " + (it.price - S.stars.balance) + " more stars for the " + esc(it.name) + "."); return; }
-      modal('<div class="panel"><h2>' + it.icon + " Buy the " + esc(it.name) + "?</h2><p>Price: <b>⭐ " + it.price + "</b>. You have ⭐ " + S.stars.balance + " and will have <b>⭐ " + (S.stars.balance - it.price) + "</b> left.</p><p>" + esc(it.fact) + '</p><button class="btn gold" id="b-buy-yes">Yes, buy it!</button><button class="btn alt" id="b-buy-no">Not now</button></div>');
-      on("b-buy-no", closeModal);
-      on("b-buy-yes", function () { closeModal(); buy(it.key) ? (toast(it.icon + " You bought the " + esc(it.name) + "!" + (it.slot !== "pack" && it.art ? " It's on your hero now." : " It's in your pack.")), market(mid, k.thanks)) : market(mid, k.poor); });
-    }; });
+    function tryOn(it) { var eq = Object.assign({}, S.equip); eq[it.slot] = it.key; document.getElementById("hero").innerHTML = heroSVG({ equip: eq }); document.getElementById("gear-progress").innerHTML = "👀 Trying on: " + esc(it.name); }
+    function askCard(it) {
+      var have = own(it.key), lk = have ? "" : itemLock(it), can = S.stars.balance >= it.price;
+      modal('<div class="panel teach-card"><h2>' + it.icon + " " + esc(it.name) + '</h2><div class="price">⭐ ' + it.price + " · " + (it.slot === "pack" ? "carried in pack" : "worn: " + SLOT_LABEL[it.slot]) + "</div>" + teachHTML(it) + (lk ? '<p class="lock">' + esc(lk) + "</p>" : "") +
+        (it.art && it.slot !== "pack" && !have ? '<button class="btn" id="b-ask-try">👀 Try on</button>' : "") +
+        (have || lk ? "" : '<button class="btn gold" id="b-ask-buy">' + (can ? "Buy ⭐ " + it.price : "Need ⭐ " + (it.price - S.stars.balance) + " more") + "</button>") +
+        '<button class="btn alt" id="b-ask-close">Close</button></div>');
+      on("b-ask-close", closeModal); on("b-ask-try", function () { closeModal(); tryOn(it); });
+      on("b-ask-buy", function () { closeModal(); startBuy(it); });
+    }
+    function startBuy(it) { confirmBuy(it, function (ok) { market(mid, ok ? k.thanks : k.bye); }, function () { sayIt(k.poor + " " + STAR_HELP); }); }
+    $all("[data-cat]", $screen).forEach(function (b) { b.onclick = function () { market(mid, null, b.getAttribute("data-cat")); }; });
+    $all("[data-ask]", $screen).forEach(function (b) { b.onclick = function () { askCard(ITEMS[b.getAttribute("data-ask")]); }; });
+    $all("[data-try]", $screen).forEach(function (b) { b.onclick = function () { tryOn(ITEMS[b.getAttribute("data-try")]); }; });
+    $all("[data-wear]", $screen).forEach(function (b) { b.onclick = function () { var it = ITEMS[b.getAttribute("data-wear")]; if (!own(it.key)) return; S.equip[it.slot] = it.key; save(); market(mid, "That looks very fine on you!"); }; });
+    $all("[data-free]", $screen).forEach(function (b) { b.onclick = function () { delete S.equip[b.getAttribute("data-free")]; save(); market(mid, "Your own look suits you well."); }; });
+    $all("[data-buy]", $screen).forEach(function (b) { b.onclick = function () { startBuy(ITEMS[b.getAttribute("data-buy")]); }; });
     on("b-char", character); on("b-map", function () { toast("“" + esc(k.bye) + "”"); home(); });
     renderHero();
   }
   function wireTabs() { $all(".mk-tab", $screen).forEach(function (b) { b.onclick = function () { market(b.getAttribute("data-mid")); }; }); }
+  /* v2.9: every look change is bought: market goods (market open), earned gear (milestone reached), badge dyes
+     (badge earned), hair colors (any open market). Idempotent: an owned item is never charged twice. */
   function buy(key) {
     var it = ITEMS[key]; if (!it || !it.price || own(key)) return false;
-    var m = marketById(it.market); if (!m || !marketOpen(m)) return false;
+    if (itemLock(it)) return false;
+    var m = it.anyMarket ? marketById(marketTab) || (C.markets || [])[0] : marketById(it.market); if (!m || !marketOpen(m)) return false;
     if (!spendStars(it.price)) return false;
     grantItem(key, true);
-    S.purchases.push({ key: key, name: it.name, price: it.price, market: it.market, at: now() });
+    S.purchases.push({ key: key, name: it.name, price: it.price, market: m.id, at: now() });
     save(); renderHero(); return true;
   }
   /* ---------------- parent report ---------------- */
@@ -1259,9 +1363,9 @@
     L.push("MARKETPLACE PURCHASES: " + (S.purchases.length ? "" : "none yet"));
     S.purchases.forEach(function (x) { var m = marketById(x.market); L.push(" - " + x.name + " (" + x.price + " stars) at " + (m ? m.name : x.market) + ", " + fmtDate(x.at)); });
     L.push("");
-    L.push("UPGRADES EARNED: " + S.gear.length + " gear, " + S.badges.length + " badges");
+    L.push("UPGRADES: " + gearUnlockedN() + " gear unlocked, " + S.owned.length + " items owned, " + S.badges.length + " badges");
     if (S.badges.length) L.push(" Badges: " + S.badges.map(function (b) { return b.icon + " " + b.name; }).join(", "));
-    if (S.gear.length) L.push(" Gear: " + S.gear.map(function (g) { return g.icon + " " + g.name; }).join(", "));
+    if (S.owned.length) L.push(" Owned: " + S.owned.map(function (k) { var it = ITEMS[k]; return it ? it.icon + " " + it.name : k; }).join(", "));
     return L.join("\n");
   }
   /* ---------------- email report to Dad (v2.4): a mailto built only from the existing save; nothing new is stored ---------------- */
@@ -1287,12 +1391,12 @@
       sec.forEach(function (x) { var t = lv > 1 ? x.id.toUpperCase() : lv ? (MAIL_SHORT[x.id] || x.t) : x.t;   // shorter names if the link is long
         L.push(x.n + ". " + t + ": " + x.st + (x.att || x.acc[1] ? ", " + x.acc[2] + "%, best trial " + x.best + "%, tries " + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", review left " + x.rq : "")); });
       L.push("Grand Trial: " + (F.passed ? "PASSED" : (allDone() ? "unlocked" : "locked")) + ", tries " + F.attempts + ", best " + F.bestPct + "%");
-      L.push("Stars " + S.stars.balance + " (earned " + S.stars.earned + "), gear " + S.gear.length + ", badges " + S.badges.length);
+      L.push("Stars " + S.stars.balance + " (earned " + S.stars.earned + "), items " + S.owned.length + ", badges " + S.badges.length);
       L.push("Mastered topics: " + (mt.length ? mt.join("; ") : (mastered.length ? "" : "none yet")) + (mt.length < mastered.length ? (mt.length ? " " : "") + "(+" + (mastered.length - mt.length) + " more)" : ""));
       L.push("Weak areas: " + (wk.length ? wk.join("; ") : (weak.length ? "" : "none")) + (wk.length < weak.length ? (wk.length ? " " : "") + "(+" + (weak.length - wk.length) + " more)" : ""));
       L.push("Review queue: " + rq + "; missed 2+ times: " + rep + ". Time played: not tracked.");
       var J = { v: (window.ABRPG && window.ABRPG.version) || "", ov: [S.totalCorrect, S.totalAnswered], goal: C.passPercent,
-        sec: sec.map(function (x) { return [x.n, x.st.charAt(0).toUpperCase(), x.acc[2], x.best, x.att, x.gear[0], x.rq]; }), gt: [F.passed ? 1 : 0, F.attempts, F.bestPct], st: [S.stars.balance, S.stars.earned], gear: S.gear.length, mt: mastered.length, weak: weak.length, rq: rq };
+        sec: sec.map(function (x) { return [x.n, x.st.charAt(0).toUpperCase(), x.acc[2], x.best, x.att, x.gear[0], x.rq]; }), gt: [F.passed ? 1 : 0, F.attempts, F.bestPct], st: [S.stars.balance, S.stars.earned], gear: S.owned.length, mt: mastered.length, weak: weak.length, rq: rq };
       var text = L.join("\n") + "\n\nREPORT-JSON-START\n" + JSON.stringify(J) + "\nREPORT-JSON-END\n";
       var subject = "American Beginnings report – " + label + " – " + day;
       return { to: REPORT_TO, subject: subject, text: text, url: "mailto:" + REPORT_TO + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text) };
@@ -1364,7 +1468,7 @@
   on("btn-report", report);
   document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
   document.getElementById("game-version").textContent = GAME_VERSION;
-  window.ABRPG = { version: GAME_VERSION, mailReport: mailParts, reportTo: REPORT_TO, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY,
+  window.ABRPG = { version: GAME_VERSION, mailReport: mailParts, reportTo: REPORT_TO, norm: norm, checkTyped: checkTyped, state: function () { return S; }, passNeed: passNeed, items: ITEMS, migrate: migrate, buy: buy, market: market, character: character, itemLock: itemLock, confirmBuy: confirmBuy, gearUnlockedModal: gearUnlockedModal, study: study, marketGoods: marketGoods, runActivity: runActivity, home: home, lesson: lesson, sourceQuiz: sourceQuiz, finalIntro: finalIntro, geoXY: geoXY,
     /* v2.2 bridge for the walkable world (world.js). None of these add fields to the progress save. */
     enterSection: enterSection, sectionIntro: sectionIntro, startTrial: startTrial, nextQuestion: nextQuestion, nextReview: nextReview, sectionById: sectionById, toast: toast, closeModal: closeModal, renderHero: renderHero, save: save,
     touchSection: function (sid) { var st = sec(sid), ch = false; if (!st.startedAt) { st.startedAt = now(); ch = true; } if (!(S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) && !(S.run && S.run.sid === sid && S.run.phase === "lessons")) { S.run = { sid: sid, phase: "lessons" }; ch = true; } if (ch) save(); },

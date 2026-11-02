@@ -196,7 +196,7 @@ function kivaCard() { return { title: "🪜 A kiva, seen from outside", body: "<
 function moundCard() { return { title: "⛰️ A Mississippian platform mound", body: "<p>Mississippian people built huge flat-topped mounds out of earth, carried up basket by basket. A temple or a leader’s house stood on top, looking over a big open plaza.</p><p>The greatest mound city was <b>Cahokia</b>, near present-day St. Louis. At its peak (about 1100) it was the <b>largest city north of Mexico</b>. Its biggest mound, Monks Mound, is about 100 feet tall.</p><p>Cahokia was empty long before Europeans came, but when Spanish explorers arrived in the 1500s, many towns in the Southeast still had mounds and plazas.</p>" }; }
 function chunkeyCard() { return { title: "🥏 The chunkey yard", body: "<p><b>Chunkey</b> was a favorite game in Mississippian towns. One player rolled a smooth stone disc across the yard. Players threw long poles at the spot where they thought the stone would stop, and the closest pole won.</p><p>Crowds came to watch, and chunkey stones have been found at Cahokia. People across the Southeast kept playing for hundreds of years.</p>" }; }
 function helpCardS2() {
-  card({ title: "❔ How to explore the Native Nations", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the homelands of Native nations of North America, about 1000 to the 1500s. In real life these regions are hundreds or thousands of miles apart. Here they sit around one council fire so you can walk to each, but the directions are true: <b>north is ahead</b> when you start, so <b>west is on your left</b>, just like on a map. The painted compass by the fire shows it.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch). <b>Look:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, gray rings are locked.</li><li>The banner at the top points to the nearest marker you still need. The Elders’ Trial is at the <b>tree-ring meeting ground</b> once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
+  card({ title: "❔ How to explore the Native Nations", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the homelands of Native nations of North America, about 1000 to the 1500s. In real life these regions are hundreds or thousands of miles apart. Here they sit around one council fire so you can walk to each, but the directions are true: <b>north is ahead</b> when you start, so <b>west is on your left</b>, just like on a map. The painted compass by the fire shows it.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch). <b>Look:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, gray rings are locked.</li><li>The banner at the top points to the nearest marker you still need. The Elders’ Trial is at the <b>tree-ring meeting ground</b> once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
   W.seen.help2 = true; saveW();
 }
 
@@ -262,7 +262,7 @@ function exchangeCard() {
   return { title: "🔄 Columbian Exchange: load the ships", body, btns: [{ t: "📦 " + (played ? "Carry the crates again" : "Carry the crates"), f: () => { closeCard(); sortStart("s3", "s3-exchange"); } }, { t: "🗂️ Card version", f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s3", "s3-exchange", resume)); } }] };
 }
 function helpCardS3() {
-  card({ title: "❔ How to sail the Voyage of 1492", body: "<p>You are <b>" + esc(heroName()) + "</b>, in the port of <b>Palos, Spain</b>, in 1492. Columbus’s voyage took courage, skill and the daring of ordinary sailors. It opened the Atlantic, and more than a century later that ocean road carried English settlers to the colonies where <b>American self-government</b> took root. A good historian admires the courage and tells the whole truth, including what it cost the Taíno.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch). <b>Look:</b> drag on the world. <b>North is ahead</b> when you start, so <b>west is on your left</b>.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Explore Palos, then board at the <b>pier</b> (⛵ ring). The sail rings carry you to the Canaries, San Salvador and Hispaniola. The ocean is shrunk so you can cross it in a moment.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, gray rings are locked. The banner points to your next marker.</li><li>The Trial, the storm on the way home, waits by the Niña at Hispaniola once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
+  card({ title: "❔ How to sail the Voyage of 1492", body: "<p>You are <b>" + esc(heroName()) + "</b>, in the port of <b>Palos, Spain</b>, in 1492. Columbus’s voyage took courage, skill and the daring of ordinary sailors. It opened the Atlantic, and more than a century later that ocean road carried English settlers to the colonies where <b>American self-government</b> took root. A good historian admires the courage and tells the whole truth, including what it cost the Taíno.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch). <b>Look:</b> drag on the world. <b>North is ahead</b> when you start, so <b>west is on your left</b>.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap ✋.</li><li>Explore Palos, then board at the <b>pier</b> (⛵ ring). The sail rings carry you to the Canaries, San Salvador and Hispaniola. The ocean is shrunk so you can cross it in a moment.</li><li>Gold rings are new, blue rings are done, pale-gold rings have 3 ⭐, gray rings are locked. The banner points to your next marker.</li><li>The Trial, the storm on the way home, waits by the Niña at Hispaniola once you have read all 7 scrolls.</li><li>The 🗂️ chip at the top switches to the classic screens any time. Your progress is the same in both.</li></ul>" });
   W.seen.help3 = true; saveW();
 }
 // Level 3 banner: the next unfinished marker on the island she is on; when that island is done, the sail ring for the
@@ -336,7 +336,7 @@ function goalsCard() {
   return { title: "⚖️ What did each empire want?", body, btns: [{ t: "📦 " + (played ? "Carry the crates again" : "Carry the crates"), f: () => { closeCard(); sortStart("s4", "s4-goals"); } }, { t: "🗂️ Card version", f: () => { closeCard(); openPanel(() => window.ABRPG.runActivity("s4", "s4-goals", resume)); } }] };
 }
 function helpCardS4() {
-  card({ title: "❔ How to explore the Three Empires", body: "<p>You are <b>" + esc(heroName()) + "</b>, exploring North America around <b>1610</b>, when three European empires were planting colonies. <b>Spain</b> wanted gold, converts and a guard for its treasure fleets; <b>France</b> wanted furs; the <b>Dutch</b> wanted trade. Each one met Native nations who had lived here for thousands of years. Soon the English would arrive too, and their colonies would grow the <b>self-government</b> that became America (that’s the next level!).</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these places are hundreds or thousands of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start in St. Augustine, so <b>west is on your left</b>.</li><li>Cross the <b>St. Lawrence</b> by canoe at the landing. Read all <b>7 scrolls</b> to open the <b>palisade gate</b> for the Trial.</li></ul>" });
+  card({ title: "❔ How to explore the Three Empires", body: "<p>You are <b>" + esc(heroName()) + "</b>, exploring North America around <b>1610</b>, when three European empires were planting colonies. <b>Spain</b> wanted gold, converts and a guard for its treasure fleets; <b>France</b> wanted furs; the <b>Dutch</b> wanted trade. Each one met Native nations who had lived here for thousands of years. Soon the English would arrive too, and their colonies would grow the <b>self-government</b> that became America (that’s the next level!).</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these places are hundreds or thousands of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start in St. Augustine, so <b>west is on your left</b>.</li><li>Cross the <b>St. Lawrence</b> by canoe at the landing. Read all <b>7 scrolls</b> to open the <b>palisade gate</b> for the Trial.</li></ul>" });
   W.seen.help4 = true; saveW();
 }
 // Level 4 banner: the unfinished marker in the station she stands in, else the lowest-numbered station with work left
@@ -406,7 +406,7 @@ function coloniesCard() { return { title: "⚖️ Two colonies, two beginnings",
 function wampanoagCard() { return { title: "🏠 The Wampanoag, People of the First Light", body: "<p>The <b>Wampanoag</b>, “People of the First Light,” had lived in what is now southeastern Massachusetts and Rhode Island for thousands of years. They lived in domed houses called <b>wetus</b>, covered with bark or woven mats, and moved between summer fields by the coast and sheltered winter homes inland.</p><p>Their great sachem (leader) <b>Ousamequin</b>, known as <b>Massasoit</b>, visited Plymouth in <b>March 1621</b>. He and Governor <b>John Carver</b> agreed to a treaty of peace and to help defend each other. It lasted more than 50 years.</p><p>In the fall of 1621, about 90 Wampanoag men came to the Pilgrims’ harvest celebration and brought five deer. The Wampanoag Nation lives in Massachusetts today, including the Mashpee and Aquinnah tribes.</p>" }; }
 function cornhillsCard() { return { title: "🌱 The Three Sisters: corn, beans and squash", body: "<p>Native farmers planted <b>corn, beans and squash</b> together in low hills, the “Three Sisters.” The tall corn gives the beans a pole to climb, the beans help keep the soil rich, and the big squash leaves shade out weeds and hold in water.</p><p>In the spring of 1621, <b>Tisquantum (Squanto)</b> showed the Pilgrims how to plant corn in hills and put fish in each hill to feed the soil. He spoke English because, years before, he had been kidnapped and taken to Europe. When he came home, he found his Patuxet people gone. He chose to help the newcomers, and William Bradford called him “a special instrument sent of God.”</p>" }; }
 function helpCardS5() {
-  card({ title: "❔ How to explore Jamestown and Plymouth", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the first lasting English colonies in America. You will see the Lost Colony of <b>Roanoke</b> (1587), <b>James Fort</b> in Virginia (1607) and <b>Plymouth</b> in New England (1620). Here Americans first learned to <b>govern themselves</b>: the General Assembly of 1619 and the Mayflower Compact of 1620.</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life Virginia and New England are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start on Roanoke Island, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Sail across the <b>James River</b> at the landing. Read all <b>10 scrolls</b> to open the <b>fort-meetinghouse</b> for the Trial.</li></ul>" });
+  card({ title: "❔ How to explore Jamestown and Plymouth", body: "<p>You are <b>" + esc(heroName()) + "</b>, visiting the first lasting English colonies in America. You will see the Lost Colony of <b>Roanoke</b> (1587), <b>James Fort</b> in Virginia (1607) and <b>Plymouth</b> in New England (1620). Here Americans first learned to <b>govern themselves</b>: the General Assembly of 1619 and the Mayflower Compact of 1620.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life Virginia and New England are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start on Roanoke Island, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Sail across the <b>James River</b> at the landing. Read all <b>10 scrolls</b> to open the <b>fort-meetinghouse</b> for the Trial.</li></ul>" });
   W.seen.help5 = true; saveW();
 }
 // Level 5 banner: like Level 4 (the station she stands in, else the lowest-numbered station with work left); across the James
@@ -462,7 +462,7 @@ function hornbookCard() { return { title: "📜 School and the hornbook", body: 
 function townmeetingCard() { return { title: "🗳️ The New England town meeting", body: "<p>In New England towns, the voters gathered in the meetinghouse at a <b>town meeting</b>. They chose their own officers, set local taxes, and decided about roads, schools and the town’s minister, all by open debate and a vote.</p><p>Boston held its town meetings here, and in the <b>Town House</b> built in <b>1713</b> (today’s Old State House) the Massachusetts assembly met upstairs. Boston’s <b>Long Wharf</b> ran far out into the harbor, and its ships carried <b>cod</b>, lumber, ships and rum around the Atlantic world.</p><p>Thomas Jefferson later called town meetings “the wisest invention ever devised by the wit of man for the perfect exercise of self-government.”</p>" }; }
 function joinordieCard() { return { title: "🐍 “JOIN, or DIE.” Albany, 1754", body: "<p>By <b>1754</b> Britain and France were close to war over the Ohio Valley. On <b>May 9, 1754</b>, Benjamin Franklin printed America’s first famous political cartoon in his <b>Pennsylvania Gazette</b>: a snake cut into pieces labeled with the colonies, and the words <b>“JOIN, or DIE.”</b></p><p>That summer, delegates from <b>seven colonies</b> met here in <b>Albany</b> with leaders of the <b>Haudenosaunee</b> (Iroquois) Confederacy, the Six Nations, including the Mohawk leader <b>Hendrick Theyanoguin</b>. Franklin proposed the <b>Albany Plan of Union</b>: one council of delegates from all the colonies to handle defense and Native relations.</p><p>No colony accepted it. They were not yet ready to give up any of their own power. But the idea of the colonies <b>uniting</b> had been planted, and twenty-two years later it grew into the United States.</p>" }; }
 function helpCardS6() {
-  card({ title: "❔ How to explore the Thirteen Colonies", body: "<p>You are <b>" + esc(heroName()) + "</b>, traveling through the <b>Thirteen Colonies</b> in the 1740s and 1750s, from the rice fields of <b>Charles Town</b> to Williamsburg, Philadelphia and Boston, and on to <b>Albany</b> in 1754. You will see how the colonists worked, worshiped, learned and <b>governed themselves</b>.</p><ul><li><b>Walk</b> with the arrow keys or WASD (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these towns are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start at Charles Town, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Follow the road north through markers 1 to 7. Read all <b>9 scrolls</b> to open the <b>Stadt Huys</b> at Albany for the Trial.</li></ul>" });
+  card({ title: "❔ How to explore the Thirteen Colonies", body: "<p>You are <b>" + esc(heroName()) + "</b>, traveling through the <b>Thirteen Colonies</b> in the 1740s and 1750s, from the rice fields of <b>Charles Town</b> to Williamsburg, Philadelphia and Boston, and on to <b>Albany</b> in 1754. You will see how the colonists worked, worshiped, learned and <b>governed themselves</b>.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these towns are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start at Charles Town, so <b>west is on your left</b> and the Atlantic (east) is on your right.</li><li>Follow the road north through markers 1 to 7. Read all <b>9 scrolls</b> to open the <b>Stadt Huys</b> at Albany for the Trial.</li></ul>" });
   W.seen.help6 = true; saveW();
 }
 // Level 6 banner: like Level 5 without the river crossing (the station she stands in, else the lowest-numbered station
@@ -653,7 +653,7 @@ const actBtn = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() 
 function tracksCard() { const n = W.season.tracks.length; return { title: "🦌 The caribou trail", body: "<p>Herds of caribou walk this trail with the seasons, and hunters followed them. Look on the ground near this trail: can you find <b>3 sets of caribou tracks</b>?</p><p><b>Found: " + n + " of 3</b>" + (n >= 3 ? " — great tracking! Following herds is how Ice Age hunters lived." : "") + "</p><p><small>This is an exploring game (no stars). Walk over a set of tracks to find it.</small></p>" }; }
 function gateCard() {
   if (hasCloak()) return { title: "🧥 The glacier pass is open", body: "<p>Your <b>Fur Cloak</b> keeps out the icy wind. Walk through the pole gate and follow the path between the ice sheets.</p>" };
-  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Earn it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river’s stepping stones.</p>", btns: [actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
+  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Unlock it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>, then trade ⭐ stars for it at the camp trade circle. Earn answers and stars: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river’s stepping stones.</p>", btns: [{ t: "🛍️ Trade for the Fur Cloak", f: () => { closeCard(); openPanel(() => { L.inMarket = true; window.ABRPG.market("m0"); }); } }, actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
 }
 function signCard() { return { title: "🧭 Two ideas scientists are still testing", body: "<p><b>Ice-free corridor:</b> as the great ice sheets melted, a gap may have opened between them, and people walked south through it. That is the path you are walking now.</p><p><b>Coastal route:</b> people may have traveled south by boat along the Pacific shore, where fish, shellfish, and seals gave them food.</p><p><b>Monte Verde</b>, an early site in southern Chile dated to about <b>14,500 years ago</b>, is widely accepted by archaeologists as older than Clovis. People that far south so early make many scientists think the coast may have come first.</p><p>Both routes are still <b>theories</b> based on evidence. Scientists keep testing them with new finds, and people may have used both.</p>" }; }
 function journeyCard() {
@@ -674,7 +674,7 @@ function ui() {
     '<button id="w-prompt" hidden></button>' +
     '<div id="w-joy" aria-hidden="true"><div id="w-knob"></div></div><button id="w-use" aria-label="Use">✋ Use</button>' +
     '<div id="w-tools"><button id="gfx-mode" class="chip" title="Graphics: Auto / High / Low">✨ Auto</button><button id="w-help" class="chip" title="How to play">❔ Help</button></div>' +
-    '<div id="w-keys">WASD / arrow keys to walk · drag to look · <b>E</b> to use</div>';
+    '<div id="w-keys">W forward · Z back · A left · S right (or arrows) to walk · drag to look · <b>E</b> to use</div>';
   document.body.appendChild(h);
   const c = document.createElement("div"); c.id = "w-card"; c.hidden = true; document.body.appendChild(c);
   const f = document.createElement("div"); f.id = "w-fade"; document.body.appendChild(f);
@@ -686,7 +686,7 @@ function ui() {
   syncChips();
 }
 const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> WASD or arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 // v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
 function layoutHud() {
@@ -839,7 +839,7 @@ function gearArt() {
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
   const ok = L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
-  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
+  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && (ok.includes(i.section) || i.allEras) && i.art) out.push({ art: i.art, color: i.color, top: i.top, skirt: i.skirt }); }   // v2.9: dyes + hair colors in every era
   return out;
 }
 function buildHero() {
@@ -966,7 +966,8 @@ function inWater(x, z) { const B = L.mods.B; return L.sid === "s1" && L.zone ===
 
 // ---- input ----
 const keys = new Set();
-const KEYMAP = { KeyW: "f", ArrowUp: "f", KeyS: "b", ArrowDown: "b", KeyA: "l", ArrowLeft: "l", KeyD: "r", ArrowRight: "r" };
+// v2.8.1 (John): W forward, Z back, A left, S right, all relative to the camera; arrows still work. D no longer moves.
+const KEYMAP = { KeyW: "f", ArrowUp: "f", KeyZ: "b", ArrowDown: "b", KeyA: "l", ArrowLeft: "l", KeyS: "r", ArrowRight: "r" };
 window.addEventListener("keydown", e => {
   if (L.phase === "panel" && e.key === "Escape" && document.getElementById("modal").classList.contains("hidden")) { resume(); return; }
   if (L.phase !== "active") return;
@@ -1058,36 +1059,53 @@ const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
 // v2.3: camera collision. The camera eases toward its spot behind her, then a short march from her head toward the
 // camera pulls it in front of anything solid it would pass through (ice walls, the gate cross-pole and flags, poles,
 // tents, the cave hill, the ground), so it never ends up inside geometry.
-function camBlocked(x, y, z) {
+// v2.8.1 (John: "the camera gets glitchy near a tree or building"): pad > 0 inflates every hard shape (a sphere cast
+// along the ray). Tree canopies (raised round occluders, o.soft) no longer pull the camera: brushing past leaves used to
+// snap it in and out every few frames. The camera may pass through foliage (back faces are culled, so it just slips by).
+function camBlocked(x, y, z, pad = 0) {
   const B = L.mods.B;
-  if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 || y > 4.2;
+  if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 - pad || y > 4.2 - pad;
   if (y < B.groundH(x, z) + 0.35) return true;
   if (L.sid === "s1") {
-    if (z > B.BOUNDS.iceZ - 0.35 && (x < B.BOUNDS.cx0 + 0.5 || x > B.BOUNDS.cx1 - 0.5)) return true;
-    if (z > 189.8) return true;
+    if (z > B.BOUNDS.iceZ - 0.35 - pad && (x < B.BOUNDS.cx0 + 0.5 + pad || x > B.BOUNDS.cx1 - 0.5 - pad)) return true;
+    if (z > 189.8 - pad) return true;
   }
   for (const o of L.lvl.camOcc || []) {
-    if (y <= o.y0 || y >= o.y1) continue;
-    if (o.arc) { const d = Math.hypot(x - o.x, z - o.z); if (Math.abs(d - o.r) < o.w && Math.abs(wrapA(Math.atan2(z - o.z, x - o.x) - o.gapA)) > o.gapHalf) return true; continue; }
-    if (o.r ? Math.hypot(x - o.x, z - o.z) < o.r : (Math.abs(x - o.x) < o.hx && Math.abs(z - o.z) < o.hz)) return true;
+    if (o.soft === undefined) o.soft = !!(o.r && !o.arc && o.y0 > -4.5 && o.r >= 1.0);   // tree canopies (and the decorated tree ring)
+    if (o.soft || y <= o.y0 - pad || y >= o.y1 + pad) continue;
+    if (o.arc) { const d = Math.hypot(x - o.x, z - o.z); if (Math.abs(d - o.r) < o.w + pad && Math.abs(wrapA(Math.atan2(z - o.z, x - o.x) - o.gapA)) > o.gapHalf) return true; continue; }
+    if (o.r ? Math.hypot(x - o.x, z - o.z) < o.r + pad : (Math.abs(x - o.x) < o.hx + pad && Math.abs(z - o.z) < o.hz + pad)) return true;
   }
   return false;
 }
 const LOOK_UP = 2.0;
+const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10;   // m/s: fastest pull-in
 function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
   const cp = new THREE.Vector3(tgt.x - Math.sin(yaw) * Math.cos(pitch) * dist, tgt.y + Math.sin(pitch) * dist, tgt.z - Math.cos(yaw) * Math.cos(pitch) * dist);
   if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (L.sid === "s1" && cp.z > B.BOUNDS.iceZ - 0.5 && L.pos.z > B.BOUNDS.iceZ - 2) { cp.x = Math.max(B.BOUNDS.cx0 + 0.6, Math.min(B.BOUNDS.cx1 - 0.6, cp.x)); cp.z = Math.min(189.4, cp.z); } }
   else cp.y = Math.min(cp.y, 4.0);
-  if (snap || !L.camPos) L.camPos = cp.clone(); else L.camPos.lerp(cp, Math.min(1, dt * 8));
-  // march from her head to the camera; stop 0.3 m before the first solid point
-  const dx = L.camPos.x - tgt.x, dy = L.camPos.y - tgt.y, dz = L.camPos.z - tgt.z, len = Math.hypot(dx, dy, dz) || 1;
-  L.camPulled = false;
-  for (let t = 0.4; t <= len + 0.001; t += 0.2) {
-    if (camBlocked(tgt.x + dx / len * t, tgt.y + dy / len * t, tgt.z + dz / len * t)) { const k = Math.max(0.9, t - 0.3) / len; L.camPos.set(tgt.x + dx * k, tgt.y + dy * k, tgt.z + dz * k); L.camPulled = true; break; }
+  // v2.8.1: the ideal spot (L.camIdeal) eases as before, but the collision pull-in no longer writes into it. Before, the
+  // pulled spot was the next frame's starting point, the march found hits only in 0.2 m steps and canopies counted as
+  // walls, so the camera pumped in and out (and the view tilted with it) whenever she walked near trees or houses.
+  if (snap || !L.camIdeal) L.camIdeal = cp.clone(); else L.camIdeal.lerp(cp, Math.min(1, dt * 8));
+  const dx = L.camIdeal.x - tgt.x, dy = L.camIdeal.y - tgt.y, dz = L.camIdeal.z - tgt.z, len = Math.hypot(dx, dy, dz) || 1, ux = dx / len, uy = dy / len, uz = dz / len;
+  // sphere cast: march with padded shapes, then refine the first hit by bisection (a smooth, not stepped, distance)
+  let allow = len;
+  for (let t = 0.4; t <= len + 0.001; t += 0.25) {
+    if (camBlocked(tgt.x + ux * t, tgt.y + uy * t, tgt.z + uz * t, CAM_PAD)) { let lo = Math.max(0, t - 0.25), hi = t; for (let i = 0; i < 5; i++) { const m = (lo + hi) / 2; if (camBlocked(tgt.x + ux * m, tgt.y + uy * m, tgt.z + uz * m, CAM_PAD)) hi = m; else lo = m; } allow = lo; break; }
   }
-  L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, len / 7), tgt.z);   // aim a little above her head: more of the land ahead and tall landmarks stay in frame
+  allow = Math.max(CAM_MIN, Math.min(len, allow)); L.camAllow = allow;
+  // damped distance: fast pull-in, slow ease-out after a short hold (hysteresis: no in/out flutter)
+  if (snap || L.camD == null) { L.camD = allow; L.camHold = 0; }
+  else if (allow < L.camD) { const gap = L.camD - allow; L.camD -= Math.min(gap, Math.min(CAM_IN_MAX, 3 + gap * 14) * dt); L.camHold = 0.35; }   // quick but never a one-frame snap (a moment inside a wall looks through it: back faces are culled)
+  else if (allow > L.camD + 0.15) { L.camHold = Math.max(0, (L.camHold || 0) - dt); if (L.camHold <= 0) L.camD += (allow - L.camD) * Math.min(1, dt * 2.2); }
+  L.camD = Math.max(CAM_MIN, Math.min(len, L.camD));
+  L.camPulled = L.camD < len - 0.05;
+  if (!L.camPos) L.camPos = new THREE.Vector3();
+  L.camPos.set(tgt.x + ux * L.camD, tgt.y + uy * L.camD, tgt.z + uz * L.camD);
+  L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, L.camD / 7), tgt.z);   // aim a little above her head (eases with the smoothed distance, so no tilt jumps)
 }
 function step(dt, raw) {
   const B = L.mods.B;
@@ -1116,7 +1134,7 @@ function step(dt, raw) {
   L.manualT = Math.max(0, (L.manualT || 0) - dt);
   const th = L.th.step(L.pos.x, L.pos.z, dt, L.camYaw);
   // never swing the camera round when she walks back toward it (backing up keeps the view steady)
-  // v2.3: only while she is mostly walking forward. Strafing (A / D alone) used to drag the camera after her sideways
+  // v2.3: only while she is mostly walking forward. Strafing (A / S alone since v2.8.1; was A / D) used to drag the camera after her sideways
   // travel, so she walked in a circle round it; now sideways steps keep the view still.
   if (L.manualT <= 0 && L.vel > 0.8 && sf > 0.25 && Math.abs(sx) < sf * 0.75 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
@@ -1141,7 +1159,7 @@ function step(dt, raw) {
   if (tg) {
     const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
     document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
-    const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
+    const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Get your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
     const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) { el.textContent = txt; const ob = el.parentNode, era = document.getElementById("w-era"); if (era) era.style.top = (ob.offsetTop + ob.offsetHeight + 4) + "px"; }
   }
   L.saveT -= dt; if (L.saveT <= 0) { L.saveT = 2; saveWorldPos(); }

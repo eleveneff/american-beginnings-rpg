@@ -28,12 +28,12 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  { const gv = await p.$eval('#game-version', e => e.textContent); assert(/^v2\.(8|9|\d\d)/.test(gv) && (await p.evaluate(() => ABRPG.version)) === gv, 'version marker v2.8+ (' + gv + ')'); }
+  { const gv = await p.$eval('#game-version', e => e.textContent); assert(/^v(2\.(8|9|\d\d)|3\.\d)/.test(gv) && (await p.evaluate(() => ABRPG.version)) === gv, 'version marker v2.8+ (' + gv + ')'); }
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
   assert(w.mode === 'walk' && w.phase === 'off' && !w.failed, 'WebGL2 device defaults to walk mode; home map stays the 2D map');
-  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v2\.8/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v2.8" banner shows on the map (non-blocking)');
+  assert(!(await p.$eval('#w-banner', e => e.hidden)) && /New in v3\.0/.test(await p.$eval('#w-banner', e => e.textContent)), '"New in v3.0" banner shows on the map (non-blocking)');
 
   console.log('enter Beringia + movement:');
   const before = await p.evaluate(k => localStorage.getItem(k), KEY);

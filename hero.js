@@ -209,6 +209,9 @@
     for (var i = 0; i < 6; i++) qz += L("M" + (126 + i * 10) + ",262 L" + (110 + i * 16) + "," + (hem - 4), sh(k, 30), 1, 'opacity=".8"') + L("M" + (174 - i * 10) + ",262 L" + (190 - i * 16) + "," + (hem - 4), sh(k, 30), 1, 'opacity=".8"');
     return skirtP(t, hem) + P("M132,250 Q122,340 112," + (hem + 4) + " L188," + (hem + 4) + " Q178,340 168,250Z", k) + qz + folds(sh(t, -30), hem).replace("M150,266 L150," + (hem + 6), "") + bodice(t) +
       P("M134,150 L166,150 L154,252 L146,252Z", "#e8d18a") + L("M138,168 L162,168 M140,188 L160,188 M142,208 L158,208 M144,228 L156,228", "#b3261e", 1.8) + P("M122,146 Q150,162 178,146 Q164,140 150,150 Q136,140 122,146Z", "#fbf8f0"); };
+  /* v3.0: frontier short gown: a loose jacket to the hips over a wool petticoat */
+  DRESS["short-gown"] = function (d) { var t = d.top || d.color, k = d.skirt || "#3a4a6a", hem = 440;
+    return skirtP(k, hem) + folds(sh(k, -30), hem) + bodice(t) + P("M110,246 Q150,258 190,246 L198,302 Q150,314 102,302Z", t) + L("M150,154 L150,306", sh(t, -40), 1.6) + L("M106,280 Q150,292 194,280", sh(t, -25), 1.2, 'opacity=".6"') + P("M122,146 Q150,162 178,146 Q164,140 150,150 Q136,140 122,146Z", "#fbf8f0"); };
   DRESS["plain-gown"] = function (d) { var c = d.color, hem = 438;
     return skirtP(c, hem) + folds(sh(c, -25), hem) + bodice(c) + L("M150,156 L150,250", sh(c, -30), 1.4) + P("M114,146 Q150,138 186,146 L196,170 Q150,202 104,170Z", "#fbf8f0") + L("M150,160 L150,190", "#e0d8c8", 1.4); };
   /* NECK */

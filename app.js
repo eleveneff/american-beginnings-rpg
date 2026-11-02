@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v2.9";
+  var GAME_VERSION = "v3.0";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -154,7 +154,9 @@
     var prev = S.sections[C.sections[i - 1].id];
     return !!(prev && prev.completed);
   }
-  function allDone() { return C.sections.every(function (s) { return S.sections[s.id] && S.sections[s.id].completed; }); }
+  /* v3.0: Levels 7+ are Unit 2 (unit: 2). The Grand Trial covers Unit 1 (Levels 1 to 6) only, so it opens as before. */
+  function unit1() { return C.sections.filter(function (s) { return !s.unit || s.unit === 1; }); }
+  function allDone() { return unit1().every(function (s) { return S.sections[s.id] && S.sections[s.id].completed; }); }
 
   /* ---------------- stars economy ---------------- */
   var SRC_LABEL = { gear: "Gear milestones (every 5 correct)", question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)", skill: "Map & timeline placements (first time right)" };
@@ -340,13 +342,15 @@
       '<button class="btn gold" id="b-market">🏪 Visit the Marketplace</button><button class="btn alt" id="b-char">🧍 My Character</button></div>' +
       '<div class="map-stars"><div class="big">⭐ ' + S.stars.balance + '</div><small>stars to spend</small></div></div>';
     h += '<div class="map">';
+    var fu = allDone(), fp = S.final.passed, fin = false, U1 = unit1().length;
+    var finNode = '<button class="node ' + (fu ? "" : "locked ") + (fp ? "done" : "") + '" data-sid="final"><span class="tag">' + (fp ? "👑 " + S.final.bestPct + "%" : (fu ? "Open" : "🔒 Finish all " + U1)) + '</span><div class="ic">' + C.final.icon + "</div><small>End of Unit 1</small><h3>" + esc(C.final.title) + "</h3><small>" + C.final.questionsPerSection * U1 + " questions from every land</small></button>";
     C.sections.forEach(function (s, i) {
+      if (s.unit > 1 && !fin) { h += finNode; fin = true; }
       var st = S.sections[s.id], un = isUnlocked(i), done = st && st.completed, na = (s.activities || []).length;
       var tag = done ? "✅ " + st.bestPct + "%" : (un ? (S.run && S.run.sid === s.id && S.run.phase !== "lessons" ? "▶ Resume" : "Open") : "🔒 Locked");
       h += '<button class="node ' + (un ? "" : "locked ") + (done ? "done" : "") + '" data-sid="' + s.id + '" ' + (un ? "" : 'aria-disabled="true"') + '><span class="tag">' + tag + '</span><div class="ic">' + s.icon + "</div><small>Section " + (i + 1) + " · " + esc(s.era) + "</small><h3>" + esc(s.title) + "</h3><small>" + s.lessons.length + " scrolls · " + s.questions.length + " questions · 🎮 " + actsDone(s) + "/" + na + " activities</small></button>";
     });
-    var fu = allDone(), fp = S.final.passed;
-    h += '<button class="node ' + (fu ? "" : "locked ") + (fp ? "done" : "") + '" data-sid="final"><span class="tag">' + (fp ? "👑 " + S.final.bestPct + "%" : (fu ? "Open" : "🔒 Finish all 6")) + '</span><div class="ic">' + C.final.icon + "</div><small>End of Unit</small><h3>" + esc(C.final.title) + "</h3><small>" + C.final.questionsPerSection * C.sections.length + " questions from every land</small></button>";
+    if (!fin) h += finNode;
     h += "</div>";
     show(h);
     on("b-market", function () { market(); }); on("b-char", character);
@@ -668,7 +672,7 @@
       S.run = null; save(); renderHero();
       var idx = C.sections.indexOf(s), nxt = C.sections[idx + 1];
       show('<div class="panel big-reward"><div class="ic">' + s.badge.icon + "</div><h1>" + (first ? "Badge earned: " : "Mastered again: ") + esc(s.badge.name) + "!</h1><p>" + esc(s.badge.desc) + "</p>" + (first ? "<p class=\"star-pop\">+" + C.stars.badge + " ⭐ badge bonus!</p>" : "") + "<p>Trial score: <b>" + r.firstPct + "%</b> · all misses cleared.</p>" +
-        (nxt ? '<p>🔓 <b>' + esc(nxt.title) + "</b> is now open!</p>" : (allDone() ? "<p>🔓 <b>The Grand Trial</b> is now open!</p>" : "")) +
+        (nxt ? '<p>🔓 <b>' + esc(nxt.title) + "</b> is now open!</p>" : "") + (first && allDone() && unit1().indexOf(s) === unit1().length - 1 ? "<p>🔓 <b>The Grand Trial</b> is now open!</p>" : "") +
         '<button class="btn gold" id="b-map">🗺️ Back to the map</button>' + (nxt ? '<button class="btn" id="b-nx">' + nxt.icon + " Go to " + esc(nxt.title) + " ▶</button>" : "") + "</div>");
       on("b-map", home); on("b-nx", function () { enterSection(nxt.id); });
     } else {
@@ -684,12 +688,12 @@
     setWorld({ sky: "#ffd27a", sky2: "#9fd8ff", ground: "#8bd16a", ground2: "#3f8a4a", accent: "#d4a017", snow: false, water: true });
     var p = currentPlayer(), h = '<div class="scene"><div class="who">' + C.final.icon + " " + esc(C.final.title) + "</div>";
     C.final.scene.forEach(function (t) { h += "<p>" + md(t) + "</p>"; });
-    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * C.sections.length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better (" + passNeed(C.final.questionsPerSection * C.sections.length) + " right) to win the <b>" + esc(C.final.badge.name) + "</b>.</p>" + ((C.finalActivities || []).length ? "<p>Warm up first? The <b>Grand Timeline</b> puts the whole unit in order, 1492 to 1754.</p>" + C.finalActivities.map(function (a) { return '<button class="btn alt" id="b-fa-' + a.id + '" data-fa="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") : "") + "<button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
+    h += "</div><div class=\"panel\"><p>" + C.final.questionsPerSection * unit1().length + " questions, " + C.final.questionsPerSection + " from each land. Score <b>" + C.passPercent + "%</b> or better (" + passNeed(C.final.questionsPerSection * unit1().length) + " right) to win the <b>" + esc(C.final.badge.name) + "</b>.</p>" + ((C.finalActivities || []).length ? "<p>Warm up first? The <b>Grand Timeline</b> puts the whole unit in order, 1492 to 1754.</p>" + C.finalActivities.map(function (a) { return '<button class="btn alt" id="b-fa-' + a.id + '" data-fa="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") : "") + "<button class=\"btn gold\" id=\"b-go\">⚔️ Begin the Grand Trial</button><button class=\"btn alt\" id=\"b-map\">🗺️ Map</button></div>";
     show(h); on("b-go", startFinal); on("b-map", home); $all("[data-fa]", $screen).forEach(function (b) { b.onclick = function () { runActivity("final", b.getAttribute("data-fa")); }; }); renderHero();
   }
   function startFinal() {
     var ids = [];
-    C.sections.forEach(function (s) { shuffle(s.questions).slice(0, C.final.questionsPerSection).forEach(function (q) { ids.push(q.id); }); });
+    unit1().forEach(function (s) { shuffle(s.questions).slice(0, C.final.questionsPerSection).forEach(function (q) { ids.push(q.id); }); });
     S.final.attempts++;
     S.run = { sid: "final", phase: "final", order: shuffle(ids), idx: 0, right: 0, missed: [] }; save(); nextFinal();
   }
@@ -974,7 +978,7 @@
   }
   function geoXY(g, lat, lon) { return [(lon - g.lon0) * g.kx, (g.lat1 - lat) * g.ky]; }
   function shortLabel(t) { return t.replace(/\s*\(.*\)\s*$/, ""); }
-  var REGION_FILL = { ne: "#2b5fae", mid: "#1e8449", south: "#c0392b" };
+  var REGION_FILL = { ne: "#2b5fae", mid: "#1e8449", south: "#c0392b", fr: "#1f4fa0", br: "#b22222" };
   function geoSVG(a, items, hint) {
     var g = C.mapGeo[a.geo], f = function (v) { return Math.round(v * 10) / 10; };
     var o = ['<svg class="geo-svg" viewBox="0 0 ' + f(g.w) + " " + f(g.h) + '" role="img" aria-label="Map: ' + esc(a.title) + '"><defs><clipPath id="geo-clip"><rect width="' + f(g.w) + '" height="' + f(g.h) + '"/></clipPath></defs>',
@@ -1166,7 +1170,7 @@
   /* ---------------- marketplace ---------------- */
   function marketOpen(m) { var i = C.sections.indexOf(sectionById(m.unlock)); return i >= 0 && isUnlocked(i); }
   function marketScene(m) {
-    var o = [], sc = m.scene, sky = { steppe: ["#e8eef4", "#9bb8d6"], cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"] }[sc] || ["#ffe6b0", "#9fd3f5"];
+    var o = [], sc = m.scene, sky = { steppe: ["#e8eef4", "#9bb8d6"], cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"], frontier: ["#ffd9a8", "#9cc4e4"] }[sc] || ["#ffe6b0", "#9fd3f5"];
     o.push('<defs><linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[0] + '"/></linearGradient></defs><rect width="600" height="220" fill="url(#msky)"/>');
     if (sc === "steppe") {
       /* v2.9: Ice Age camp: snowy hills, hide tents, a distant mammoth herd, a hearth */
@@ -1189,6 +1193,16 @@
     } else if (sc === "jamestown") {
       for (var i = 0; i < 30; i++) o.push(pg((i * 20) + ",150 " + (i * 20 + 16) + ",150 " + (i * 20 + 16) + ",86 " + (i * 20 + 8) + ",76 " + (i * 20) + ",86", "#8a5a32"));
       o.push(pg("380,150 520,150 520,110 380,110", "#b08a5a"), pg("370,112 450,70 530,112", "#d9b36a"), pg("0,150 600,150 600,220 0,220", "#8c7a4a"));
+    } else if (sc === "frontier") {
+      /* v3.0: Wills Creek, autumn 1754: blue ridges, fall trees, a log trading post with a stick chimney, a pointed stockade */
+      o.push(pg("0,118 120,84 240,110 360,78 480,104 600,86 600,150 0,150", "#7f93a8"), pg("0,132 140,108 300,126 450,104 600,124 600,150 0,150", "#5f7a5a"));
+      [[30, "#d9662b"], [90, "#e8a23a"], [560, "#c0392b"], [500, "#e8a23a"]].forEach(function (g) { var x = g[0]; o.push(ln(x, 150, x, 118, "#4a3420", 5), '<circle cx="' + x + '" cy="106" r="22" fill="' + g[1] + '" stroke="#2a1a0c" stroke-width="2"/>'); });
+      o.push(pg("380,150 540,150 540,100 380,100", "#8a6038"));
+      for (var lg = 0; lg < 5; lg++) o.push(ln(380, 104 + lg * 10, 540, 104 + lg * 10, "#5a3a20", 2));
+      o.push(pg("370,102 460,66 550,102", "#6b5a44"), pg("500,80 516,80 516,58 500,58", "#7a4a2a"), '<rect x="446" y="118" width="22" height="32" fill="#3a2614"/><rect x="400" y="112" width="16" height="14" fill="#fff4c0" stroke="#2a1a0c"/>');
+      o.push('<circle cx="508" cy="46" r="8" fill="#e8e4dc" opacity=".7"/><circle cx="516" cy="32" r="10" fill="#e8e4dc" opacity=".55"/>');
+      for (var pz = 0; pz < 9; pz++) o.push(pg((150 + pz * 18) + ",150 " + (166 + pz * 18) + ",150 " + (166 + pz * 18) + ",96 " + (158 + pz * 18) + ",84 " + (150 + pz * 18) + ",96", "#8a5a32"));
+      o.push(pg("0,150 600,150 600,220 0,220", "#8c7a4a"));
     } else {
       [[20, "#9b3b2a"], [150, "#8a3424"], [440, "#a2452e"]].forEach(function (g) { var x = g[0]; o.push(pg(x + ",150 " + (x + 120) + ",150 " + (x + 120) + ",70 " + x + ",70", g[1]), pg((x - 6) + ",72 " + (x + 60) + ",46 " + (x + 126) + ",72", "#4a3a3a")); for (var j = 0; j < 3; j++) o.push('<rect x="' + (x + 14 + j * 36) + '" y="88" width="18" height="22" fill="#fff4c0" stroke="#2a1a0c"/>'); });
       o.push(pg("320,150 360,150 360,60 340,20 320,60", "#e8e0d0"), pg("0,150 600,150 600,220 0,220", "#8f8a80"));
@@ -1370,7 +1384,7 @@
   }
   /* ---------------- email report to Dad (v2.4): a mailto built only from the existing save; nothing new is stored ---------------- */
   var REPORT_TO = "history-tutor+reports@mail.grokbot.com", MAIL_MAX = 1800;
-  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies" };
+  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies", s7: "French & Indian War" };
   function secAcc(st) { var r = 0, t = 0; Object.keys((st && st.topics) || {}).forEach(function (k) { r += st.topics[k].right; t += st.topics[k].right + st.topics[k].wrong; }); return [r, t, pct(r, t)]; }
   function mailParts(sid) {
     var label = sid === "final" ? "Grand Trial" : (sid && sectionById(sid) ? sectionById(sid).title : "Progress");

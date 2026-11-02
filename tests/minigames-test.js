@@ -45,6 +45,8 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
     console.log(sid + ':'); if ((await p.evaluate(() => __world.level)) !== sid) await enter(sid);
     const rings = await p.evaluate(() => __world.rings().filter(r => /^mg-/.test(r.id)).map(r => r.id));
     check(rings.length === REG[sid].length, sid + ': a ring for each mini-game (' + rings.join(', ') + ')');
+    { const bad = await p.evaluate(() => { const all = __world.rings(); return all.filter(q => /^mg-/.test(q.id)).map(q => ({ id: q.id, d: __world.pathDist ? __world.pathDist(q.x, q.z) : 0, w: __world.walkable(q.x, q.z), s: __world.solid(q.x, q.z), near: Math.min(...all.filter(o => o.id !== q.id).map(o => Math.hypot(o.x - q.x, o.z - q.z))) })).filter(r => !(r.d <= 3.2) || !r.w || r.s || r.near < 3); });
+      check(!bad.length, sid + ': mini-game rings are beside a road, standable and clear of other rings (' + JSON.stringify(bad) + ')'); }
     for (const id of REG[sid]) {
       const st0 = await stars();
       // open from the ring (the world's own action), intro card, Esc on the intro

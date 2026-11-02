@@ -11,12 +11,12 @@ import { makeKit, rng } from './lib.js';
 // play area, so the camera looks along it from the road side. water: arena sits on the water surface.
 export const REG = {
   s1: [
-    { id: 'atlatl', file: 'atlatl', title: 'Atlatl Dart Throw', icon: '🎯', station: 'herds', ring: [22.5, 15.4], arena: [25.5, 12.3, 2.36] },
-    { id: 'stalk', file: 'stalk', title: 'Stalk the Caribou', icon: '🦌', station: 'herds', ring: [35.5, 26], arena: [38, 27, -1.83] },
+    { id: 'atlatl', file: 'atlatl', title: 'Atlatl Dart Throw', icon: '🎯', station: 'herds', ring: [21.9, 17.8], arena: [25.5, 12.3, 2.36] },
+    { id: 'stalk', file: 'stalk', title: 'Stalk the Caribou', icon: '🦌', station: 'herds', ring: [25.5, 26], arena: [38, 27, -1.83] },
   ],
   s2: [
     { id: 'salmon', file: 'salmon', title: 'Salmon Dip-Net', icon: '🐟', station: 'nw', ring: [17.2, 30.5], arena: [13.2, 33, -1.0] },
-    { id: 'pueblo', file: 'pueblo', title: 'Build a Pueblo Wall', icon: '🧱', station: 'sw', ring: [23.2, -19.5], arena: [26.8, -16.5, 0.85] },
+    { id: 'pueblo', file: 'pueblo', title: 'Build a Pueblo Wall', icon: '🧱', station: 'sw', ring: [21.3, -20], arena: [26.8, -16.5, 0.85] },
   ],
   s3: [
     { id: 'quadrant', file: 'quadrant', title: 'Sight the North Star', icon: '⭐', station: 'tower', ring: [-67.5, 49.5], arena: [-65, 46, 2.5], water: true },

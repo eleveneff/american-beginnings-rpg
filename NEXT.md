@@ -46,6 +46,12 @@
   after 2 misses a hint + easy mode (same stars). Hooks: 3 lines in world.js, miniGame/miniGameRec in app.js. tests/minigames-test.js
   (every game: Esc/Quit/real bot win + real bot loss with keys/easy/stars/440 px cards/scene restored). Lessons:
   /workspace/shared/abrpg-lessons/minigames-lessons.md. Shots: /workspace/abrpg-report/v29-mg-*.png.
+  **Status (paused Nov 1, 9:40 PM ET by John): NOT pushed.** Branch `minigames` (worktree /workspace/abrpg-mg) has origin/main 10d5412 merged in.
+  Batch 1 = LIVE ['s1','s2','s3'] (index.js). minigames-test ALL PASSED for s1–s3 at 9:24 PM ET (before the ring moves + 10d5412 merge).
+  To resume: re-run minigames-test (s1–s3), smoke, world (mg rings are now filtered out of its ring lists), market-test, then FPS A/B
+  interleaved s1–s3 RUNS=3 (one before/after pass under load ~8–11 was noisy: s1 21.5→16.6, s2 15.9→14.2, s3 17.8→14.4; re-check on a
+  quiet box before shipping). Then pull --no-rebase, merge to main, push, live md5. Batch 2 = add s4–s6 to LIVE (all tested individually;
+  probe their ring spots with pathDist first).
 
 ## Open items, in order
 1. Mini-game ideas not built: a 3rd game for some levels (e.g. s2 three-sisters planting, s6 printing press).

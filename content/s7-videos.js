@@ -80,12 +80,13 @@
   V["s7-treaty-1763"] = {
     title: "1763: A New Map, and New Troubles",
     cues: [
-      "February 1763: the **Treaty of Paris**. France gives Britain **Canada** and its lands **east of the Mississippi**.",
-      "Britain gets **Florida** from Spain. Spain gets **Louisiana** and **New Orleans**.",
-      "**Pontiac**, an Ottawa leader, unites nations to fight British forts around the Great Lakes.",
-      "October 1763: King George III's **Proclamation** bans settlement **west of the Appalachians**.",
-      "Britain is deep in **debt** and plans to **tax** the colonies. The road to revolution begins."
+      "February 1763: the **Treaty of Paris**. France gives Britain **Canada** and its lands east of the **Mississippi River**.",
+      "**Pontiac**, an Ottawa leader, unites many nations to fight the British forts around the Great Lakes.",
+      "His warriors besiege **Fort Detroit** for about six months.",
+      "In October, King George III's **Proclamation** bans settlement west of the **Appalachian Mountains**. Many colonists are angry.",
+      "And Britain is deep in **debt** from the war. To pay it, Parliament plans to **tax the colonies**. The **road to revolution** begins."
     ],
+    cueTimes: [0, 8.05, 14.51, 18.86, 27.24], // narration starts 0.5 s after each cue
     facts: [
       "Pontiac's forces besieged **Detroit** for about **six months**.",
       "Britain planned to keep **10,000 troops** in America after the war.",

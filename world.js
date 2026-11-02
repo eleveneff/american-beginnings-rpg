@@ -653,7 +653,7 @@ const actBtn = (id, label) => ({ t: label, f: () => { closeCard(); openPanel(() 
 function tracksCard() { const n = W.season.tracks.length; return { title: "🦌 The caribou trail", body: "<p>Herds of caribou walk this trail with the seasons, and hunters followed them. Look on the ground near this trail: can you find <b>3 sets of caribou tracks</b>?</p><p><b>Found: " + n + " of 3</b>" + (n >= 3 ? " — great tracking! Following herds is how Ice Age hunters lived." : "") + "</p><p><small>This is an exploring game (no stars). Walk over a set of tracks to find it.</small></p>" }; }
 function gateCard() {
   if (hasCloak()) return { title: "🧥 The glacier pass is open", body: "<p>Your <b>Fur Cloak</b> keeps out the icy wind. Walk through the pole gate and follow the path between the ice sheets.</p>" };
-  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Earn it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river’s stepping stones.</p>", btns: [actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
+  return { title: "🧥 Too cold to cross", body: "<p>The wind in the glacier pass is too strong and cold. You need a <b>Fur Cloak</b> first.</p><p>Unlock it with <b>" + ((window.GAME_CONTENT && GAME_CONTENT.correctPerGear) || 5) + " correct answers</b>, then trade ⭐ stars for it at the camp trade circle. Earn answers and stars: try the Traveler’s Journal at camp, Craft a Clovis Point at the hearth, the Evidence Scroll questions, or the Timeline on the river’s stepping stones.</p>", btns: [{ t: "🛍️ Trade for the Fur Cloak", f: () => { closeCard(); openPanel(() => { L.inMarket = true; window.ABRPG.market("m0"); }); } }, actBtn("s1-clovis", "🪨 Craft a Clovis Point"), actBtn("s1-timeline", "📓 Journal Timeline"), { t: "🗂️ Switch to Classic screens", cls: "alt", f: () => { closeCard(); setMode("classic"); } }] };
 }
 function signCard() { return { title: "🧭 Two ideas scientists are still testing", body: "<p><b>Ice-free corridor:</b> as the great ice sheets melted, a gap may have opened between them, and people walked south through it. That is the path you are walking now.</p><p><b>Coastal route:</b> people may have traveled south by boat along the Pacific shore, where fish, shellfish, and seals gave them food.</p><p><b>Monte Verde</b>, an early site in southern Chile dated to about <b>14,500 years ago</b>, is widely accepted by archaeologists as older than Clovis. People that far south so early make many scientists think the coast may have come first.</p><p>Both routes are still <b>theories</b> based on evidence. Scientists keep testing them with new finds, and people may have used both.</p>" }; }
 function journeyCard() {
@@ -839,7 +839,7 @@ function gearArt() {
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
   const ok = L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
-  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && ok.includes(i.section) && i.art) out.push({ art: i.art, color: i.color }); }
+  for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && (ok.includes(i.section) || i.allEras) && i.art) out.push({ art: i.art, color: i.color, top: i.top, skirt: i.skirt }); }   // v2.9: dyes + hair colors in every era
   return out;
 }
 function buildHero() {
@@ -1141,7 +1141,7 @@ function step(dt, raw) {
   if (tg) {
     const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
     document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
-    const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
+    const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Get your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
     const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) { el.textContent = txt; const ob = el.parentNode, era = document.getElementById("w-era"); if (era) era.style.top = (ob.offsetTop + ob.offsetHeight + 4) + "px"; }
   }
   L.saveT -= dt; if (L.saveT <= 0) { L.saveT = 2; saveWorldPos(); }

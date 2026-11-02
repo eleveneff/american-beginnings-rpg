@@ -101,12 +101,13 @@
   V["s7-ohio-rivals"] = {
     title: "Rivals for the Ohio Valley",
     cues: [
-      "The 1750s: **Britain** and **France**, Europe's great rivals, both claim the **Ohio River Valley**, beyond the **Appalachian Mountains**.",
+      "The 1750s! **Britain** and **France**, Europe's great rivals, both claim the **Ohio River Valley**, beyond the Appalachian Mountains.",
       "Virginians want its rich land for farms. French traders want its **fur trade**, and the Ohio links **New France** with **Louisiana**.",
-      "The French build a **chain of forts** from **Lake Ontario** south toward the Ohio.",
-      "Shawnee, Delaware, and Mingo towns already stand in the valley. It is **their home**.",
-      "April 1754: the French seize the **Forks of the Ohio** and build **Fort Duquesne**. Today it is **Pittsburgh**."
+      "So the French build a chain of **forts** and **trading posts**, from Lake Ontario south toward the Ohio.",
+      "But **Shawnee**, **Delaware**, and **Mingo** towns already stand in the valley. It is their home.",
+      "In April 1754, the French seize the **Forks of the Ohio** and build **Fort Duquesne**. Today, that spot is **Pittsburgh**."
     ],
+    cueTimes: [0, 8.79, 17.23, 23.63, 29.86], // narration starts 0.5 s after each cue
     facts: [
       "In **1749** the king granted Virginia's **Ohio Company** 200,000 acres near the Forks.",
       "The Ohio Company's storehouse at **Wills Creek** on the Potomac later became **Fort Cumberland**.",

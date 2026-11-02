@@ -55,12 +55,13 @@
   V["s7-fall-of-quebec"] = {
     title: "The Fall of Quebec, 1759",
     cues: [
-      "**Quebec**, capital of New France, sits high on a **cliff** above the St. Lawrence River.",
-      "September 1759: British scouts find a **poorly guarded path** up the cliff at the Anse au Foulon.",
-      "At night, General **James Wolfe's** soldiers climb the path and overwhelm the guards.",
-      "September 13: the British defeat the French on the **Plains of Abraham**. **Wolfe** and **Montcalm** are both killed.",
-      "Montreal surrenders in **1760**. France's empire in North America is ending."
+      "**Quebec**, capital of New France, sits high on a cliff above the **Saint Lawrence River**. It seems impossible to attack.",
+      "September 1759: British boats slip quietly down the river in the dark. Scouts have found a **poorly guarded path** up the cliff.",
+      "General **James Wolfe**'s soldiers climb the steep path at the **Anse au Foulon** and overwhelm the guards.",
+      "September 13: on the **Plains of Abraham**, the British defeat the French in less than an hour. Wolfe and **Montcalm** are both killed.",
+      "**Montreal** surrenders in 1760. France's **empire in North America** is ending."
     ],
+    cueTimes: [0, 7.77, 16.11, 23.01, 30.86], // narration starts 0.5 s after each cue
     facts: [
       "The battle on the Plains of Abraham lasted **less than an hour**.",
       "Wolfe's army had to row past French guards in the dark. A French-speaking officer is said to have answered a sentry's challenge.",

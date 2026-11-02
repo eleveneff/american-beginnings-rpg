@@ -18,6 +18,7 @@ GAME_CONTENT.sections.push({
         "Some scientists think people also traveled **by boat along the Pacific coast**, fishing and hunting sea animals as they moved south. Both ideas may be true!"
       ] },
     { topic: "paleo", title: "Scroll 2: The Paleo-Indians", video: null,
+      videoKey: "s1-paleo-indians", videoTitle: "The Paleo-Indians: America's First Pioneers",
       videoIdea: "Low-poly N64-style scene: archaeologists brushing dirt from ancient tools at a dig site.",
       text: [
         "The first Americans are called **Paleo-Indians** (\"paleo\" means ancient). They were **nomads**: people who move from place to place instead of living in one permanent home.",
@@ -42,6 +43,7 @@ GAME_CONTENT.sections.push({
         "Farming meant people could stay in one place. They built **permanent villages**, grew a **surplus** (extra food), and populations grew. Some villages became cities and **civilizations**: complex societies with governments, religion, specialized jobs, and art."
       ] },
     { topic: "meso", title: "Scroll 5: Olmec, Maya, and Aztec", video: null,
+      videoKey: "s1-olmec-maya-aztec", videoTitle: "Olmec, Maya, and Aztec",
       videoIdea: "Low-poly N64-style flyover of a Maya stone pyramid in a jungle, then the Aztec island city of Tenochtitlán with floating gardens.",
       text: [
         "The **Olmec** lived along the Gulf Coast of Mexico about 3,000 years ago. They carved **giant stone heads** and are often called the \"mother culture\" of Mesoamerica because later peoples borrowed their ideas.",
@@ -49,6 +51,7 @@ GAME_CONTENT.sections.push({
         "The **Aztec** built their capital, **Tenochtitlán**, on an island in Lake Texcoco in 1325 (where Mexico City is today). They farmed on **chinampas**, \"floating gardens\" built up from the lake bed. Their empire collected **tribute** (payments) from conquered peoples."
       ] },
     { topic: "inca", title: "Scroll 6: The Inca of the Andes", video: null,
+      videoKey: "s1-inca-empire", videoTitle: "The Inca: Empire of the Andes",
       videoIdea: "Low-poly N64-style scene of green terraces on steep Andes mountains, llamas, and a runner carrying a knotted quipu.",
       text: [
         "The **Inca** built the largest empire in the Americas along the **Andes Mountains** of South America. Their capital was **Cusco**.",
@@ -56,6 +59,7 @@ GAME_CONTENT.sections.push({
         "The Inca had no written alphabet. Instead they kept records on a **quipu**: a set of knotted, colored cords."
       ] },
     { topic: "mounds", title: "Scroll 7: Mound Builders and Ancestral Puebloans", video: null,
+      videoKey: "s1-mound-builders", videoTitle: "Mound Builders and Ancestral Puebloans",
       videoIdea: "Low-poly N64-style view of Cahokia's great earthen mound, then cliff houses at Mesa Verde.",
       text: [
         "In the Ohio and Mississippi River valleys, peoples known as the **Mound Builders** (the Adena, Hopewell, and later **Mississippians**) built huge earthen mounds for burials and ceremonies.",

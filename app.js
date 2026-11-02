@@ -1402,7 +1402,8 @@
       var L = [];
       L.push((currentPlayer().name || "Your hero") + ", " + day + ". Sections mastered: " + done + "/" + sec.length);
       L.push("Overall: " + pct(S.totalCorrect, S.totalAnswered) + "% (" + S.totalCorrect + "/" + S.totalAnswered + "), goal " + C.passPercent + "%");
-      sec.forEach(function (x) { var t = lv > 1 ? x.id.toUpperCase() : lv ? (MAIL_SHORT[x.id] || x.t) : x.t;   // shorter names if the link is long
+      sec.forEach(function (x) { if (lv > 2) { L.push(x.n + ". " + x.id.toUpperCase() + ": " + x.st + (x.att || x.acc[1] ? " " + x.acc[2] + "%, best " + x.best + "%, x" + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", rev " + x.rq : "")); return; }   // v3.1: most compact lines once 8+ sections overflow
+        var t = lv > 1 ? x.id.toUpperCase() : lv ? (MAIL_SHORT[x.id] || x.t) : x.t;   // shorter names if the link is long
         L.push(x.n + ". " + t + ": " + x.st + (x.att || x.acc[1] ? ", " + x.acc[2] + "%, best trial " + x.best + "%, tries " + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", review left " + x.rq : "")); });
       L.push("Grand Trial: " + (F.passed ? "PASSED" : (allDone() ? "unlocked" : "locked")) + ", tries " + F.attempts + ", best " + F.bestPct + "%");
       L.push("Stars " + S.stars.balance + " (earned " + S.stars.earned + "), items " + S.owned.length + ", badges " + S.badges.length);
@@ -1422,6 +1423,7 @@
     while (m.url.length > MAIL_MAX && wk.length > 3) { wk.pop(); m = build(mt, wk, lv); }
     if (m.url.length > MAIL_MAX) m = build(mt, wk, lv = 2);
     while (m.url.length > MAIL_MAX && wk.length) { wk.pop(); m = build(mt, wk, lv); }
+    if (m.url.length > MAIL_MAX) m = build(mt, wk, lv = 3);
     return m;
   }
   function copyText(txt, ok) {

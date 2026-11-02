@@ -15,6 +15,8 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ')
   await p.goto(BASE + '?cb=' + Date.now()); await sleep(1200); await p.evaluate(() => document.querySelector('.node[data-sid="s1"]').click());
   const t = Date.now(); while (Date.now() - t < 90000 && (await p.evaluate(() => __world.phase)) !== 'active') await sleep(300); await sleep(2500); await p.evaluate(() => __world.closeCard());
   const F = () => p.evaluate(() => __world.ford()), pos = () => p.evaluate(() => __world.pos);
+  // a right step: wait until the row advances (slow SwiftShader frames under load can take >600 ms to register a step)
+  const step = async (x, z, want) => { await go(x, z, 300); for (let t = 0; t < 40 && (await F()).row < want && !(await F()).solved; t++) await sleep(150); await sleep(250); };
   const go = async (x, z, wait = 700) => { await p.evaluate((x, z) => { __world.teleport(x, z); __world.faceCam(0); }, x, z); await sleep(wait); };
   // the ring card first (760x440, no scrolling)
   const ring = await p.evaluate(() => __world.rings().find(r => r.id === 's1-timeline'));
@@ -34,7 +36,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ')
   // wrong on row 1 → back to the bank
   await go(wrong(0).x, wrong(0).z, 2200); let ps = await pos(); f = await F();
   check(f.row === 0 && f.miss[0] === 1 && Math.hypot(ps.x - R.x, ps.z - R.z) < 0.5, 'wrong stone on row 1: splash, back on the bank, miss 1');
-  await go(right(0).x, right(0).z, 600); f = await F();
+  await step(right(0).x, right(0).z, 1); f = await F();
   check(f.row === 1 && f.good && f.good.row === 0 && /Row 2 of 8/.test(await p.evaluate(() => __world.banner)), 'right stone: row 2 next, strip "' + f.strip + '"');
   // wrong on row 2 → back to the gold stone of row 1, not the bank
   await go(wrong(1).x, wrong(1).z, 2200); ps = await pos();
@@ -43,7 +45,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ')
   check(f.marks.some(m => m.row === 1 && m.side === f.rows[1].right && m.key.startsWith('h')), 'after 2 misses: the gold hint label');
   await go(wrong(1).x, wrong(1).z, 2200); f = await F();
   check(f.marks.some(m => m.row === 1 && m.side === f.rows[1].right && m.key.startsWith('a')), 'after 3 misses: the answer glows');
-  await go(right(1).x, right(1).z, 600);
+  await step(right(1).x, right(1).z, 2);
   // skipping a row
   await go(right(3).x, right(3).z, 2200); f = await F(); ps = await pos();
   check(f.row === 2 && Math.hypot(ps.x - right(1).x, ps.z - right(1).z) < 0.3, 'skipping a row: splash, back on the last gold stone');
@@ -55,14 +57,14 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ')
   check(!f.armed && f.strip === '', 'walked away: the strip and banner go away');
   await go(R.x, R.z, 900); f = await F();
   check(f.armed && f.row === 2 && /Row 3 of 8/.test(await p.evaluate(() => __world.banner)), 'came back: progress kept (row 3)');
-  { const seen = []; for (let k = 2; k < 8; k++) { await go(right(k).x, right(k).z, 650); seen.push((await F()).row); } console.log('info rows after each step: ' + seen.join(',')); }
+  { const seen = []; for (let k = 2; k < 8; k++) { await step(right(k).x, right(k).z, k + 1); seen.push((await F()).row); } console.log('info rows after each step: ' + seen.join(',')); }
   await sleep(2500); f = await F(); console.log('info after the last stone: ' + JSON.stringify({ row: f.row, armed: f.armed, solved: f.solved, miss: f.miss, phase: await p.evaluate(() => __world.phase), pos: await pos() }));
   const res = await p.evaluate(() => { const d = document.querySelector('.act-done'); return { phase: __world.phase, txt: d ? d.textContent.replace(/\s+/g, ' ').slice(0, 120) : '' }; });
   check(f.solved && res.phase === 'panel' && res.txt, 'finished: timeline solved, results: "' + res.txt + '"');
   await p.setViewport({ width: 760, height: 440 }); await sleep(600);
   const fit = await p.evaluate(() => { const b = document.getElementById('a-back'), r = b && b.getBoundingClientRect(); return r ? { bottom: Math.round(r.bottom), page: document.scrollingElement.scrollHeight } : null; });
   console.log('info results at 760x440: ' + JSON.stringify(fit));
-  await p.screenshot({ path: '/workspace/abrpg-report/v283-ford-results-phone.png' });
+  await p.screenshot({ path: '/workspace/abrpg-report/' + (process.env.TAG || 'v291') + '-ford-results-phone.png' });
   await p.setViewport({ width: 1024, height: 640 });
   await p.evaluate(() => document.getElementById('a-back').click());
   const t2 = Date.now(); while (Date.now() - t2 < 60000 && (await p.evaluate(() => __world.phase)) !== 'active') await sleep(300);

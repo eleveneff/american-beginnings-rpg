@@ -38,6 +38,14 @@
   Tests: tests/market-test.js (new, ALL PASSED: locks, tabs, cards ≤440px desktop + phone, can't afford, back out, idempotent, hair,
   unlock Buy-now, migration), smoke ALL PASSED, keys-test PASSED. world-test: all non-camera checks pass; the camera-inside-object
   checks fail on 5a0c04c too (owned by the camera job, not touched here). Shots: /workspace/abrpg-report/v29-wardrobe-*.png.
+- **v2.9.1 (Nov 1 evening, John: "a compass of some sort" on each level; "the River Ford is a little difficult and confusing"):**
+  Compass HUD in the banner on all 6 levels (L1-2 carved guide stone, L3-4 brass, L5-6 wood): camera-relative needle to the next
+  objective, objective name + distance, faint footprint trail toward it; help line added to the "How to" cards. River ford (L1): goal
+  banner that never fades, timeline strip (older -> newer, done rows show dates), the row to step on glows, wider stones (r 0.68,
+  offset 1.05), a wrong step returns her to the last right stone (not the bank), hint label after 2 misses, answer after 3 (fewer
+  stars; the miss is charged to that row's event). faceCam snaps the camera (fixes the s4 "camera inside a building" world-test views);
+  placeCamera tests only occluders near the camera segment (s3/s4 fps). No new save fields. Tests: tests/compass-test.js,
+  tests/ford-test.js. Shots: /workspace/abrpg-report/v291-compass-*.png, v291-ford-{before,after}-*.png.
 
 ## Open items, in order
 1. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.

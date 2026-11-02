@@ -28,7 +28,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
 
   console.log('versions / boot:');
   await seed(base(), null);
-  assert((await p.$eval('#game-version', e => e.textContent)) === 'v2.8' && (await p.evaluate(() => ABRPG.version)) === 'v2.8', 'version marker v2.8');
+  { const gv = await p.$eval('#game-version', e => e.textContent); assert(/^v2\.(8|9|\d\d)/.test(gv) && (await p.evaluate(() => ABRPG.version)) === gv, 'version marker v2.8+ (' + gv + ')'); }
   let w = await W();
   { const mv = await p.evaluate(() => { const out = []; const walk = (o, path) => { if (typeof o === 'string') { if (/Monte Verde/.test(o)) out.push(o); } else if (o && typeof o === 'object') for (const k in o) walk(o[k], path + '.' + k); }; walk(window.GAME_CONTENT, ''); return out; });
     assert(mv.length >= 8 && mv.every(t => !/14,000/.test(t)) && mv.some(t => /southern Chile/.test(t) && /14,500/.test(t) && /older than Clovis/.test(t)), 'Monte Verde is labelled consistently (about 14,500 years ago, southern Chile, older than Clovis; ' + mv.length + ' mentions)'); }
@@ -129,7 +129,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     while (Date.now() - t0 < 3500) { const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad++; if (c.pulled) pulled++; await sleep(80); }
     await p.keyboard.up('KeyW'); w = await W();
     assert(w.pos.z < 125 && n > 8 && bad === 0, 'walking south under the gate cross-pole the camera never sits inside the poles, hides or ice (' + n + ' samples, pulled in ' + pulled + ', z ' + w.pos.z.toFixed(1) + ')'); }
-  { await tp(-5, 150); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2500); const c = await p.evaluate(() => __world.cam); w = await W();
+  { await tp(-5, 150); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyS', 2500); const c = await p.evaluate(() => __world.cam); w = await W();
     assert(Math.abs(c.yaw - y0) < 0.05 && Math.abs(w.pos.x + 5) > 1.5, 'strafing sideways does not swing the camera around her (yaw drift ' + Math.abs(c.yaw - y0).toFixed(3) + ', x ' + w.pos.x.toFixed(1) + ')'); }
   console.log('v2.3 glacier pass:');
   { await tp(-5, 150); await sleep(300);
@@ -249,7 +249,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { const ga = await p.evaluate(() => __world._dbg().L.mods.B.PALISADE.gapA); await tp(-42 + Math.cos(ga) * 21, 48 + Math.sin(ga) * 21); await p.evaluate(a => __world.faceCam(a), Math.atan2(-Math.cos(ga), -Math.sin(ga))); await sleep(300); await closeCards(); await p.keyboard.down('KeyW'); let bad = 0, n = 0; const t0 = Date.now();
       while (Date.now() - t0 < 3000) { const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad++; await sleep(80); }
       await p.keyboard.up('KeyW'); assert(n > 8 && bad === 0, 'walking into the palisade gap and between the longhouses the camera stays clear (' + n + ' samples)'); }
-    { await tp(0, -4); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyD', 2000); const c = await p.evaluate(() => __world.cam);
+    { await tp(0, -4); await p.evaluate(() => __world.faceCam(0)); await sleep(300); const y0 = (await p.evaluate(() => __world.cam)).yaw; await hold('KeyS', 2000); const c = await p.evaluate(() => __world.cam);
       assert(Math.abs(c.yaw - y0) < 0.05, 'strafing does not swing the camera around her here either (yaw drift ' + Math.abs(c.yaw - y0).toFixed(3) + ')'); }
     const after2 = await p.evaluate(k => localStorage.getItem(k), KEY);
     assert(after2 === before2, 'progress save byte-identical after walking the Native Nations level');

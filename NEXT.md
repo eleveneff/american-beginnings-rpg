@@ -18,6 +18,13 @@
 - Shots: /workspace/abrpg-report/v28-shot-*.png (charleston, williamsburg, revival, philadelphia, village, boston, albany, hero, phone,
   jamesfort-ships-fixed, mayflower-fixed, roanoke) and v28-s*-*.png (fps views). v27 shots are still there for comparison.
 - Lessons: /workspace/shared/abrpg-lessons/lessons-learned.md (Level 5 and Level 6 sections, incl. ship flags), copied to /workspace/abrpg-design/.
+- **v2.8.1 (Nov 1 evening, John):** controls are W forward, Z back, A left, S right, camera-relative on all 6 levels (arrows +
+  joystick kept; D no longer moves; no hotkey used Z, so nothing reassigned; typing in inputs never moves her). tests/keys-test.js.
+  Camera near trees/buildings: placeCamera now keeps the eased ideal separate from the pulled-in distance, sphere-casts (pad 0.3)
+  with bisection, ignores tree canopies (o.soft), pulls in fast but rate-limited (≤10 m/s, never a one-frame snap), eases out
+  slowly after a 0.35 s hold (hysteresis), min distance 1.2 m, look-up scales with distance. tests/camera-test.js (tree/building
+  hugging walks on every level): old code 60 in/out reversals, 5–6 m single-frame jumps, 22/90 runs failing; new 8 reversals,
+  ≤10.1 m/s extra camera speed, 90/90 ok.
 
 ## Open items, in order
 1. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.

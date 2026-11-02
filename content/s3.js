@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "motives", title: "Scroll 1: Why Explore?", video: null,
+      videoKey: "s3-motives", videoTitle: "Why Explore? Spices, Silk, and a Sea Route",
       videoIdea: "Low-poly N64-style European market with spices and silks, then a map showing long overland routes to Asia.",
       text: [
         "Europeans wanted Asian goods like **spices** (pepper, cinnamon, cloves) and **silk**. The **Crusades** and the travels of **Marco Polo**, an Italian merchant who wrote about China, made these goods famous.",

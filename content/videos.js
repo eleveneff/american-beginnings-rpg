@@ -512,6 +512,32 @@ GAME_CONTENT.videos = {
         choices: ["Squanto and Massasoit's Wampanoag", "John Smith and the Powhatan", "Spanish soldiers from Florida", "Dutch traders from New Amsterdam"],
         explain: "Squanto taught them to plant corn, and the Wampanoag made peace with them." }
     ]
+  },
+  "s3-motives": {
+    title: "Why Explore? Spices, Silk, and a Sea Route",
+    cueTimes: [0, 7.34, 15.69, 27.51, 32.05], // narration starts 0.5 s after each cue
+    cues: [
+      "In the **1400s**, Europeans prized goods from Asia: **spices** like pepper, cinnamon, and cloves, and shining **silk**.",
+      "**Marco Polo**, an Italian merchant, wrote a famous book about his travels to **China**, and Europeans grew curious about Asia.",
+      "But these goods crossed long **overland routes** and passed through many **middlemen**, so prices were high. After the **Ottoman Turks** captured **Constantinople** in **1453**, trade grew even harder.",
+      "So Europeans began searching for an **all-water route to Asia**.",
+      "Their motives are summed up as **God, gold, and glory**: spreading Christianity, finding wealth, and winning fame. The new learning of the **Renaissance** fed their curiosity."
+    ],
+    facts: [
+      "Europeans wanted Asian **spices** (pepper, cinnamon, cloves) and **silk**.",
+      "**Marco Polo** of Venice wrote about his years in **China**, making Asia's riches famous in Europe.",
+      "Overland routes passed through many **middlemen**, so prices were high.",
+      "The **Ottoman Turks** captured **Constantinople** in **1453**, making trade with Asia even harder.",
+      "Explorers' motives are summed up as **\"God, gold, and glory.\"**"
+    ],
+    check: [
+      { q: "What were Europeans searching for to reach Asia more cheaply?",
+        choices: ["An all-water route to Asia", "A new road across Africa", "A tunnel under the mountains", "A railroad across Russia"],
+        explain: "A sea route would skip the many middlemen on the long overland routes." },
+      { q: "What do \"God, gold, and glory\" stand for?",
+        choices: ["Spreading Christianity, finding wealth, and winning fame", "Building churches, mining coal, and writing books", "Farming, fishing, and trading furs", "Peace, freedom, and equality"],
+        explain: "These three motives drove many European explorers." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

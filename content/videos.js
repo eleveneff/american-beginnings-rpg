@@ -564,6 +564,32 @@ GAME_CONTENT.videos = {
         choices: ["Vasco da Gama", "Bartolomeu Dias", "Christopher Columbus", "Prince Henry"],
         explain: "Dias rounded the Cape of Good Hope in 1488; ten years later da Gama reached India." }
     ]
+  },
+  "s3-columbus": {
+    title: "Columbus Crosses the Atlantic",
+    cueTimes: [0, 9.65, 17.18, 27.38, 36.96], // narration starts 0.5 s after each cue
+    cues: [
+      "**Christopher Columbus**, a sailor from **Genoa**, believed he could reach Asia by sailing **west**. Spain's **King Ferdinand** and **Queen Isabella** agreed to pay for his voyage.",
+      "In August **1492**, he set sail from **Palos** with three ships: the **Niña**, the **Pinta**, and the **Santa María**.",
+      "On **October 12**, after five weeks on the open ocean, his crew reached an island in the **Bahamas**. Columbus named it **San Salvador** and met the **Taíno** people.",
+      "His crossing was a bold feat of seamanship that **linked two worlds**. Columbus believed he had reached the **Indies** near Asia, so he called the people **Indians**.",
+      "But Columbus and the Spanish also **enslaved** many Taíno and forced them to work. Harsh treatment and **disease** made the Taíno population fall sharply."
+    ],
+    facts: [
+      "**Columbus**, from **Genoa**, sailed for **Spain**, paid for by **Ferdinand and Isabella**.",
+      "He left **Palos** on **August 3, 1492**, with the **Niña**, **Pinta**, and **Santa María**.",
+      "On **October 12, 1492**, he landed in the **Bahamas** and met the **Taíno**.",
+      "His voyage linked the **Eastern and Western Hemispheres** for good.",
+      "The Spanish **enslaved** many Taíno; harsh treatment and **disease** made their numbers fall sharply."
+    ],
+    check: [
+      { q: "Which rulers paid for Columbus's 1492 voyage?",
+        choices: ["King Ferdinand and Queen Isabella of Spain", "King Henry VII of England", "Prince Henry of Portugal", "The Doge of Venice"],
+        explain: "Spain's monarchs agreed to fund his plan to reach Asia by sailing west." },
+      { q: "What happened to the Taíno after the Spanish arrived?",
+        choices: ["Many were enslaved, and harsh treatment and disease made their population fall sharply", "They sailed to Spain and became rulers there", "Nothing changed in their lives", "They moved to the Great Plains"],
+        explain: "Columbus's voyage linked two worlds, but it brought great suffering to the Taíno." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

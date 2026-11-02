@@ -28,6 +28,7 @@ GAME_CONTENT.sections.push({
         "**Prince Henry the Navigator** of Portugal supported sailors, mapmakers, and shipbuilders. Portuguese explorer **Bartolomeu Dias** sailed around the southern tip of Africa (the Cape of Good Hope) in 1488, and **Vasco da Gama** reached India by sea in 1498."
       ] },
     { topic: "columbus", title: "Scroll 3: Columbus Sails the Ocean Blue", video: null,
+      videoKey: "s3-columbus", videoTitle: "Columbus Crosses the Atlantic",
       videoIdea: "Low-poly N64-style: three ships (Niña, Pinta, Santa María) cross a sparkling ocean and spot a green Caribbean island at dawn.",
       text: [
         "**Christopher Columbus**, a sailor from Genoa, Italy, believed he could reach Asia by sailing **west**. Spain's **King Ferdinand and Queen Isabella** agreed to pay for his voyage.",

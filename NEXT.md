@@ -92,7 +92,7 @@ Live-action (Grok Imagine), fact cards, Piper en_GB-aru-medium speaker 3 narrati
 - [x] L1 s1 (4): paleo → s1-paleo-indians, meso → s1-olmec-maya-aztec, inca → s1-inca-empire, mounds → s1-mound-builders
 - [x] L2 s2 (6): regions → s2-culture-regions, northwest → s2-pacific-northwest, plains → s2-great-plains, southwest → s2-southwest, iroquois → s2-iroquois, southeast → s2-southeast (s1-mound-builders Cahokia shot redone: no smoke from the post)
 - Tonight's order (John): L2 videos, then L7/L8 build (other job), then L3 videos, then L7 videos.
-- [ ] L3 s3 (5): motives, navigation, columbus, afterColumbus, exchange
+- [x] L3 s3 (5): motives → s3-motives, navigation → s3-navigation, columbus → s3-columbus, afterColumbus → s3-after-columbus, exchange → s3-columbian-exchange (accuracy log: /workspace/abrpg-videos/l3/accuracy-log.md)
 - [ ] L4 s4 (5): conquest, spanishNA, spanishLife, france, dutch
 - [ ] L5 s5 (1): roanoke
 - [ ] L6 s6 (6): newengland, middle, southern, government, dailylife, ideas

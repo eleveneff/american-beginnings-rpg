@@ -127,12 +127,13 @@
   V["s7-native-nations"] = {
     title: "Native Nations Choose Sides",
     cues: [
-      "For Native nations, the war is a fight over **their own homelands**.",
-      "Many nations side with the **French**, who mostly came to **trade**, not to clear farms.",
-      "The French also sent missionaries hoping to **convert** Native people to Christianity.",
-      "The **Iroquois Confederacy**, six nations in New York, has long traded with the British.",
-      "Each nation chooses for its own people, and some change sides as the war goes on."
+      "For **Native nations**, this war is not about kings across the sea. It is a fight over their own **homelands**.",
+      "Many nations side with the **French**, who mostly came to trade furs, not to clear the forest for farms.",
+      "The **French** also sent **missionaries**, hoping to convert Native people to Christianity.",
+      "The **Iroquois Confederacy**, six nations in New York, has long traded with the **British**.",
+      "Each nation chooses what is best for **its own people**, and some **change sides** as the war goes on."
     ],
+    cueTimes: [0, 8.15, 15.42, 21.92, 28.35], // narration starts 0.5 s after each cue
     facts: [
       "The six Iroquois nations: **Mohawk, Oneida, Onondaga, Cayuga, Seneca**, and **Tuscarora** (joined about 1722).",
       "The Seneca leader **Tanacharison** was with Washington at Jumonville Glen in May 1754.",

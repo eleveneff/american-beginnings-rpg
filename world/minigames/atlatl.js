@@ -49,9 +49,10 @@ export default {
     tgts.forEach((T, i) => T.glow.visible = i === 0);
     return {
       start() { st(); ctx.msg('Aim at target 1', 'info', 1.4); },
-      bot() {   // test autoplayer: when would a careful kid press?
+      bot(lose) {   // test autoplayer: when would a careful kid press? (lose: throws way off target)
         if (pend || fly) return {};
         const T = tg(); if (!T) return {};
+        if (lose) return { press: phase === 'aim' ? Math.abs(ang - Math.atan2(T.x - HX, T.z - HZ)) > 0.25 : phase === 'power' };
         if (phase === 'aim') return { press: Math.abs(ang - Math.atan2(T.x - HX, T.z - HZ)) < 0.03 };
         if (phase === 'power') { const z = zoneFor(T); return { press: Math.abs(pwr - (z[0] + z[1]) / 2) < 0.03 }; }
         return {};

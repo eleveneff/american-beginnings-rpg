@@ -48,7 +48,7 @@ export default {
     let pt = 0;
     return {
       start() { st(); ctx.msg('Paddle upriver!', 'info', 1.4); },
-      bot() { if (portW && rapIt && rapIt.z < 16) return { press: true }; return R.bot(); },
+      bot(lose) { if (!lose && portW && rapIt && rapIt.z < 16) return { press: true }; return R.bot(lose); },
       action() { if (!portW || ended) return; portW = false; portT = 3.2; rapIdx++; ctx.msg('🎒 Portage! Carry the canoe around the rapids.', 'good', 2); },
       update(dt, inp) {
         if (ended) return;

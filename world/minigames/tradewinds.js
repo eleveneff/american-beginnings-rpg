@@ -65,7 +65,7 @@ export default {
     let pt = 0, grumbled = false;
     return {
       start() { st(); ctx.msg('Sept 9, 1492: land drops out of sight. Sail west!', 'info', 2.4); },
-      bot: () => R.bot(),
+      bot: lose => R.bot(lose),
       action() { ctx.msg('Use ◀ ▶ (A / S) to steer into the gusts.', 'info', 1.4); },
       idle(dt) { pt += dt; ship.position.y = Math.sin(pt * 1.4) * 0.08; },
       update(dt, inp) {

@@ -59,7 +59,7 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
       check(!(await p.evaluate(() => __mg.active)), id + ': Quit button leaves the game'); await same(S0, id + ': scene (visibility, layers, fog, lights) put back after Quit');
       // a real loss with keys, then the gentle retry, then a second loss offers easy mode
       await p.evaluate((s, i) => __mg.open(s, i), sid, id); await sleep(900); await p.keyboard.press('KeyE'); await sleep(400);
-      if (!process.env.NOBOT) { const r = await waitEnd(true, 170); await sleep(1500); check(r.ph === 'lost', id + ': a careless player loses (' + r.secs.toFixed(1) + ' s)'); }
+      if (!process.env.NOBOT) { const r = await waitEnd(true, 170); await sleep(1500); check(r.ph === 'lost', id + ': a careless player loses (' + r.ph + ', ' + r.secs.toFixed(1) + ' s)'); }
       else { await p.evaluate(() => __mg.cheatLose()); await sleep(1400); }
       check(/Try again/.test(await p.evaluate(() => __mg.card()) || ''), id + ': the lose card offers a retry');
       await p.keyboard.press('KeyE'); await sleep(500); check(await p.evaluate(() => __mg.phase === 'play'), id + ': E retries');
@@ -69,7 +69,7 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
       await p.evaluate(() => [...document.querySelectorAll('#mg-card button')].find(x => /easy/i.test(x.textContent)).click()); await sleep(500);
       check(await p.evaluate(() => __mg.phase === 'play' && __mg.easy === true), id + ': easy mode starts');
       // a real win in easy mode pays 10 stars the first time
-      if (!process.env.NOBOT) { const r = await waitEnd(false, 200); await sleep(1600); check(r.ph === 'won', id + ': the bot wins with real keys (' + r.secs.toFixed(1) + ' s, easy)'); }
+      if (!process.env.NOBOT) { const r = await waitEnd(false, 200); await sleep(1600); check(r.ph === 'won', id + ': the bot wins with real keys (' + r.ph + ', ' + r.secs.toFixed(1) + ' s, easy)'); }
       else { await p.evaluate(() => __mg.cheatWin()); await sleep(1500); }
       const st1 = await stars(); check(st1 - st0 === 10, id + ': first win pays 10 ⭐ (' + (st1 - st0) + ')');
       await p.setViewport({ width: 1000, height: 440 }); await sleep(400); check(await fitsIn(), id + ': win card fits a 440 px-tall screen (' + (await cardH()) + ' px)'); await p.setViewport({ width: 1100, height: 720 }); await sleep(300);

@@ -33,12 +33,12 @@ export function makeRunner(ctx, cfg) {
     },
     jump() { if (R.jumpT <= 0) { R.jumpT = R.JUMP; return true; } return false; },
     // test autoplayer: pick the safest x a few metres ahead
-    bot() {
+    bot(lose) {   // lose: a careless player steers into hazards and misses the good things
       let best = R.px, bc = 1e9;
       for (let x = -cfg.W; x <= cfg.W + 1e-6; x += 0.25) {
         let c = Math.abs(x - R.px) * 0.6;
         for (const it of R.objs) { if (it.dead || it.hitDone || it.kind === 'deco' || it.z < -0.5 || it.z > 13) continue; const d = Math.abs(it.x - x);
-          if (it.kind === 'bad' && d < it.r + 0.9) c += 100 / (1 + it.z * 0.3); if (it.kind === 'good' && d < it.r + 0.3) c -= 8 / (1 + it.z * 0.2); }
+          const sg = lose ? -1 : 1; if (it.kind === 'bad' && d < it.r + 0.9) c += sg * 100 / (1 + it.z * 0.3); if (it.kind === 'good' && d < it.r + 0.3) c -= sg * 8 / (1 + it.z * 0.2); }
         if (c < bc) { bc = c; best = x; }
       }
       const dx = best - R.px; return { x: Math.abs(dx) < 0.2 ? 0 : (dx > 0 ? -1 : 1) };

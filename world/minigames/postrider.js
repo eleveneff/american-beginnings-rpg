@@ -56,7 +56,7 @@ export default {
     let gal = 0;
     return {
       start() { st(); ctx.msg('Ride for Philadelphia!', 'info', 1.4); },
-      bot: () => R.bot(),
+      bot: lose => R.bot(lose),
       action() { if (!ended && R.jump()) kit.puff(new THREE.Vector3(R.px, ctx.gy(R.px, 0) + 0.1, -0.6), '#b89a70', 6, { up: 0.8 }); },
       update(dt, inp) {
         if (ended) return; R.update(dt, inp); road.tick(R.dist); st();

@@ -26,13 +26,22 @@
   hugging walks on every level): old code 60 in/out reversals, 5–6 m single-frame jumps, 22/90 runs failing; new 8 reversals,
   ≤10.1 m/s extra camera speed, 90/90 ok.
 
+- **v2.9 mini-games (Nov 1 evening, John [pt81u]):** 12 short hands-on 3D games, 2 per level, optional rings with signs, in
+  world/minigames/ (index.js registry/engine, lib.js toon kit, one file each; runner.js shared by tradewinds/canoe/postrider).
+  s1 atlatl, stalk · s2 salmon, pueblo · s3 quadrant, tradewinds · s4 canoe, adobe · s5 palisade, hornworm · s6 bucket, postrider.
+  Stars: 10 first win, then 2 per practice win up to 3 a day (records in S.acts "mg-<sid>-<id>", no new save fields). Lose → gentle retry;
+  after 2 misses a hint + easy mode (same stars). Hooks: 3 lines in world.js, miniGame/miniGameRec in app.js. tests/minigames-test.js
+  (every game: Esc/Quit/real bot win + real bot loss with keys/easy/stars/440 px cards/scene restored). Lessons:
+  /workspace/shared/abrpg-lessons/minigames-lessons.md. Shots: /workspace/abrpg-report/v29-mg-*.png.
+
 ## Open items, in order
-1. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.
-2. Williamsburg's Capitol reads as two plain red blocks with no windows; give it windows and the cupola a clearer shape.
-3. Princess Prep review items not done yet: a `?debug=nogate,nocost` URL flag, plant sway, animal gait.
+1. Mini-game ideas not built: a 3rd game for some levels (e.g. s2 three-sisters planting, s6 printing press).
+2. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.
+3. Williamsburg's Capitol reads as two plain red blocks with no windows; give it windows and the cupola a clearer shape.
+4. Princess Prep review items not done yet: a `?debug=nogate,nocost` URL flag, plant sway, animal gait.
    Already met: labels the player acts on never fade; fpsall reports the median and spread of 3 runs, a worst-spot row and the load average.
-4. Still deferred: the interior clear-line camera yaw.
-5. The /workspace/abrpg-l6 worktree (branch level6) is merged; it can be reused or removed for Level 7.
+5. Still deferred: the interior clear-line camera yaw.
+6. The /workspace/abrpg-l6 worktree (branch level6) is merged; it can be reused or removed for Level 7.
 
 ## How to run heavy QC (only 1–3 AM or 3:15–7 AM ET unless John says otherwise; Princess Prep tests from 7 AM)
 - `bash /tmp/abperf/myrun.sh <label> bash -c 'cd <repo> && node tests/world-test.js' > log 2>&1 &`

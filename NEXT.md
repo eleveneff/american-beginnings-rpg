@@ -1,5 +1,20 @@
 # NEXT: resume notes for American Beginnings RPG
 
+- **v3.0, Level 7 "The French and Indian War" (Nov 1 night, John: "start with chapters 7 and 8 only"):** Unit 2 begins (unit: 2;
+  the Grand Trial still covers Levels 1-6). content/s7.js (7 narrative scrolls + 2 source scrolls: Washington's journal 1754 and
+  "Join, or Die" 1754; 36 exam-style questions; s7-geomap map + s7-timeline + s7-sides sort + s7-washington dialogue + s7-mission;
+  Join-or-Die Badge, butternut dye), content/s7-geo.js, content/s7-videos.js (7 fact-tour placeholders, videoKey s7-<topic>; the
+  tour runs until assets/video/<key>.mp4 lands; briefs for the video job: /workspace/abrpg-videos/l7/briefs.md), content/market-s7.js
+  (m6 Trading Post at Wills Creek, v2.9 tabs, every item 20+ stars with a teaching card), world/frontier.js (frontier farm, Wills
+  Creek, Fort Necessity at Great Meadows, the Forks of the Ohio, Albany 1754, Plains of Abraham/Levis at Quebec; story jumps, no time
+  travel), tools/gen_map_s7.py. No new save fields (W.seen keys + read/at for s7 whitelisted only).
+  QC Nov 1, 9:45-11:00 PM ET on :8807: tests/s7-test.js ALL S7 TESTS PASSED, smoke ALL PASSED, market ALL PASSED (cards at 440 px
+  and 375 px), keys PASSED (s1-s7), camera PASSED (108 runs, 0 page errors), world-test: every check passes except the camera-inside
+  checks that already fail on main (Beringia gate cross-pole + s2/s4/s5/s6 ring views; owned by the camera job, not touched).
+  fps s7 over 3 runs: median 26.6 (24.4-28.4); worst spot s7/farm 10.3 (the first view = warm-up, like s1/camp). Shots:
+  /workspace/abrpg-report/v30-*.png. Mini-games are NOT in Level 7: the framework is only on the unmerged minigames branch.
+  Simplifications: the L7 map shrinks distances (Virginia to Quebec in one walk) and joins places by story order.
+  smoke-test now counts activities and video slots from the content (was a fixed 31 / 12) and reads a short tour's caption early.
 - **Live:** v2.8, Level 6 "The Thirteen Colonies to 1754" (Charles Town rice and indigo, Williamsburg's Capitol, a 1740 field
   meeting, Penn's Philadelphia and Franklin, a village lane, Boston's town meeting and Long Wharf, the Albany Congress 1754 Trial).
   QC Nov 1, 5:25–6:10 AM ET on :8785: world test ALL WORLD TESTS PASSED (twice, the 2nd after the Philadelphia shot fix), smoke ALL PASSED,
@@ -38,7 +53,7 @@
   Tests: tests/market-test.js (new, ALL PASSED: locks, tabs, cards ≤440px desktop + phone, can't afford, back out, idempotent, hair,
   unlock Buy-now, migration), smoke ALL PASSED, keys-test PASSED. world-test: all non-camera checks pass; the camera-inside-object
   checks fail on 5a0c04c too (owned by the camera job, not touched here). Shots: /workspace/abrpg-report/v29-wardrobe-*.png.
-- **v2.9.1 (Nov 1 evening, John: "a compass of some sort" on each level; "the River Ford is a little difficult and confusing"):**
+- **v2.9.1 → shipped as v3.0.1 with Level 7 (brass compass on L7 too) (Nov 1 evening, John: "a compass of some sort" on each level; "the River Ford is a little difficult and confusing"):**
   Compass HUD in the banner on all 6 levels (L1-2 carved guide stone, L3-4 brass, L5-6 wood): camera-relative needle to the next
   objective, objective name + distance, faint footprint trail toward it; help line added to the "How to" cards. River ford (L1): goal
   banner that never fades, timeline strip (older -> newer, done rows show dates), the row to step on glows, wider stones (r 0.68,
@@ -48,7 +63,7 @@
   tests/ford-test.js. Shots: /workspace/abrpg-report/v291-compass-*.png, v291-ford-{before,after}-*.png.
 
 ## Open items, in order
-1. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.
+1. Level 7 shipped in v3.0; Level 8 (Road to Revolution) is v3.1. Levels 9-12 follow /workspace/abrpg-design/chapters-7-12-plan.md. L7/L8 Grok Imagine videos wait for the video job (briefs in /workspace/abrpg-videos/l7, l8).
 2. Williamsburg's Capitol reads as two plain red blocks with no windows; give it windows and the cupola a clearer shape.
 3. Princess Prep review items not done yet: a `?debug=nogate,nocost` URL flag, plant sway, animal gait.
    Already met: labels the player acts on never fade; fpsall reports the median and spread of 3 runs, a worst-spot row and the load average.

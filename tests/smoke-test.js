@@ -338,7 +338,8 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     if (solvedN % 4 === 0) await p.screenshot({ path: SHOTS + 'act-' + id + '.png', fullPage: true });
     try { await solve(0); } catch (e) { throw new Error('activity ' + id + ' failed: ' + e.message); } solvedN++;
   }
-  assert(solvedN === 31, 'all 31 activities completed (19 classic + 6 maps + 6 timelines)');
+  const totalN = all.reduce((n, s) => n + s.ids.length, 0);
+  assert(solvedN === totalN && totalN >= 31, 'all ' + totalN + ' activities completed (Levels 1-6 had 31: 19 classic + 6 maps + 6 timelines)');
 
   /* v2.1 primary-source scroll: shows the source, its quiz pays and records srcQ, a miss comes back until cleared */
   console.log('primary-source scrolls:');
@@ -400,7 +401,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
      file falls back to a placeholder fact tour. */
   await p.evaluate(() => { window.GAME_CONTENT.videoTourSeconds = 0.25; });
   const vids = await p.evaluate(() => { const o = []; window.GAME_CONTENT.sections.forEach(s => s.lessons.forEach((l, i) => { if (l.videoKey) o.push({ sid: s.id, i, key: l.videoKey, nq: window.GAME_CONTENT.videos[l.videoKey].check.length }); })); return o; });
-  assert(vids.length === 12 && ['s5-jamestown-settlers', 's5-virginia-founders', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize', 's1-paleo-indians', 's1-olmec-maya-aztec', 's1-inca-empire', 's1-mound-builders'].every(k => vids.some(v => v.key === k)), 'all 12 video slots use the player (7 in s1, 5 in s5)'); const realWant = { 's1-beringia': 1, 's1-clovis-points': 1, 's1-early-maize': 1, 's5-jamestown-settlers': 1, 's5-virginia-founders': 1, 's5-virginia-struggles': 1, 's5-pilgrim-voyage': 1, 's5-new-england': 1, 's1-paleo-indians': 1, 's1-olmec-maya-aztec': 1, 's1-inca-empire': 1, 's1-mound-builders': 1 }; assert(true, 'all 8 verified clips are embedded');
+  assert(vids.filter(v => v.sid === 's1' || v.sid === 's5').length === 12 && vids.filter(v => v.sid === 's7').length === 7 && ['s5-jamestown-settlers', 's5-virginia-founders', 's5-virginia-struggles', 's5-pilgrim-voyage', 's5-new-england', 's1-beringia', 's1-clovis-points', 's1-early-maize', 's1-paleo-indians', 's1-olmec-maya-aztec', 's1-inca-empire', 's1-mound-builders'].every(k => vids.some(v => v.key === k)), 'all ' + vids.length + ' video slots use the player (7 in s1, 5 in s5, 7 in s7 + any newer)'); const realWant = { 's1-beringia': 1, 's1-clovis-points': 1, 's1-early-maize': 1, 's5-jamestown-settlers': 1, 's5-virginia-founders': 1, 's5-virginia-struggles': 1, 's5-pilgrim-voyage': 1, 's5-new-england': 1, 's1-paleo-indians': 1, 's1-olmec-maya-aztec': 1, 's1-inca-empire': 1, 's1-mound-builders': 1 }; assert(true, 'all 8 verified clips are embedded');
   for (const v of vids) {
     const before = (await st()).stars.balance;
     await p.evaluate((sid, i) => ABRPG.lesson(sid, i), v.sid, v.i); await sleep(1500);
@@ -421,10 +422,11 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
         'video ' + v.key + ': plays unmuted with sound (' + snd.bytes + ' audio bytes decoded), ' + snd.dur.toFixed(1) + ' s, captions in sync at every cueTime' + (sync.bad.length ? ' BAD ' + sync.bad : ''));
       await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     } else {
-      await p.click('.vtour'); await sleep(1500);
+      await p.click('.vtour'); await sleep(400); // a short silent tour (0.25 s per cue in tests) can end before 1.5 s, so read a caption early too
+      const cap0 = await p.evaluate(() => { const t = document.querySelector('.lower3.on .l3-t'); return t ? t.textContent : ''; }); await sleep(1100);
       const tour = await p.evaluate(async key => { const V = window.GAME_CONTENT.videos[key], au = document.querySelector('.vslot audio'); const t = document.querySelector('.lower3.on .l3-t'); const r = { c: t ? t.textContent : '', audio: !!V.audio, playing: !!au && !au.paused && au.currentTime > 0.3, muted: !!au && au.muted };
         if (au) { au.currentTime = Math.max(0, au.duration - 0.8); } return r; }, v.key);
-      capSeen = tour.c;
+      capSeen = tour.c || cap0;
       if (tour.audio) assert(tour.playing && !tour.muted, 'video ' + v.key + ': narrated fact tour plays its narration track');
       await p.waitForSelector('.vcheck:not([hidden]) .vc-ch button', { timeout: 15000 });
     }
@@ -466,7 +468,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     assert(m.url.startsWith('mailto:history-tutor+reports@mail.grokbot.com?subject=') && m.url.length <= 1800, 'Send report to Dad builds a mailto to history-tutor+reports@mail.grokbot.com under 1,800 chars (' + m.url.length + ')');
     assert(/^American Beginnings report – Progress – \w{3} \d{1,2}, \d{4}$/.test(subj), 'mail subject "American Beginnings report – Progress – <date>" (' + subj + ')');
     const js = (body.split('REPORT-JSON-START\n')[1] || '').split('\nREPORT-JSON-END')[0]; let J = null; try { J = JSON.parse(js); } catch (e) { }
-    assert(/Overall: .*goal 95%/.test(body) && /Grand Trial: /.test(body) && /Stars \d/.test(body) && /Weak areas: /.test(body) && /Review queue: /.test(body) && /REPORT-JSON-END/.test(body) && J && J.goal === 95 && J.sec.length === 6 && J.ov.length === 2, 'mail body: plain-text report + JSON between REPORT-JSON-START / REPORT-JSON-END');
+    assert(/Overall: .*goal 95%/.test(body) && /Grand Trial: /.test(body) && /Stars \d/.test(body) && /Weak areas: /.test(body) && /Review queue: /.test(body) && /REPORT-JSON-END/.test(body) && J && J.goal === 95 && J.sec.length === (await p.evaluate(() => GAME_CONTENT.sections.length)) && J.ov.length === 2, 'mail body: plain-text report + JSON between REPORT-JSON-START / REPORT-JSON-END');
     assert(!(await p.$eval('#mail-fallback', e => e.hidden)) && /history-tutor\+reports@mail\.grokbot\.com/.test(await p.$eval('#mail-fallback', e => e.textContent)) && await p.$('#b-mailcopy'), 'when no mail app opens, a Copy report fallback shows the address'); }
   await p.screenshot({ path: SHOTS + 'v21-report.png', fullPage: true });
   console.log('ALL PASSED');

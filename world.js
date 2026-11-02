@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [], s6: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [], s6: [], s7: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -108,7 +108,8 @@ function loadW() {
   for (const k of ["s2", "s3", "s4"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
   if (w.read && Array.isArray(w.read.s5)) d.read.s5 = [...new Set(w.read.s5.filter(i => Number.isInteger(i) && i >= 0 && i < 10))].sort((a, b) => a - b);   // v2.7: Section 5 has 10 scrolls
   if (w.read && Array.isArray(w.read.s6)) d.read.s6 = [...new Set(w.read.s6.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v2.8: Section 6 has 9 scrolls
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills", "help6", "rice", "indigo", "port6", "capitol", "trade6", "whitefield", "library", "penn", "hornbook", "townmeeting", "joinordie"]) if (w.seen[k] === true) d.seen[k] = true;
+  if (w.read && Array.isArray(w.read.s7)) d.read.s7 = [...new Set(w.read.s7.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v3.0: Section 7 has 9 scrolls
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills", "help6", "rice", "indigo", "port6", "capitol", "trade6", "whitefield", "library", "penn", "hornbook", "townmeeting", "joinordie", "help7", "cabin", "furtrade7", "necessity", "duquesne", "braddock", "hendrick", "snake7", "wolfe", "plains"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
@@ -119,6 +120,8 @@ function loadW() {
   if (a5 && typeof a5 === "object" && Number.isFinite(a5.x) && Number.isFinite(a5.z) && a5.x > -70 && a5.x < 70 && a5.z > -72 && a5.z < 70) d.at.s5 = { x: a5.x, z: a5.z, yaw: Number.isFinite(a5.yaw) ? wrapA(a5.yaw) : 0 };
   const a6 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s6 : null;   // Thirteen Colonies bounds (world/thirteen.js BOUNDS)
   if (a6 && typeof a6 === "object" && Number.isFinite(a6.x) && Number.isFinite(a6.z) && a6.x > -70 && a6.x < 70 && a6.z > -72 && a6.z < 70) d.at.s6 = { x: a6.x, z: a6.z, yaw: Number.isFinite(a6.yaw) ? wrapA(a6.yaw) : 0 };
+  const a7 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s7 : null;   // Frontier bounds (world/frontier.js BOUNDS)
+  if (a7 && typeof a7 === "object" && Number.isFinite(a7.x) && Number.isFinite(a7.z) && a7.x > -70 && a7.x < 70 && a7.z > -72 && a7.z < 90) d.at.s7 = { x: a7.x, z: a7.z, yaw: Number.isFinite(a7.yaw) ? wrapA(a7.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -128,14 +131,14 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2", "s3", "s4", "s5", "s6"];                                       // sections with a walkable level
+const WALK = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]], s6: [[7, "src6a"], [8, "src6b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
+const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]], s6: [[7, "src6a"], [8, "src6b"]], s7: [[7, "src7a"], [8, "src7b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
 const scrollRead = (sid, i) => W.read[sid].includes(i) || (SRC_LESSON[sid] || []).some(([j, t]) => i === j && !!(ST().srcQ && ST().srcQ[t] && ST().srcQ[t].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
@@ -477,6 +480,71 @@ function nextTargetS6() {
   const n0 = Math.min(...todo.map(r => S[r.def.station].n)); return pick(todo.filter(r => S[r.def.station].n === n0));
 }
 
+// ---- v3.0 Level 7 (The French and Indian War, 1753–1763): a frontier farm → the trading post at Wills Creek → Fort
+// Necessity → the Forks of the Ohio → Albany 1754 → a story jump to 1759: Point Lévis → a boat across the St. Lawrence to
+// the Anse au Foulon, up the cliff path → the Plains of Abraham (Trial). The boat rings fade her across; nothing is saved
+// but at.s7. Info cards mark W.seen like the other levels; no new progress-save fields.
+function ringDefsS7(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L7 = (id, i, st) => lessonRing("s7-" + id, i, A[id][0], A[id][1], st, "s7");
+  const A7 = (id, actId, icon, title, st) => actRing("s7-" + id, actId, icon, title, A[id][0], A[id][1], st, "s7");
+  const boat = (side, station) => at("boat-" + side, { id: "boat-" + side, station, icon: "🛶", label: () => side === "south" ? "Story jump to 1759: cross the St. Lawrence by boat" : "Take the boat back to Point Lévis", act: () => card(boatCardS7(side)), state: () => "done" });
+  return [
+    L7("l0", 0, "farm"), info("cabin", "farm", "🏡", "A frontier farm, 1753", cabinCard7), A7("mission", "s7-mission", "✉️", "Washington’s Winter Mission, 1753", "farm"),
+    L7("l2", 2, "willscreek"), info("furtrade7", "willscreek", "🦫", "Trading at Wills Creek", furtrade7Card), A7("sides", "s7-sides", "⚔️", "Who fought on which side?", "willscreek"),
+    at("market", { id: "market", station: "willscreek", icon: "🛍️", label: () => "The Trading Post at Wills Creek", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m6"); }), state: () => "done" }),
+    L7("l1", 1, "meadows"), L7("l7", 7, "meadows"), A7("washington", "s7-washington", "🎖️", "Talk with young George Washington", "meadows"), info("necessity", "meadows", "🪵", "Fort Necessity, July 3, 1754", necessityCard),
+    L7("l4", 4, "forks"), info("duquesne", "forks", "⚜️", "The Forks of the Ohio and Fort Duquesne", duquesneCard), info("braddock", "forks", "🥁", "Braddock’s defeat, July 9, 1755", braddockCard),
+    L7("l3", 3, "albany"), L7("l8", 8, "albany"), info("hendrick", "albany", "🪶", "Hendrick and the Six Nations", hendrickCard), info("snake7", "albany", "🐍", "“JOIN, or DIE.” and the Albany Plan", snake7Card),
+    info("wolfe", "levis", "⛺", "Wolfe’s army at Point Lévis, 1759", wolfeCard), boat("south", "levis"), boat("north", "gate"),
+    L7("l5", 5, "gate"), L7("l6", 6, "gate"), info("plains", "gate", "🎖️", "The Plains of Abraham, September 13, 1759", plainsCard),
+    A7("geomap", "s7-geomap", "🧭", "Map the French and Indian War", "gate"), A7("timeline", "s7-timeline", "📓", "Timeline of the French and Indian War", "gate"),
+    at("trial", { id: "trial", station: "gate", icon: "⚔️", label: () => trialLabelS7(), act: () => gateOpenS7() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s7"); } finally { L.bypass = false; } }) : card(gateLockedCardS7()), state: () => !gateOpenS7() ? "locked" : (sec("s7").completed ? "star" : "new") })
+  ];
+}
+const S7_ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const missingS7 = () => S7_ALL.filter(i => !scrollRead("s7", i));
+const gateOpenS7 = () => missingS7().length === 0 || (sec("s7").attempts || 0) > 0 || !!sec("s7").completed || trialActive("s7");
+function trialLabelS7() { const st = sec("s7"); if (trialActive("s7")) return "Resume the Trial on the Plains of Abraham"; if (st.completed) return "The Plains of Abraham Trial (mastered " + st.bestPct + "%) — try again"; return "The Plains of Abraham: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCardS7() { return { title: "🎖️ The Plains of Abraham", body: "<p>Here, outside the walls of <b>Quebec</b>, the battle that decided the French and Indian War was fought on <b>September 13, 1759</b>. The Trial opens once you have read <b>all 9 scrolls</b> of the French and Indian War. Still to read:</p>", btns: missingS7().map(i => lessonBtnS("s7", i)) }; }
+function boatCardS7(side) {
+  if (side === "north") return { title: "🛶 Back across the St. Lawrence", body: "<p>Ready to row back across the river to the British camp at <b>Point Lévis</b>, and the road south to Albany and the Ohio country?</p>", btns: [{ t: "🛶 Row back to Point Lévis", f: () => { closeCard(); boatToS7("south"); } }] };
+  return { title: "🛶 A story jump: 1759", body: "<p>Five years pass. The war that began in the Ohio Valley in 1754 has spread around the world. Britain’s leader <b>William Pitt</b> has sent thousands of soldiers and a great fleet to America, and in the summer of <b>1759</b> General <b>James Wolfe</b> has brought an army up the St. Lawrence River to <b>Quebec</b>, the capital of New France.</p><p>The city sits high on cliffs. In the dark before dawn on <b>September 13, 1759</b>, Wolfe’s soldiers drift downriver in flat-bottomed boats to a little cove, the <b>Anse au Foulon</b>, and climb a narrow path up the cliff. Will you go with them?</p>", btns: [{ t: "🛶 Cross the river to the Anse au Foulon", f: () => { closeCard(); boatToS7("north"); } }] };
+}
+const ARRIVE7 = {
+  north: "🌙 The Anse au Foulon, before dawn on <b>September 13, 1759</b>. Climb the steep path up the cliff, as Wolfe’s soldiers did, to the <b>Plains of Abraham</b>.",
+  south: "⛺ Point Lévis, 1759: the British camp on the south shore of the St. Lawrence."
+};
+function boatToS7(side) { const h = L.mods.B.HARBORS[side]; if (!h) return false; teleport("out", h); setTimeout(() => toast(ARRIVE7[side]), 600); return true; }
+function cabinCard7() { return { title: "🏡 A frontier farm, 1753", body: "<p>By the 1750s, colonists were moving west from the coast into the <b>backcountry</b> of Virginia and Pennsylvania. They cleared the forest, built log cabins like this one, fenced their fields with zig-zag split rails, and planted corn. Across the mountains lay the rich <b>Ohio River Valley</b>.</p><p>In <b>1749</b> King George II granted a group of Virginians, the <b>Ohio Company</b>, 200,000 acres there. But <b>France</b> claimed the same land, and in <b>1753</b> French soldiers built a chain of forts south from Lake Erie to hold it.</p><p>The whole truth: the Ohio Valley was the home and hunting ground of the <b>Shawnee</b>, the <b>Delaware</b> (Lenape) and the <b>Mingo</b> (Seneca and other Haudenosaunee people living along the Ohio), and they had never given it to either king. That winter, Virginia’s governor sent a 21-year-old militia officer north to warn the French away: <b>George Washington</b>.</p>" }; }
+function furtrade7Card() { return { title: "🦫 Trading at Wills Creek", body: "<p>About <b>1750</b>, the Ohio Company built a storehouse here at <b>Wills Creek</b> on the Potomac River, at the edge of the mountains. Traders brought wool cloth, blankets, kettles, knives, guns and beads to trade with Native hunters for <b>deerskins</b> and <b>beaver furs</b>.</p><p>The French were the great fur traders of North America. New France had <b>far fewer colonists</b> (well under 100,000) than the British colonies (more than a million), and most French traders came to trade, not to clear farms. That is a big reason many Native nations <b>sided with the French</b>: British settlers wanted their land.</p><p>Here in 1754–1755 the British built <b>Fort Cumberland</b>, and in 1755 General Braddock’s army set out from it toward the Forks of the Ohio.</p>" }; }
+function necessityCard() { return { title: "🪵 Fort Necessity, July 3, 1754", body: "<p>In the spring of 1754, Lieutenant Colonel <b>George Washington</b>, age 22, led about 160 Virginia soldiers toward the Forks of the Ohio. On <b>May 28, 1754</b>, guided by the Seneca leader <b>Tanacharison</b> (the “Half King”), they surprised a small French party in a rocky glen. The French commander, <b>Jumonville</b>, and nine others were killed. The French called it murder; the first shots of a world war had been fired.</p><p>Washington fell back to the <b>Great Meadows</b> and built this little <b>round stockade</b>, about 53 feet across, around a storehouse, with shallow trenches outside. He named it <b>Fort Necessity</b>.</p><p>On <b>July 3, 1754</b>, about 600 French soldiers and 100 Native allies attacked in pouring rain. The trenches filled with water and the gunpowder got wet. That night Washington <b>surrendered</b>, and his men marched home on July 4. Washington learned hard lessons here, and he never stopped serving his country. A copy of the fort stands on this spot today.</p>" }; }
+function duquesneCard() { return { title: "⚜️ The Forks of the Ohio and Fort Duquesne", body: "<p>Here the <b>Allegheny River</b> (from the north) and the <b>Monongahela River</b> (from the south) join to make the <b>Ohio River</b>, which flows west to the Mississippi. Whoever held this point could control the whole Ohio Valley.</p><p>In early 1754 a few Virginians began building a fort here. In April a French force of about 500 arrived, ordered them to leave, and built <b>Fort Duquesne</b>, a square fort of logs and earth with four pointed corners called <b>bastions</b>. It flew the <b>white flag of the French king</b>, with gold <b>fleurs-de-lis</b> (lilies).</p><p>The soldiers in grey-white coats with blue cuffs are French <b>troupes de la Marine</b>; the men in blanket coats and red caps are <b>Canadian militia</b>. In <b>1758</b>, as a British army under General John Forbes closed in, the French <b>blew up</b> Fort Duquesne and left. The British built <b>Fort Pitt</b>, named for William Pitt. Today this point is the city of <b>Pittsburgh</b>.</p>" }; }
+function braddockCard() { return { title: "🥁 Braddock’s defeat, July 9, 1755", body: "<p>In 1755 Britain sent General <b>Edward Braddock</b> with two regiments of red-coated regulars. With colonial troops, his army cut a road over the mountains from Wills Creek toward Fort Duquesne. Washington went along as a volunteer aide.</p><p>On <b>July 9, 1755</b>, near the Monongahela River about ten miles from the fort, about 900 French soldiers, Canadians and <b>Native warriors</b> attacked from the woods. Braddock’s men were used to fighting in open fields in neat lines, and they did not know how to fight hidden enemies. Almost two-thirds of them were killed or wounded, and <b>Braddock was mortally wounded</b>.</p><p>Washington rode back and forth through the fire to organize the retreat. He wrote afterward that he had “4 Bullets through my Coat, and two Horses shot under me,” yet he escaped unhurt. Americans remembered his courage.</p>" }; }
+function hendrickCard() { return { title: "🪶 Hendrick and the Six Nations", body: "<p>The <b>Haudenosaunee</b> (Iroquois) Confederacy was the most powerful Native alliance in the Northeast: the <b>Mohawk, Oneida, Onondaga, Cayuga, Seneca</b> and, since about 1722, the <b>Tuscarora</b>. That is why it was called the <b>Six Nations</b>. Its Great Law of Peace united them under one council.</p><p>At the <b>Albany Congress</b> in the summer of 1754, the colonies hoped to win the Six Nations to the British side. The Mohawk leader <b>Hendrick Theyanoguin</b>, an old friend of the British, spoke sharply: the British had left their frontier forts weak while the French built strong ones everywhere.</p><p>Most of the Confederacy tried to stay <b>neutral</b> at first. Hendrick himself fought beside the British and was killed at the Battle of Lake George in <b>1755</b>. Later in the war, as the British began winning, more Haudenosaunee joined them.</p>" }; }
+function snake7Card() { return { title: "🐍 “JOIN, or DIE.” and the Albany Plan", body: "<p>On <b>May 9, 1754</b>, after news came that the French had taken the Forks of the Ohio, <b>Benjamin Franklin</b> printed this woodcut in his <b>Pennsylvania Gazette</b>. The snake is cut into <b>8 pieces</b>: South Carolina, North Carolina, Virginia, Maryland, Pennsylvania, New Jersey, New York and New England. (Georgia and Delaware are not shown.) An old belief said a cut snake could live again if its pieces were joined before sunset.</p><p>In <b>June and July 1754</b>, delegates from <b>seven colonies</b> met at Albany. Franklin proposed the <b>Albany Plan of Union</b>: one grand council of delegates from all the colonies, with a president chosen by the king, to raise armies and deal with the Native nations.</p><p>The delegates approved it, but <b>every colonial assembly turned it down</b>, and Britain ignored it. The colonies were not yet ready to share power. Twenty-two years later, the idea of union came back.</p>" }; }
+function wolfeCard() { return { title: "⛺ Wolfe’s army at Point Lévis, 1759", body: "<p>In the summer of <b>1759</b>, a British fleet carried General <b>James Wolfe</b> and about 9,000 soldiers up the St. Lawrence River. They camped here at <b>Point Lévis</b>, on the south shore across from <b>Quebec</b>, and their cannons fired on the city all summer.</p><p>But Quebec stood on high cliffs, and the French general, the <b>Marquis de Montcalm</b>, kept his army safe behind its defenses. Wolfe’s attacks failed, and autumn was coming, when ice would trap his ships.</p><p>So Wolfe made a bold plan. He found a little cove west of the city, the <b>Anse au Foulon</b>, where a narrow path climbed the cliff. Take the boat to see what happened next.</p>" }; }
+function plainsCard() { return { title: "🎖️ The Plains of Abraham, September 13, 1759", body: "<p>In the night of September 12–13, Wolfe’s boats slipped downriver. About <b>4,500</b> soldiers climbed the cliff path and, by morning, stood in lines on this open farmland, the <b>Plains of Abraham</b>, just west of the city walls. (The fields were named for Abraham Martin, a river pilot who had farmed here more than a hundred years before.)</p><p>Montcalm marched out to fight. The British held their fire until the French came close, then fired together. The battle was over in less than an hour. <b>Both generals were mortally wounded</b>: Wolfe died on the field, and Montcalm the next morning. Quebec surrendered five days later.</p><p>In <b>1760</b> Montreal fell too, and in the <b>Treaty of Paris</b> of <b>1763</b> France gave up Canada and its lands east of the Mississippi. The British flag now flew over most of North America east of the Mississippi.</p>" }; }
+function helpCardS7() {
+  card({ title: "❔ How to explore the French and Indian War", body: "<p>You are <b>" + esc(heroName()) + "</b>, a girl on the <b>Virginia frontier</b> in 1753. Britain and France both claim the Ohio Valley, and war is coming. Walk from your family’s farm to the trading post at Wills Creek, Washington’s <b>Fort Necessity</b>, the <b>Forks of the Ohio</b> and the <b>Albany Congress</b>; then a story jump takes you to <b>Quebec in 1759</b>.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these places are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start, so <b>west is on your left</b>.</li><li>At <b>Point Lévis</b> (marker 6) a boat carries you across the St. Lawrence River; climb the cliff path to the <b>Plains of Abraham</b>. Read all <b>9 scrolls</b> to open the Trial there.</li></ul>" });
+  W.seen.help7 = true; saveW();
+}
+// Level 7 banner: like Level 5 (the St. Lawrence is crossed by boat): the station she stands in, else the lowest-numbered
+// station with work left; if that is across the river, the boat ring on her side. With nothing left: the Trial.
+function nextTargetS7() {
+  const rings = L.lvl.rings, S = L.mods.B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const north = z => z > 55, meN = north(L.pos.z);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const cross = () => { const r = byId(meN ? "boat-north" : "boat-south"); return { def: { ...r.def, text: meN ? "Marker 7 · Take the boat back to Point Lévis" : "Marker 6 · Take the boat across the St. Lawrence to 1759" } }; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  let best;
+  if (!todo.length) best = byId("trial");
+  else { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+    if (inSt && inSt.length) best = pick(inSt); else { const n0 = Math.min(...todo.map(r => S[r.def.station].n)); best = pick(todo.filter(r => S[r.def.station].n === n0)); } }
+  return best && north(best.def.z) !== meN ? cross() : best;
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
 const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
@@ -711,8 +779,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies", s7: "⚔️ Back to the French and Indian War" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies", s7: "🚶 Walk the French and Indian War" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); if (L.sid === "s7") return helpCardS7(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 // v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
 function layoutHud() {
@@ -731,7 +799,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.8:</b> walk the Thirteen Colonies in 3D: Charles Town, Williamsburg, a Great Awakening field meeting, Ben Franklin’s Philadelphia, a village lane, Boston and Albany in 1754 (plus Jamestown and Plymouth, the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v3.0:</b> walk the French and Indian War in 3D: a frontier farm, Fort Necessity, the Forks of the Ohio, the Albany Congress and the Plains of Abraham at Quebec (plus the Thirteen Colonies, Jamestown and Plymouth, the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
@@ -756,6 +824,12 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s7") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s7") { enterLevel("s7"); return true; }
+        resume(); if (gateOpenS7()) setTimeout(() => toast("🎖️ The Trial waits on the <b>Plains of Abraham</b>, marker 7, across the St. Lawrence. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCardS7()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s6") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s6") { enterLevel("s6"); return true; }
@@ -824,16 +898,16 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s7" ? "./world/frontier.js" : sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s7" ? ringDefsS7(B) : sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") {
+    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6" || sid === "s7") {
       const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s4" ? "s4-goals" : sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = sid === "s6" ? B.buildThirteen({ mergeAO, rings, matLabels }) : sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s7" ? B.buildFrontier({ mergeAO, rings, matLabels }) : sid === "s6" ? B.buildThirteen({ mergeAO, rings, matLabels }) : sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -864,12 +938,12 @@ function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
-  const ok = L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  const ok = L.sid === "s7" ? ["s7"] : L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && (ok.includes(i.section) || i.allEras) && i.art) out.push({ art: i.art, color: i.color, top: i.top, skirt: i.skirt }); }   // v2.9: dyes + hair colors in every era
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" || L.sid === "s6" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" || L.sid === "s6" || L.sid === "s7" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
@@ -881,6 +955,7 @@ function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
   if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }
+  if (L.sid === "s7") { L.zone = "out"; L.pos.set(-14, B.groundH(-14, -62), -62); L.yaw = 0; return; }   // the frontier farm, facing north
   if (L.sid === "s6") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Charles Town, facing north up the road
   if (L.sid === "s5") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Roanoke Island, facing north to the empty fort   // St. Augustine, facing north into town
   if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
@@ -892,10 +967,11 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") && (L.phase === "off" || from !== sid)) {
+  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6" || sid === "s7") && (L.phase === "off" || from !== sid)) {
     // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
     const a = W.at[sid], t = B.RING_AT.trial;
     if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid) && sid === "s7") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🎖️ Your Trial is waiting. Step into the ring on the Plains of Abraham to resume."), 300); }
     else if (trialActive(sid) && sid === "s6") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the Stadt Huys door to resume."), 300); }
     else if (trialActive(sid) && sid === "s5") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the fort-meetinghouse door to resume."), 300); }
     else if (trialActive(sid) && sid === "s4") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🚪 Your Trial is waiting. Step into the ring in the palisade gate to resume."), 300); }
@@ -911,9 +987,9 @@ async function enterLevel(sid = L.sid) {
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone); compassSetup(sid);
-  document.getElementById("w-era").textContent = sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  document.getElementById("w-era").textContent = sid === "s7" ? "Section 7 · The French and Indian War, 1754–1763 · the Ohio frontier, Fort Necessity 1754, Albany 1754, Quebec 1759" : sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s7" ? "help7" : sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -1068,6 +1144,7 @@ function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
   if (L.sid === "s3") return nextTargetS3();
   if (L.sid === "s4") return nextTargetS4();
+  if (L.sid === "s7") return nextTargetS7();
   if (L.sid === "s6") return nextTargetS6();
   if (L.sid === "s5") return nextTargetS5();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
@@ -1088,7 +1165,7 @@ function nextTarget() {
 // shows real north (+z on every level). Styled per era: Levels 1-2 a carved "guide stone" (no magnetic compass
 // existed; the help card says travelers used the sun, landmarks and rivers), Level 3 a brass mariner's compass
 // (Columbus steered by one) and Level 4, Levels 5-6 a brass-and-wood compass of the 1600s-1700s. The banner adds the distance.
-const COMPASS = { s1: "stone", s2: "stone", s3: "brass", s4: "brass", s5: "wood", s6: "wood" };
+const COMPASS = { s1: "stone", s2: "stone", s3: "brass", s4: "brass", s5: "wood", s6: "wood", s7: "brass" };
 const COMPASS_HELP = {
   stone: "<li><b>Guide stone</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. It is a game helper: Ice Age and Native travelers had no compass and found their way by the sun, the stars, rivers and landmarks.</li>",
   brass: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Sailors of 1492 really steered by a magnetic compass.</li>",
@@ -1316,7 +1393,7 @@ window.__world = {
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
-  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), ship5: (side) => shipToS5(side),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), gateOpenS7: () => gateOpenS7(), boat7: (side) => boatToS7(side), ship5: (side) => shipToS5(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

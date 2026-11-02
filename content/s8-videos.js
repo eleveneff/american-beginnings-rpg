@@ -125,11 +125,12 @@
   V["s8-intolerable-acts"] = {
     title: "The Intolerable Acts",
     cues: [
-      "King George III: \"We must either master them or totally leave them to themselves.\"",
+      "Early 1774: news of the Tea Party reaches London. King George III and Parliament decide to punish Boston.",
       "1774: the **Coercive Acts** close **Boston Harbor** until the tea is paid for.",
       "Town meetings are limited, and General **Thomas Gage** becomes governor of Massachusetts.",
       "The **Quebec Act** stretches Canada south to the **Ohio River**.",
-      "Colonists call them the **Intolerable Acts**, and other colonies send **food** to Boston."
+      "Colonists call them the **Intolerable Acts**, and other colonies send **food** to Boston.",
+      "November 1774, King George III: \"We must either master them or totally leave them to themselves.\""
     ],
     facts: [
       "With the harbor closed, Boston's sailors, dockworkers, and merchants lost their work.",

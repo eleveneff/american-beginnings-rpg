@@ -18,17 +18,17 @@ GAME_CONTENT.sections.push({
   lessons: [
     { topic: "newlaws", title: "Scroll 1: Paying for an Empire", video: null,
       text: [
-        "After the French and Indian War, Britain controlled a huge part of North America. King **George III** issued the **Proclamation of 1763**, which **prohibited** colonists from living **west of the Appalachian Mountains**, on Native American land. He sent **10,000 troops** to enforce it and keep the peace.",
+        "After the French and Indian War, Britain controlled a huge part of North America. King **George III** issued the **Proclamation of 1763**, which **prohibited** colonists from living **west of the Appalachian Mountains**, on Native American land. Britain kept about **10,000 troops** in North America to guard the frontier and keep the peace.",
         "The Proclamation helped keep peace with Native nations and kept colonists near the coast, where British authority was strong. But many colonists ignored it. In **1768**, at the Treaty of **Fort Stanwix**, the Iroquois sold Britain a huge area south of the Ohio River. Shawnee, Delaware, and Cherokee people who hunted there were not asked.",
         "Britain needed **revenue**, or income, to pay for its troops and its huge **war debt**. The king and **Parliament** decided the colonists should pay part of the cost. Many colonists avoided old taxes by **smuggling**.",
-        "In **1763**, Prime Minister **George Grenville** set out to stop smuggling. Accused smugglers would be tried by royal judges instead of local juries. Customs officers got **writs of assistance**, papers that let them search almost anywhere, even private homes, for smuggled goods.",
+        "In **1763**, Prime Minister **George Grenville** set out to stop smuggling. Accused smugglers would be tried by royal judges instead of local juries. Customs officers used **writs of assistance**, papers that let them search almost anywhere, even private homes, for smuggled goods.",
         "The **Sugar Act (1764)** actually **lowered** the tax on molasses, hoping colonists would pay it instead of smuggling. But it let officers seize goods without going to court. Colonists said these laws broke their rights as British citizens: **trial by jury**, being **innocent until proven guilty**, and being **secure in their homes**."
       ] },
     { topic: "stamp", title: "Scroll 2: The Stamp Act and \"No Taxation Without Representation\"", video: null,
       text: [
         "In **1765** Parliament passed the **Stamp Act**. It taxed almost all **printed materials**: newspapers, wills, licenses, pamphlets, and even **playing cards** needed a stamp to show the tax was paid.",
         "Colonists argued that only their **own assemblies**, which they elected, could tax them. They had no vote in Parliament. Their cry became **\"No taxation without representation!\"**",
-        "In Virginia's **House of Burgesses**, a young lawyer named **Patrick Henry** got the burgesses to pass a **resolution**, a formal expression of opinion, saying Virginia had \"the only and sole exclusive right and power to lay taxes\" on its people.",
+        "In Virginia's **House of Burgesses**, a young lawyer named **Patrick Henry** got the burgesses to pass **resolutions**, formal expressions of opinion, against the Stamp Act. His boldest one said Virginia's assembly had \"the only and sole exclusive right and power to lay taxes\" on its people. The burgesses struck that one out the next day, but newspapers printed it all over the colonies anyway.",
         "In Boston, **Samuel Adams** helped start the **Sons of Liberty**. They burned **effigies**, stuffed figures, of tax collectors. Hard truth: some protests turned into mob violence. In August 1765 a crowd wrecked the home of Lieutenant Governor **Thomas Hutchinson**, even though he had privately opposed the Stamp Act.",
         "In **October 1765**, delegates from **nine colonies** met in New York at the **Stamp Act Congress**. Colonists also **boycotted**, refused to buy, British goods. British merchants lost so much money that Parliament **repealed** (canceled) the Stamp Act in **March 1766**. The same day it passed the **Declaratory Act**, saying it could make laws for the colonies \"in all cases whatsoever.\""
       ] },
@@ -46,7 +46,7 @@ GAME_CONTENT.sections.push({
         "After a soldier was knocked down, the nervous soldiers fired. **Five colonists** were killed. One was **Crispus Attucks**, a sailor and dockworker of African and Native American descent. The colonists called it the **Boston Massacre**.",
         "Leaders used it as **propaganda**, information meant to influence opinion. **Paul Revere** sold an engraving that showed the soldiers firing on a calm crowd as an officer gave the order. That is not exactly what happened, but it made many colonists angry.",
         "Truth matters, even for your opponents. The patriot lawyer **John Adams** agreed to **defend** the soldiers in court, because everyone deserves a fair trial. Captain Preston and six soldiers were found not guilty; two were convicted of manslaughter.",
-        "Parliament then **repealed** all the Townshend taxes **except the tax on tea**. Trade went back to normal. But in **1772**, Samuel Adams revived Boston's **committee of correspondence**, a group that wrote letters to spread news and plan protests. Soon committees sprang up across the colonies."
+        "Parliament then **repealed** all the Townshend taxes **except the tax on tea**. Trade went back to normal. But in **1772**, Samuel Adams helped start Boston's **committee of correspondence**, a group that wrote letters to spread news and plan protests. Soon committees sprang up across the colonies."
       ] },
     { topic: "tea", title: "Scroll 5: The Boston Tea Party", video: null,
       text: [
@@ -58,7 +58,7 @@ GAME_CONTENT.sections.push({
       ] },
     { topic: "intolerable", title: "Scroll 6: The Intolerable Acts", video: null,
       text: [
-        "When the news reached London, King George III said: \"We must either master them or totally leave them to themselves.\"",
+        "News of the Tea Party reached London in early 1774. King George III and Parliament decided that Boston must be punished. Later that year, in November 1774, the king wrote: \"We must either master them or totally leave them to themselves.\"",
         "In **1774** Parliament passed the **Coercive Acts**, laws meant to punish Massachusetts and **force** it to obey. They **closed Boston Harbor** until the tea was paid for, which cut off most food and supplies. They limited **town meetings** and gave the royal governor, General **Thomas Gage**, more power. Another **Quartering Act** let soldiers be housed in empty buildings.",
         "Parliament also passed the **Quebec Act**, which made Canada's territory stretch south to the **Ohio River**, ignoring the colonies' claims to that land.",
         "Colonists called these laws the **Intolerable Acts**, which means painful and unbearable. Instead of cutting Massachusetts off, the laws **drew the colonies together**. Other colonies sent food, sheep, rice, and flour to Boston.",
@@ -114,7 +114,7 @@ GAME_CONTENT.sections.push({
     { id: "s8q11", topic: "stamp", type: "vocab", term: "repeal",
       choices: ["To cancel an act or law", "To pass a new tax", "To arrest a smuggler", "To write a letter"],
       explain: "Parliament repealed the Stamp Act in March 1766." },
-    { id: "s8q12", topic: "stamp", type: "short", q: "Which Virginia burgess got the House of Burgesses to say only Virginia could tax its people?",
+    { id: "s8q12", topic: "stamp", type: "short", q: "Which Virginia burgess led the House of Burgesses to protest the Stamp Act, saying only Virginia's own assembly could tax its people?",
       accept: ["patrick henry", "henry"], display: "Patrick Henry", explain: "His resolutions were printed all over the colonies." },
     { id: "s8q13", topic: "stamp", type: "fill", q: "In October 1765, delegates from nine colonies met in New York at the Stamp Act ____.",
       accept: ["congress"], display: "Congress", explain: "They declared that only colonial assemblies could tax the colonists." },
@@ -162,7 +162,7 @@ GAME_CONTENT.sections.push({
       explain: "Colonists kept boycotting tea." },
     { id: "s8q29", topic: "massacre", type: "mc", q: "What was a committee of correspondence?",
       choices: ["A group that wrote letters to spread news and plan protests", "A British court", "A group of tax collectors", "A ship's crew"],
-      explain: "Samuel Adams revived Boston's committee in 1772." },
+      explain: "Samuel Adams helped start Boston's committee in 1772." },
     { id: "s8q30", topic: "tea", type: "mc", q: "What did the Tea Act of 1773 do?",
       choices: ["It gave the British East India Company almost total control of the colonial tea market", "It banned tea in the colonies", "It ended all taxes on tea", "It let colonists grow their own tea"],
       explain: "The tea was cheap, but it still carried a tax colonists had not agreed to." },

@@ -37,8 +37,9 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
       if (r.press) await p.keyboard.press('KeyE'); await sleep(25); }
     for (const k of [...held]) await p.keyboard.up(k); return { ph, secs: (Date.now() - ts) / 1000 }; };
   { const first = (process.env.ONLY || 's1').split(',')[0]; await enter(first); }   // the mini-game module loads with the first walkable level
-  const REG = await p.evaluate(() => { const o = {}; for (const s in __mg.reg) o[s] = __mg.reg[s].map(g => g.id); return o; });
-  check(Object.keys(REG).length === 6 && Object.values(REG).every(a => a.length >= 2 && a.length <= 3), 'registry: 2–3 games in each of the 6 levels (' + Object.values(REG).flat().length + ' games)');
+  const REG = await p.evaluate(() => { const o = {}; for (const s of __mg.live) o[s] = __mg.reg[s].map(g => g.id); return o; });
+  check(Object.keys(REG).length >= 1 && Object.values(REG).every(a => a.length >= 2 && a.length <= 3), 'registry: 2–3 games in each live level (' + Object.keys(REG).join(', ') + ': ' + Object.values(REG).flat().length + ' games)');
+  { const off = await p.evaluate(() => Object.keys(__mg.reg).filter(s => !__mg.live.includes(s))); if (off.length) { await enter(off[0]); check((await p.evaluate(() => __world.rings().filter(r => /^mg-/.test(r.id)).length)) === 0 && !(await p.evaluate(s => __mg.open(s, __mg.reg[s][0].id), off[0])), off[0] + ': games of levels not yet live show no rings and do not open'); } }
   for (const sid of Object.keys(REG)) {
     if (process.env.ONLY && !process.env.ONLY.split(',').includes(sid)) continue;
     console.log(sid + ':'); if ((await p.evaluate(() => __world.level)) !== sid) await enter(sid);

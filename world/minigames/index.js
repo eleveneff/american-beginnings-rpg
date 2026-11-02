@@ -35,6 +35,8 @@ export const REG = {
     { id: 'postrider', file: 'postrider', title: 'Ride the Post Road', icon: '✉️', station: 'williamsburg', ring: [19.8, -17.9], arena: [28.5, -15.6, 1.31] },
   ],
 };
+// levels whose games are switched on (shipped in batches; the other files are present but unused until listed here)
+export const LIVE = ['s1', 's2', 's3'];
 const PAY = { first: 10, practice: 2, perDay: 3 };   // mirrored from app.js (for the intro card text only)
 
 let A = null, S = null, cssOn = false, lastLvl = null;
@@ -51,7 +53,7 @@ export const active = () => !!S;
 // ring defs for one level (called while the level is being built)
 export function ringDefs(sid) {
   if (S) exit(true);
-  return (REG[sid] || []).map(g => ({
+  return (LIVE.includes(sid) && REG[sid] || []).map(g => ({
     id: 'mg-' + sid + '-' + g.id, mg: true, x: g.ring[0], z: g.ring[1], station: g.station, icon: g.icon, scored: false,
     text: null, label: () => 'Mini-game: ' + g.title + (won(sid, g.id) ? ' ✅' : ''),
     act: () => open(sid, g), state: () => won(sid, g.id) ? 'mgwon' : 'mg'
@@ -248,7 +250,7 @@ function exit(silent) {
 const hook = {
   get active() { return !!S; }, get phase() { return S ? S.phase : null; }, get id() { return S ? S.g.id : null; },
   get easy() { return S ? S.easy : null; }, get fails() { return S ? S.fails : null; },
-  reg: REG, L: () => A && A.L, ctx: () => S && S.ctx, game: () => S && S.game, open: (sid, id) => { const g = (REG[sid] || []).find(q => q.id === id); return g && open(sid, g); },
+  reg: REG, L: () => A && A.L, ctx: () => S && S.ctx, game: () => S && S.game, live: LIVE, open: (sid, id) => { const g = (LIVE.includes(sid) && REG[sid] || []).find(q => q.id === id); return g && open(sid, g); },
   play: () => S && S.phase === 'intro' && play(), press, quit, exit: () => exit(), cheatWin: () => S && S.phase === 'play' && win('(test)'), cheatLose: () => S && S.phase === 'play' && fail('(test)'),
   card: () => { const c = $('mg-card'); return c.hidden ? null : c.innerText; }, primary: () => S && S.cardPrimary && S.cardPrimary(), back: () => S && S.cardBack && S.cardBack(),
 };

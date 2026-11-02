@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "regions", title: "Scroll 1: Land Shapes Life", video: null,
+      videoKey: "s2-culture-regions", videoTitle: "Land Shapes Life: Culture Regions",
       videoIdea: "Low-poly N64-style flyover of North America's culture regions: Arctic ice, Northwest forests, Plains grass, Southwest desert, Eastern forests.",
       text: [
         "By the 1400s, millions of Native Americans lived in North America, speaking hundreds of languages. Historians group them into **culture regions**: areas where groups shared similar ways of life because of their environment.",
@@ -18,6 +19,7 @@ GAME_CONTENT.sections.push({
         "In the dry **Great Basin**, groups such as the Shoshone and Ute moved often, gathering seeds, nuts, and roots and hunting small animals."
       ] },
     { topic: "northwest", title: "Scroll 2: The Pacific Northwest", video: null,
+      videoKey: "s2-pacific-northwest", videoTitle: "The Pacific Northwest: People of the Cedar and Salmon",
       videoIdea: "Low-poly N64-style coastal village with cedar plank houses, carved cedar house posts showing family crests, and canoes full of salmon.",
       text: [
         "Along the rainy Pacific Northwest coast, peoples such as the **Kwakiutl (Kwakwaka'wakw), Haida, and Tlingit** found plenty of food: **salmon**, shellfish, whales, and berries.",
@@ -26,6 +28,7 @@ GAME_CONTENT.sections.push({
         "At a **potlatch**, a family held a great feast and **gave away gifts** to show its wealth and status."
       ] },
     { topic: "plains", title: "Scroll 3: The Great Plains", video: null,
+      videoKey: "s2-great-plains", videoTitle: "The Great Plains: People of the Buffalo",
       videoIdea: "Low-poly N64-style grassland with a herd of buffalo and painted tepees.",
       text: [
         "On the wide grasslands of the **Great Plains**, peoples such as the **Lakota (Sioux), Cheyenne, and Comanche** depended on the **buffalo (bison)**. They used nearly every part: meat for food, hides for clothing and shelters, bones for tools.",
@@ -33,6 +36,7 @@ GAME_CONTENT.sections.push({
         "Later, **horses brought by the Spanish** spread north in the 1600s. Horses changed Plains life, making hunting and travel much faster."
       ] },
     { topic: "southwest", title: "Scroll 4: The Southwest", video: null,
+      videoKey: "s2-southwest", videoTitle: "The Southwest: Pueblos, Kivas, and Corn",
       videoIdea: "Low-poly N64-style desert pueblo village of adobe, with a ladder into a round kiva.",
       text: [
         "In the dry **Southwest**, the **Hopi, Zuni, and other Pueblo peoples** farmed corn, beans, and squash using careful water-saving methods.",
@@ -41,6 +45,7 @@ GAME_CONTENT.sections.push({
         "Later arrivals to the region, the **Navajo (Diné) and Apache**, became skilled hunters and traders, and (after the Spanish arrived) sheep herders and weavers."
       ] },
     { topic: "iroquois", title: "Scroll 5: Eastern Woodlands and the Iroquois", video: null,
+      videoKey: "s2-iroquois", videoTitle: "Eastern Woodlands: The Iroquois Confederacy",
       videoIdea: "Low-poly N64-style forest village with longhouses and a council fire where leaders pass a wampum belt.",
       text: [
         "In the forests of the **Eastern Woodlands**, people hunted deer, fished, and farmed the Three Sisters. Many spoke **Algonquian** languages (such as the Wampanoag, Lenape, and Powhatan) or **Iroquoian** languages.",
@@ -50,6 +55,7 @@ GAME_CONTENT.sections.push({
         "**Wampum**, beads made from shells, was woven into belts to record agreements and used in ceremonies and trade."
       ] },
     { topic: "southeast", title: "Scroll 6: The Southeast", video: null,
+      videoKey: "s2-southeast", videoTitle: "The Southeast: Farming Towns and the Green Corn Ceremony",
       videoIdea: "Low-poly N64-style Cherokee farming town with corn fields and a ceremonial square.",
       text: [
         "In the warm, fertile **Southeast**, peoples such as the **Cherokee, Creek (Muscogee), and Choctaw** lived in farming towns, growing corn, beans, and squash.",

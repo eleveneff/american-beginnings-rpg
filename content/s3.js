@@ -19,6 +19,7 @@ GAME_CONTENT.sections.push({
         "The **Renaissance**, a time of new learning in Europe, also encouraged curiosity about the world."
       ] },
     { topic: "navigation", title: "Scroll 2: The Science of Sailing", video: null,
+      videoKey: "s3-navigation", videoTitle: "The Science of Sailing",
       videoIdea: "Low-poly N64-style ship deck at night: a navigator holds up an astrolabe to the North Star while a compass glows.",
       text: [
         "The magnetic **compass**, first developed in **China**, points north so sailors could keep their direction.",

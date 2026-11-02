@@ -538,6 +538,32 @@ GAME_CONTENT.videos = {
         choices: ["Spreading Christianity, finding wealth, and winning fame", "Building churches, mining coal, and writing books", "Farming, fishing, and trading furs", "Peace, freedom, and equality"],
         explain: "These three motives drove many European explorers." }
     ]
+  },
+  "s3-navigation": {
+    title: "The Science of Sailing",
+    cueTimes: [0, 8.01, 16.99, 24.34, 30.0], // narration starts 0.5 s after each cue
+    cues: [
+      "Sailing far from land took new tools. The **magnetic compass**, first developed in **China**, showed sailors which way was **north**.",
+      "The **astrolabe** measured the height of the sun or a star above the horizon. That told sailors their **latitude**, how far north or south they were.",
+      "The Portuguese built the **caravel**, a small, fast ship. Its triangular **lateen sails** let it sail into the wind.",
+      "**Prince Henry the Navigator** of Portugal supported sailors, mapmakers, and shipbuilders.",
+      "In **1488**, **Bartolomeu Dias** sailed around Africa's **Cape of Good Hope**. Ten years later, **Vasco da Gama** reached **India** by sea."
+    ],
+    facts: [
+      "The **magnetic compass**, first developed in China, shows which way is north.",
+      "The **astrolabe** measured the sun or a star to find **latitude**.",
+      "The **caravel** was a small, fast Portuguese ship with triangular **lateen sails**.",
+      "**Prince Henry the Navigator** paid for Portuguese voyages down the coast of Africa.",
+      "**Dias** rounded the **Cape of Good Hope** in **1488**, and **da Gama** reached **India** in **1498**."
+    ],
+    check: [
+      { q: "What did sailors use an astrolabe to find?",
+        choices: ["Their latitude, how far north or south they were", "The depth of the water", "The speed of the wind", "The time of the next storm"],
+        explain: "The astrolabe measured the height of the sun or a star above the horizon." },
+      { q: "Who reached India by sailing around Africa in 1498?",
+        choices: ["Vasco da Gama", "Bartolomeu Dias", "Christopher Columbus", "Prince Henry"],
+        explain: "Dias rounded the Cape of Good Hope in 1488; ten years later da Gama reached India." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

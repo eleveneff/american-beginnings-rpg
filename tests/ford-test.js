@@ -46,6 +46,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ')
   await go(wrong(1).x, wrong(1).z, 2200); f = await F();
   check(f.marks.some(m => m.row === 1 && m.side === f.rows[1].right && m.key.startsWith('a')), 'after 3 misses: the answer glows');
   await step(right(1).x, right(1).z, 2);
+  console.log('info after the row-2 right step: ' + JSON.stringify(await p.evaluate(() => { const { L } = __world._dbg(); const f = __world.ford(); return { row: f.row, frozen: !!L.frozen, cardOpen: !!L.cardOpen, card: __world.card(), phase: __world.phase, pos: __world.pos, modal: !document.getElementById('modal').classList.contains('hidden') && document.getElementById('modal').textContent.slice(0, 120) }; })));
   // skipping a row
   await go(right(3).x, right(3).z, 2200); f = await F(); ps = await pos();
   check(f.row === 2 && Math.hypot(ps.x - right(1).x, ps.z - right(1).z) < 0.3, 'skipping a row: splash, back on the last gold stone');

@@ -1212,8 +1212,8 @@ function placeCamera(dt, snap) {
   // v2.9.1: pinned at the 1.2 m minimum but still inside a wall (she stands right against a house), lift the camera over it
   // (eased up quickly, down slowly), so the view looks down past the roof edge instead of through the back faces
   let lift = 0;
-  if (L.zone !== "cave" && L.camD <= CAM_MIN + 0.05 && camBlocked(L.camPos.x, L.camPos.y, L.camPos.z, 0, occ)) { lift = 2.5; for (let h = 0.25; h <= 2.5; h += 0.25) if (!camBlocked(L.camPos.x, L.camPos.y + h, L.camPos.z, 0.15, occ)) { lift = h; break; } }
-  if (snap || L.camLift == null) L.camLift = lift; else if (lift > L.camLift) L.camLift = Math.min(lift, L.camLift + 12 * dt); else L.camLift += (lift - L.camLift) * Math.min(1, dt * 2.2);
+  if (L.zone !== "cave" && L.camD <= CAM_MIN + 0.05 && camBlocked(L.camPos.x, L.camPos.y, L.camPos.z, 0, occ)) { for (let h = 0.25; h <= 2.5; h += 0.25) if (!camBlocked(L.camPos.x, L.camPos.y + h, L.camPos.z, 0.15, occ)) { lift = h; break; } }   // no clear height (ice walls): no lift
+  if (snap || L.camLift == null) L.camLift = lift; else if (lift > L.camLift) L.camLift = Math.min(lift, L.camLift + 6 * dt); else L.camLift += (lift - L.camLift) * Math.min(1, dt * 2.2);
   L.camPos.y += L.camLift;
   L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, L.camD / 7), tgt.z);   // aim a little above her head (eases with the smoothed distance, so no tilt jumps)
 }

@@ -31,11 +31,12 @@
     title: "The Albany Plan of Union",
     cues: [
       "June 1754: delegates from **seven colonies** meet Iroquois leaders at **Albany, New York**.",
-      "The Mohawk leader **Hendrick** scolds the British for leaving the frontier undefended.",
-      "The Iroquois refuse an alliance, but promise to stay **neutral**.",
-      "**Benjamin Franklin** proposes one **Grand Council** for the colonies: the **Albany Plan of Union**.",
-      "Every colonial assembly says **no**. None will give up its power. But the idea of union is born."
+      "The Mohawk leader **Hendrick** scolds the British for leaving the frontier undefended. The Iroquois refuse an alliance, but promise to stay **neutral**.",
+      "**Benjamin Franklin** proposes one **Grand Council** to run defense for all the colonies: the **Albany Plan of Union**.",
+      "Weeks earlier, his newspaper printed a famous cartoon: a snake cut into pieces, with the words **JOIN, or DIE**.",
+      "But every colonial assembly says **no**. None will give up its power. Still, the **idea of union** is born."
     ],
+    cueTimes: [0, 6.6, 15.34, 22.73, 29.75], // narration starts 0.5 s after each cue
     facts: [
       "The Albany Congress met from **June 19 to July 11, 1754**.",
       "Franklin's **\"JOIN, or DIE\"** snake appeared in his Pennsylvania Gazette on **May 9, 1754**.",

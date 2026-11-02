@@ -181,6 +181,160 @@ GAME_CONTENT.videos = {
         explain: "Hohokam canals carried river water to fields of corn, beans, squash, and cotton." }
     ]
   },
+  "s2-culture-regions": {
+    title: "Land Shapes Life: Culture Regions",
+    cueTimes: [0, 6.58, 15.64, 22.69, 29.13], // narration starts 0.5 s after each cue
+    cues: [
+      "By the **1400s**, **millions** of Native Americans lived in North America, speaking **hundreds of languages**.",
+      "Historians group them into **culture regions**. The land, climate, plants, and animals shaped food, homes, and clothing.",
+      "In the far north **Arctic**, the **Inuit** hunted seals, whales, and caribou, using light skin boats called **kayaks**.",
+      "In winter, Inuit hunters built **snow houses (igloos)** for shelter while they hunted on the ice.",
+      "In the dry **Great Basin**, the **Shoshone** and **Ute** moved often, gathering seeds, nuts, and roots."
+    ],
+    facts: [
+      "By the **1400s**, millions of Native Americans lived in North America, speaking **hundreds of languages**.",
+      "A **culture region** is an area where groups shared similar ways of life because of their environment.",
+      "The **Inuit** of the **Arctic** hunted seals, whales, and caribou and traveled in **kayaks**.",
+      "Inuit hunters built **snow houses (igloos)** for shelter while hunting in winter.",
+      "In the **Great Basin**, the **Shoshone** and **Ute** gathered seeds, nuts, and roots and hunted small animals."
+    ],
+    check: [
+      { q: "What do historians call an area where groups shared similar ways of life because of their environment?",
+        choices: ["A culture region", "A colony", "A confederacy", "A city-state"],
+        explain: "Land, climate, plants, and animals shaped each culture region's food, homes, and clothing." },
+      { q: "How did Inuit hunters travel on the Arctic waters?",
+        choices: ["In light skin boats called kayaks", "In birchbark canoes with sails", "On horseback along the shore", "In large wooden ships"],
+        explain: "Kayaks were light boats of skin stretched over a frame of wood or bone." }
+    ]
+  },
+  "s2-pacific-northwest": {
+    title: "The Pacific Northwest: People of the Cedar and Salmon",
+    cueTimes: [0, 9.11, 14.97, 20.55, 29.54], // narration starts 0.5 s after each cue
+    cues: [
+      "Along the rainy **Pacific Northwest** coast, the **Kwakwaka'wakw**, **Haida**, and **Tlingit** found plenty of food: **salmon**, shellfish, whales, and berries.",
+      "Giant **cedar** trees gave them wood for large **plank houses**, shared by related families.",
+      "From a **single cedar log**, they carved **canoes** big enough to travel the ocean coast.",
+      "They carved cedar **house posts** showing **family crests**. The very tall **totem poles** came later, mostly in the **1800s**.",
+      "At a **potlatch**, a family held a great feast and **gave away gifts** to show its wealth and status."
+    ],
+    facts: [
+      "Pacific Northwest peoples such as the **Kwakwaka'wakw (Kwakiutl)**, **Haida**, and **Tlingit** lived on salmon, shellfish, whales, and berries.",
+      "Giant **cedar** trees gave wood for **plank houses** and ocean-going **canoes** carved from one log.",
+      "Carved cedar **house posts** showed **family crests**; very tall freestanding **totem poles** came mostly in the **1800s**.",
+      "At a **potlatch**, the host family held a feast and **gave gifts away** to show its wealth and status."
+    ],
+    check: [
+      { q: "What happened at a potlatch?",
+        choices: ["A family held a feast and gave gifts away", "Leaders voted on a new constitution", "Hunters raced horses", "Farmers planted the Three Sisters"],
+        explain: "Giving gifts away at a potlatch showed a family's wealth and status." },
+      { q: "Which tree gave Pacific Northwest peoples wood for plank houses and canoes?",
+        choices: ["Cedar", "Palm", "Saguaro cactus", "Birch only"],
+        explain: "Giant western red cedars grow in the rainy Northwest forests." }
+    ]
+  },
+  "s2-great-plains": {
+    title: "The Great Plains: People of the Buffalo",
+    cueTimes: [0, 8.84, 17.29, 23.8, 32.0], // narration starts 0.5 s after each cue
+    cues: [
+      "On the wide grasslands of the **Great Plains**, the **Lakota**, **Cheyenne**, and **Comanche** depended on the **buffalo (bison)**.",
+      "For centuries, Plains hunters had **no horses**. They hunted buffalo **on foot**, sometimes creeping close under wolf skins.",
+      "They used nearly **every part**: meat for food, hides for clothing and shelters, and bones for tools.",
+      "Many lived in **tepees**, cone-shaped homes of poles and hides. **Dogs** pulled loads on frames called **travois**.",
+      "Then **horses, brought by the Spanish**, spread north in the **1600s and 1700s**, making hunting and travel much faster."
+    ],
+    facts: [
+      "Plains peoples such as the **Lakota (Sioux)**, **Cheyenne**, and **Comanche** depended on the **buffalo (bison)**.",
+      "**Before horses**, Plains hunters hunted buffalo **on foot**, and **dogs** pulled **travois** loads.",
+      "They used nearly every part of the buffalo: meat, hides, and bones.",
+      "**Tepees** of poles and hides could be packed up and moved quickly.",
+      "**Horses brought by the Spanish** spread north in the **1600s–1700s** and changed Plains life."
+    ],
+    check: [
+      { q: "Where did the Plains peoples' horses come from?",
+        choices: ["The Spanish brought them; they spread north in the 1600s and 1700s", "They had always lived wild on the Plains", "The Inuit traded them south", "The English brought them to Plymouth"],
+        explain: "Before the Spanish arrived, Plains hunters went on foot and used dogs to pull travois." },
+      { q: "Why were tepees a good home for Plains peoples?",
+        choices: ["They could be packed up and moved quickly", "They were built of stone to last forever", "They floated on rivers", "They were made of snow blocks"],
+        explain: "Tepees of poles and buffalo hides moved with the people as they followed the herds." }
+    ]
+  },
+  "s2-southwest": {
+    title: "The Southwest: Pueblos, Kivas, and Corn",
+    cueTimes: [0, 8.6, 14.55, 21.14, 27.62], // narration starts 0.5 s after each cue
+    cues: [
+      "In the dry **Southwest**, the **Hopi**, **Zuni**, and other **Pueblo peoples** farmed corn, beans, and squash, using careful methods to **save water**.",
+      "They built homes of stone and **adobe**, sun-dried clay, and women plastered the walls smooth.",
+      "Buildings shared by many families, several stories tall and reached by ladders, are called **pueblos**.",
+      "A **kiva** is a round room, often underground, used for **religious ceremonies and meetings**.",
+      "Later arrivals, the **Navajo (Diné)** and **Apache**, became skilled hunters and traders. After the Spanish came, the Navajo raised **sheep** and wove **wool**."
+    ],
+    facts: [
+      "The **Hopi**, **Zuni**, and other **Pueblo peoples** farmed corn, beans, and squash with water-saving methods.",
+      "They built with stone and **adobe** (sun-dried clay); many-family buildings are called **pueblos**.",
+      "A **kiva** is a round, often underground room for ceremonies and meetings.",
+      "The **Navajo (Diné)** and **Apache** arrived later; after the Spanish came, the Navajo raised **sheep** and wove **wool**."
+    ],
+    check: [
+      { q: "What is a kiva?",
+        choices: ["A round, often underground room for ceremonies and meetings", "A cedar canoe", "A buffalo-hide tent", "A shell-bead belt"],
+        explain: "Pueblo peoples still use kivas for ceremonies today." },
+      { q: "What were many-family adobe buildings in the Southwest called?",
+        choices: ["Pueblos", "Longhouses", "Igloos", "Plank houses"],
+        explain: "Pueblos were several stories tall and were reached by ladders." }
+    ]
+  },
+  "s2-iroquois": {
+    title: "Eastern Woodlands: The Iroquois Confederacy",
+    cueTimes: [0, 7.04, 14.07, 23.08, 29.77], // narration starts 0.5 s after each cue
+    cues: [
+      "In the **Eastern Woodlands**, people hunted deer, fished, and farmed the **Three Sisters**: corn, beans, and squash.",
+      "The **Iroquois (Haudenosaunee)** lived in **longhouses**, long bark-covered homes shared by several related families.",
+      "Five nations, the **Mohawk, Oneida, Onondaga, Cayuga, and Seneca**, formed the **Iroquois Confederacy** under the **Great Law of Peace**.",
+      "Women held real power. **Clan mothers** chose the male leaders, called **sachems**, and could remove them.",
+      "**Wampum**, beads made from shells, was woven into **belts** to record agreements."
+    ],
+    facts: [
+      "Eastern Woodlands peoples hunted deer, fished, and farmed the **Three Sisters** (corn, beans, squash).",
+      "The **Iroquois (Haudenosaunee)** lived in bark-covered **longhouses** shared by related families.",
+      "The **Mohawk, Oneida, Onondaga, Cayuga, and Seneca** formed the **Iroquois Confederacy** under the **Great Law of Peace** (later joined by the Tuscarora).",
+      "**Clan mothers** chose the **sachems** (male leaders) and could remove them.",
+      "**Wampum** shell-bead belts recorded agreements and were used in ceremonies."
+    ],
+    check: [
+      { q: "Who chose the Iroquois sachems and could remove them?",
+        choices: ["The clan mothers", "The Spanish governor", "The youngest warriors", "The English king"],
+        explain: "Iroquois women held real political power through the clan mothers." },
+      { q: "Which group of nations formed the Iroquois Confederacy?",
+        choices: ["Mohawk, Oneida, Onondaga, Cayuga, and Seneca", "Hopi, Zuni, and Navajo", "Lakota, Cheyenne, and Comanche", "Haida, Tlingit, and Kwakwaka'wakw"],
+        explain: "These five nations united under the Great Law of Peace; the Tuscarora joined later." }
+    ]
+  },
+  "s2-southeast": {
+    title: "The Southeast: Farming Towns and the Green Corn Ceremony",
+    cueTimes: [0, 7.49, 13.46, 19.37, 26.4], // narration starts 0.5 s after each cue
+    cues: [
+      "In the warm, fertile **Southeast**, the **Cherokee**, the **Creek (Muscogee)**, and the **Choctaw** lived in **farming towns** along rivers.",
+      "Women farmed fields of **corn, beans, and squash**, while men hunted deer and fished.",
+      "Each town had a central **plaza** and a **council house**, where leaders met to make decisions.",
+      "Each summer, many Southeastern peoples held the **Green Corn Ceremony**, to give thanks for the harvest and begin a new year.",
+      "Towns played **stickball**, a fast team game. The **Cherokee, Muscogee, and Choctaw nations** are still thriving today."
+    ],
+    facts: [
+      "The **Cherokee**, **Creek (Muscogee)**, and **Choctaw** lived in farming towns in the Southeast.",
+      "Women farmed **corn, beans, and squash**; men hunted deer and fished.",
+      "Each town had a central **plaza** and a **council house** where leaders met.",
+      "The summer **Green Corn Ceremony** gave thanks for the harvest and began a new year.",
+      "These nations still thrive today."
+    ],
+    check: [
+      { q: "What was the Green Corn Ceremony?",
+        choices: ["A summer ceremony giving thanks for the harvest and beginning a new year", "A buffalo hunt on horseback", "A gift-giving feast on the Pacific coast", "A winter igloo festival"],
+        explain: "Many Southeastern peoples held it each summer when the new corn ripened." },
+      { q: "Where did leaders in a Southeastern town meet to make decisions?",
+        choices: ["In the council house by the central plaza", "In a kiva", "On a cedar canoe", "In a snow house"],
+        explain: "The council house stood at the heart of the town." }
+    ]
+  },
   "s1-early-maize": {
     title: "Early Maize: The Gift of Farming",
     cueTimes: [0, 5.37, 13.7, 20.52, 26.93], // narration starts 0.5 s after each cue

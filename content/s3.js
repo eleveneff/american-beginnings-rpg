@@ -46,6 +46,7 @@ GAME_CONTENT.sections.push({
         "An expedition led by **Ferdinand Magellan** (1519–1522) became the **first to sail all the way around the world**. Magellan died on the way, but one ship made it home."
       ] },
     { topic: "exchange", title: "Scroll 5: The Columbian Exchange", video: null,
+      videoKey: "s3-columbian-exchange", videoTitle: "The Columbian Exchange",
       videoIdea: "Low-poly N64-style split scene: ships carry horses and wheat west, and potatoes, corn, and tomatoes east.",
       text: [
         "Columbus's voyages connected the **Eastern and Western Hemispheres**. The transfer of plants, animals, people, and diseases between them is called the **Columbian Exchange**.",

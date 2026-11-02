@@ -616,6 +616,32 @@ GAME_CONTENT.videos = {
         choices: ["The first voyage all the way around the world", "The first landing in the Bahamas", "The first sea route to India", "The founding of Jamestown"],
         explain: "Magellan died in the Philippines, but the Victoria returned to Spain in 1522." }
     ]
+  },
+  "s3-columbian-exchange": {
+    title: "The Columbian Exchange",
+    cueTimes: [0, 10.22, 19.53, 24.27, 34.55], // narration starts 0.5 s after each cue
+    cues: [
+      "Columbus's voyages connected the **Eastern** and **Western Hemispheres**. The movement of plants, animals, people, and diseases between them is called the **Columbian Exchange**.",
+      "From the **Americas** came **corn**, **potatoes**, **tomatoes**, beans, squash, peppers, **cacao**, and tobacco. Potatoes and corn helped feed millions of people.",
+      "From **Europe** came **horses**, **cattle**, pigs, sheep, **wheat**, and **sugarcane**.",
+      "Sadly, Europeans also brought diseases such as **smallpox**. Native Americans had **no immunity**, and millions died, one of the greatest tragedies in history.",
+      "The exchange changed what people ate around the world, from **potatoes in Ireland** to **tomatoes in Italy** and **corn in Africa and China**."
+    ],
+    facts: [
+      "The **Columbian Exchange** was the movement of plants, animals, people, and diseases between the hemispheres.",
+      "From the Americas: **corn, potatoes, tomatoes, beans, squash, peppers, cacao, and tobacco**.",
+      "From Europe: **horses, cattle, pigs, sheep, wheat, and sugarcane**.",
+      "**Smallpox** and other diseases killed millions of Native Americans, who had **no immunity**.",
+      "The **1500s Florentine Codex** shows Aztec people suffering from smallpox."
+    ],
+    check: [
+      { q: "Which of these came to the Americas from Europe in the Columbian Exchange?",
+        choices: ["Horses", "Potatoes", "Corn", "Cacao"],
+        explain: "Horses, cattle, pigs, sheep, wheat, and sugarcane came from Europe; potatoes, corn, and cacao came from the Americas." },
+      { q: "Why did smallpox kill so many Native Americans?",
+        choices: ["They had no immunity to diseases from Europe", "They refused all medicine", "It came from American crops", "It only affected children"],
+        explain: "Native Americans had never been exposed to these diseases, so their bodies had no defenses." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

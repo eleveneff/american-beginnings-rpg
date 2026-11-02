@@ -52,8 +52,8 @@ function groundH0(x, z) {
 // (the right event and a later one); the last row has one. Which side is right is chosen each visit (world.js).
 export const FORD_ROWS = 8, FORD_DZ = 1.35;
 export const STONES = (() => { const zc = riverZ(-5), out = []; for (let k = 0; k < FORD_ROWS; k++) { const z = zc + (k - (FORD_ROWS - 1) / 2) * FORD_DZ, j = 0.12 * Math.sin(k * 2.3);
-  if (k < FORD_ROWS - 1) for (const side of [0, 1]) out.push({ x: -5 + (side ? 1.15 : -1.15) + j, z, r: 0.6, top: 0.1, row: k, side });
-  else out.push({ x: -5 + j, z, r: 0.62, top: 0.1, row: k, side: -1 }); } return out; })();
+  if (k < FORD_ROWS - 1) for (const side of [0, 1]) out.push({ x: -5 + (side ? 1.05 : -1.05) + j, z, r: 0.68, top: 0.1, row: k, side });   // v2.8.3: wider stones, a smaller gap
+  else out.push({ x: -5 + j, z, r: 0.7, top: 0.1, row: k, side: -1 }); } return out; })();
 export const FORD_RESPAWN = { x: -5, z: riverZ(-5) - 8.6, yaw: 0 };
 export function onStone(x, z, pad = 0) { for (const s of STONES) if (Math.hypot(x - s.x, z - s.z) < s.r + pad) return s; return null; }
 

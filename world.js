@@ -539,21 +539,40 @@ function sortStop() { if (!SP.active) return; SP.active = false; SP.cur = null; 
 // the card version, so there are no new save fields. Once the timeline has been played, the stones are safe and show
 // the dates; the ring on the bank offers a replay on the stones or the card version.
 const FORD_SHORT = { s1tl1: "Monte Verde (southern Chile)", s1tl2: "Clovis spear points", s1q15: "Maize farming begins", s1q19: "Olmec stone heads", s1tl4: "Maya Classic Age", s1q25: "Cahokia at its peak", s1tl3: "Aztecs found Tenochtitlán", s1tl5: "Inca Empire expands" };
-const F = { lay: null, armed: false, replay: false, row: 0, miss: [], last: null, started: false, vis: null, done: false };
+const F = { lay: null, armed: false, replay: false, row: 0, miss: [], last: null, started: false, vis: null, done: false, good: null };
+// v2.8.3 (John: "The River Ford is a little difficult and confusing ... make it more intuitive"): a goal banner that
+// never fades ("Row 3 of 8: step on the OLDER event"), the compass points at the row, a timeline strip at the top fills
+// in as she crosses, the row to step on glows, wider stones, a wrong stone or a slip sends her back to her last gold
+// stone (not the bank), a gold hint after 2 misses and the answer glowing after 3 (the miss costs that row's star only).
+const fordShortWhen = w => String(w).replace(/^about /, "").replace(" years ago", " yrs ago");
+function fordHud() {
+  let el = document.getElementById("w-ford"); const on = L.sid === "s1" && L.zone === "out" && F.armed && F.lay && L.phase === "active";
+  if (!el) { if (!on) return; el = document.createElement("div"); el.id = "w-ford"; el.setAttribute("aria-live", "polite"); document.getElementById("w-hud").appendChild(el); }
+  if (!on) { if (!el.hidden) el.hidden = true; return; }
+  const rows = F.lay.rows, key = F.row + ":" + F.miss.join(",");
+  if (el.dataset.k !== key) {
+    el.dataset.k = key;
+    el.innerHTML = '<span class="wf-end">older</span>' + rows.map((r, k) => k < F.row ? '<span class="wf-s done" title="' + esc(r.ev.when + ": " + r.ev.label) + '">✓' + (k >= F.row - 3 ? " " + esc(fordShortWhen(r.ev.when)) : "") + "</span>"
+      : k === F.row ? '<span class="wf-s now">' + (k + 1) + " ?</span>" : '<span class="wf-s">' + (k + 1) + "</span>").join("") + '<span class="wf-end">newer</span>';
+  }
+  el.hidden = false;
+  const er = document.getElementById("w-era"), t = er ? Math.round(er.getBoundingClientRect().bottom + 4) : 120; if (el._top !== t) { el._top = t; el.style.top = t + "px"; }
+}
+function fordRespawn() { const B = L.mods.B, g = F.armed && F.lay && F.good && F.good.row < F.row ? F.good : null; return g ? { x: g.x, z: g.z, yaw: 0 } : B.FORD_RESPAWN; }
 const fordSolved = () => { const a = ST().acts && ST().acts["s1-timeline"]; return !!(a && a.plays); };
 const fordName = e => FORD_SHORT[e.q] || e.label;
 function fordNew() {
   const B = L.mods.B, h = window.ABRPG.worldTimeline && window.ABRPG.worldTimeline("s1", "s1-timeline", resume);
   if (!h || h.events.length !== B.FORD_ROWS) return null;
   const ev = h.events, rows = ev.map((e, k) => { const later = ev.slice(k + 1); return { ev: e, right: k < ev.length - 1 ? (Math.random() < 0.5 ? 0 : 1) : -1, wrong: later.length ? later[Math.floor(Math.random() * later.length)] : null }; });
-  F.lay = { h, rows }; F.row = 0; F.miss = rows.map(() => 0); F.started = false; F.done = false; return F.lay;
+  F.lay = { h, rows }; F.good = null; F.row = 0; F.miss = rows.map(() => 0); F.started = false; F.done = false; return F.lay;
 }
 function fordCard() {
   const solved = fordSolved();
   const body = solved
     ? "<p>You have built this timeline before. The stones are safe now and show their dates as you cross.</p><p>Want to practice? Replay it on the stones, or use the card version.</p>"
-    : "<p>Cross the river on the stepping stones <b>in time order</b>. Each row of stones is the next step in time, starting with the oldest event on this bank.</p><p>Read the two labels and step on the one that happened <b>first</b>. Step on a later one and you fall in the cold river and wash back to this bank. Right stones stay lit.</p>";
-  const btns = [{ t: "🪨 " + (solved ? "Replay on the river stones" : "Start on the river stones"), f: () => { closeCard(); F.replay = true; fordNew(); F.armed = true; toast("🪨 Step on the stones from <b>oldest</b> to <b>newest</b>. Start at the row nearest you."); } }, actBtn("s1-timeline", "📓 Card version")];
+    : "<p>Cross on the stones <b>in time order</b>. In each row, read the two labels and step on the event that happened <b>first</b> (the older one). The strip at the top fills in your timeline.</p><p>Wrong stone? Just a splash: you hop back to your last gold stone. After 2 misses a gold <b>hint</b> appears; after 3 the answer glows (no star for that row).</p>";
+  const btns = [{ t: "🪨 " + (solved ? "Replay on the river stones" : "Start on the river stones"), f: () => { closeCard(); F.replay = true; fordNew(); F.armed = true; fordHud(); } }, actBtn("s1-timeline", "📓 Card version")];
   return { title: "📓 Timeline on the river stones", body, btns };
 }
 function fordLabelTex(top, bottom, tone) {
@@ -574,7 +593,7 @@ function fordLabelTex(top, bottom, tone) {
 }
 function fordVisuals() {
   if (F.vis) return F.vis; const B = L.mods.B, sc = L.lvl.scene;
-  const glowG = new THREE.RingGeometry(0.42, 0.6, 24); glowG.rotateX(-Math.PI / 2);
+  const glowG = new THREE.RingGeometry(0.5, 0.74, 24); glowG.rotateX(-Math.PI / 2);
   const items = B.STONES.map(s => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: true }));
     sp.position.set(s.x, s.top + 1.35, s.z); sp.scale.set(2.05, 0.64, 1); sp.visible = false; sp.renderOrder = 6; sp.userData.noMerge = true; sp.name = "ford-label"; sc.add(sp);
@@ -589,24 +608,29 @@ function fordStoneEvent(s) { const r = F.lay && F.lay.rows[s.row]; if (!r) retur
 function fordSplash(s, html) {
   const B = L.mods.B; L.sparks && L.sparks.emit(new THREE.Vector3(s.x, B.WATER_Y + 0.1, s.z), 60, ["#dfefff", "#a9d4f5", "#ffffff"], { speed: 0.55, life: 1.1, up: 0.8 });
   L.pos.y = B.WATER_Y - 0.25; toast(html); L.frozen = true; L.fordFall = true;
-  setTimeout(() => { L.fordFall = false; teleport("out", B.FORD_RESPAWN); }, 420);
+  setTimeout(() => { L.fordFall = false; teleport("out", fordRespawn()); }, 420);
 }
 function fordStep() {
   if (L.sid !== "s1") return;
   const B = L.mods.B; if (L.zone !== "out" || !F.vis && Math.hypot(L.pos.x + 5, L.pos.z - B.riverZ(-5)) > 30) return;
   const v = fordVisuals(), zc = B.riverZ(-5), near = Math.abs(L.pos.x + 5) < 12 && Math.abs(L.pos.z - zc) < 14;
   // arm on the south bank (she meets the oldest event first); coming back from the north the stones are just stones
-  if (!F.armed && !F.done && near && L.pos.z < zc - 5.4 && Math.abs(L.pos.x + 5) < 8 && (!fordSolved() || F.replay)) { if (!F.lay) fordNew(); if (F.lay) { F.armed = true; if (!F.started && !F.hinted) { F.hinted = true; toast("🪨 The river stones are a <b>timeline</b>: step on the event that happened first, row by row. A later one means a splash!"); } } }
+  if (!F.armed && !F.done && near && L.pos.z < zc - 5.4 && Math.abs(L.pos.x + 5) < 8 && (!fordSolved() || F.replay)) { if (!F.lay) fordNew(); if (F.lay) { F.armed = true; if (!F.started && !F.hinted) { F.hinted = true; toast("🪨 The river stones are a <b>timeline</b>. In each row, step on the event that happened <b>first</b>."); } } }
   if (F.armed && L.pos.z < zc - 16) F.armed = false;   // walked away: progress on lit rows stays for this visit
-  const play = F.armed && F.lay;
+  const play = F.armed && F.lay; const pulse = 0.45 + 0.35 * Math.sin(performance.now() / 260);
   // labels: only the row she is about to step on; lit rows get a gold ring. Safe mode shows dates just ahead of her
   for (const it of v.items) {
     const s = it.s; let show = false;
     if (near) {
       if (play) {
         const ev = fordStoneEvent(s), r = F.lay.rows[s.row], right = ev === r.ev;
-        if (s.row < F.row) { it.gl.visible = right; }   // lit rows: a gold ring on the right stone (the date was in the toast)
-        else if (s.row === F.row) { show = true; const hint = right && F.miss[s.row] >= 2; fordSet(it, (hint ? "h" : "q") + ev.key, fordName(ev), hint ? "Hint: this one came first" : "", hint ? "hint" : ""); it.gl.visible = false; }
+        const gm = it.gl.material;
+        if (s.row < F.row) { it.gl.visible = right; if (right) { gm.color.set("#ffd75e"); gm.opacity = 0.7; } }   // lit rows: a gold ring on the right stone
+        else if (s.row === F.row) {   // the row to step on: both stones glow; a hint after 2 misses, the answer after 3
+          show = true; const m = F.miss[s.row] || 0, hint = right && m >= 2, ans = right && m >= 3;
+          fordSet(it, (ans ? "a" : hint ? "h" : "q") + ev.key, fordName(ev), ans ? "✔ This one came first" : hint ? "Hint: this one is older" : "", hint ? "hint" : "");
+          it.gl.visible = true; gm.color.set(ans ? "#ffd75e" : "#bff4ff"); gm.opacity = ans ? 0.95 : pulse;
+        }
         else { it.gl.visible = false; }
       } else {
         const r = F.lay && F.lay.rows[s.row], ev = r ? fordStoneEvent(s) : null;
@@ -619,20 +643,21 @@ function fordStep() {
     it.sp.visible = show;
   }
   if (!play || L.frozen || L.cardOpen) { F.last = null; return; }
-  const s = B.onStone(L.pos.x, L.pos.z, -0.15);
+  const s = B.onStone(L.pos.x, L.pos.z, -0.05);
   if (!s || s === F.last) { if (!s) F.last = null; return; }
   F.last = s; const h = F.lay.h, r = F.lay.rows[s.row];
   if (s.row < F.row) return;                        // lit rows are safe
   if (!F.started) { F.started = true; h.start(); }
-  if (s.row > F.row) { fordSplash(s, "💦 Splash! Step on the stones <b>row by row</b>, oldest first. That row was skipped."); return; }
+  if (s.row > F.row) { fordSplash(s, "💦 Splash! One row at a time: step on a <b>glowing</b> stone first."); return; }
   const ev = fordStoneEvent(s);
   if (ev === r.ev) {
-    const star = h.right(ev.key); F.row++;
+    const star = h.right(ev.key); F.row++; F.good = s;
     toast("✅ " + star + "<b>" + esc(ev.when) + ":</b> " + esc(ev.label) + ".");
     if (F.row >= F.lay.rows.length) { F.armed = false; F.done = true; F.replay = false; const done = F.lay; setTimeout(() => { if (L.phase === "active") openPanel(() => done.h.finish()); F.lay = null; F.done = false; }, 1100); }
   } else {
-    h.miss(ev.key); F.miss[s.row]++;
-    fordSplash(s, "💦 Splash! <b>" + esc(fordName(ev)) + "</b> happened <b>later</b> than the other stone in that row." + (F.miss[s.row] >= 2 ? " Look for the <b>gold</b> hint label." : " Back to the bank. Your lit stones stay lit."));
+    h.miss(r.ev.key); F.miss[s.row]++;   // v2.8.3: the miss counts against THIS row's event (it used to cost a later row its star)
+    const m = F.miss[s.row];
+    fordSplash(s, "💦 Not this one: <b>" + esc(fordName(ev)) + "</b> happened <b>later</b>. " + (m >= 3 ? "The <b>glowing gold</b> stone came first." : m >= 2 ? "Look for the <b>gold hint</b>." : "Try the other stone!"));
   }
 }
 
@@ -641,6 +666,7 @@ function cardBtns(list) { return '<div class="w-card-btns">' + list.map((b, i) =
 let cardActs = [];
 function card(c) {
   const el = document.getElementById("w-card"); cardActs = c.btns || [];
+  if (c.title && c.title.startsWith("❔ How to") && L.sid && COMPASS_HELP[COMPASS[L.sid]] && !c.body.includes("w-ch")) c = { ...c, body: c.body.replace("</ul>", COMPASS_HELP[COMPASS[L.sid]].replace("<li>", '<li class="w-ch">') + "</ul>") };
   el.innerHTML = '<div class="w-card-in" role="dialog" aria-label="' + esc(c.title) + '"><h3>' + c.title + "</h3>" + c.body + cardBtns(cardActs.concat([{ t: c.close || "Keep exploring ▶", cls: "alt", f: closeCard }])) + "</div>";
   cardActs = cardActs.concat([{ f: closeCard }]);
   el.hidden = false; L.cardOpen = true; clearHeld();
@@ -670,7 +696,7 @@ function ui() {
   const mb = document.createElement("button"); mb.id = "w-mode"; mb.className = "chip"; mb.title = "Switch between walking the 3D world and the classic screens"; mb.onclick = () => { mb.blur(); setMode(mode() === "walk" ? "classic" : "walk", true); };
   tb.insertBefore(back, document.getElementById("btn-inv")); tb.appendChild(mb);
   const h = document.createElement("div"); h.id = "w-hud"; h.hidden = true;
-  h.innerHTML = '<div id="w-obj" aria-live="polite"><span id="w-arrow" aria-hidden="true">➤</span><span id="w-obj-t"></span></div><div id="w-era"></div>' +
+  h.innerHTML = '<div id="w-obj" aria-live="polite"><span id="w-comp" aria-hidden="true"></span><span id="w-obj-t"></span><span id="w-dist"></span></div><div id="w-era"></div>' +
     '<button id="w-prompt" hidden></button>' +
     '<div id="w-joy" aria-hidden="true"><div id="w-knob"></div></div><button id="w-use" aria-label="Use">✋ Use</button>' +
     '<div id="w-tools"><button id="gfx-mode" class="chip" title="Graphics: Auto / High / Low">✨ Auto</button><button id="w-help" class="chip" title="How to play">❔ Help</button></div>' +
@@ -884,7 +910,7 @@ async function enterLevel(sid = L.sid) {
     else placeStart("out");
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
-  buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
+  buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone); compassSetup(sid);
   document.getElementById("w-era").textContent = sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
   if (!W.seen[sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
@@ -1046,13 +1072,87 @@ function nextTarget() {
   if (L.sid === "s5") return nextTargetS5();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
-  if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
+  // v2.8.3: while the timeline is on, the banner and compass point at the row to step on (the banner never fades)
+  if (F.armed && F.lay && F.row < F.lay.rows.length) { const st = L.mods.B.STONES.filter(s => s.row === F.row), x = st.reduce((a, s) => a + s.x, 0) / st.length;
+    return { def: { id: "s1-timeline", station: "ford", x, z: st[0].z, text: F.row === F.lay.rows.length - 1 ? "🪨 Last stone! Step on it to finish your timeline" : "🪨 Row " + (F.row + 1) + " of " + F.lay.rows.length + ": step on the event that happened FIRST" } }; }
   const gate = rings.find(r => r.def.id === "gate"), door = rings.find(r => r.def.id === "cave-door");
   const unfinished = r => r.def.id !== "gate" && r.def.id !== "cave-door" && (r.state === "new" || (r.def.id === "tracks" && r.state !== "done"));
   let best = null, bs = 1e9;
   for (const r of rings) { if (!unfinished(r)) continue; const rs = r._s != null ? r._s : (r._s = routeS(r.def.x, r.def.z)); if (rs >= hs - 6 && rs < bs) { bs = rs; best = r; } }
   if (!hasCloak()) { const gs = gate._s != null ? gate._s : (gate._s = routeS(gate.def.x, gate.def.z)); if (!best || bs > gs) return gate; }
   return best || door;
+}
+// ---- v2.8.2 compass (John: "make it clear which way to walk along the paths ... with a compass of some sort") ----
+// A dial at the left end of the objective banner. Its gold pointer turns with the camera toward the next stop
+// (nextTarget(): the next un-done station in the level's path order, then the gate / exit / Trial); the dial's N mark
+// shows real north (+z on every level). Styled per era: Levels 1-2 a carved "guide stone" (no magnetic compass
+// existed; the help card says travelers used the sun, landmarks and rivers), Level 3 a brass mariner's compass
+// (Columbus steered by one) and Level 4, Levels 5-6 a brass-and-wood compass of the 1600s-1700s. The banner adds the distance.
+const COMPASS = { s1: "stone", s2: "stone", s3: "brass", s4: "brass", s5: "wood", s6: "wood" };
+const COMPASS_HELP = {
+  stone: "<li><b>Guide stone</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. It is a game helper: Ice Age and Native travelers had no compass and found their way by the sun, the stars, rivers and landmarks.</li>",
+  brass: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Sailors of 1492 really steered by a magnetic compass.</li>",
+  wood: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Glowing footprints on the ground lead the first few steps.</li>"
+};
+function compassSVG(style) {
+  const ticks = Array.from({ length: 16 }, (_, k) => { const a = k * Math.PI / 8, r0 = k % 4 === 0 ? 33 : k % 2 === 0 ? 36 : 38; return '<line x1="' + (Math.sin(a) * r0).toFixed(1) + '" y1="' + (-Math.cos(a) * r0).toFixed(1) + '" x2="' + (Math.sin(a) * 41).toFixed(1) + '" y2="' + (-Math.cos(a) * 41).toFixed(1) + '"/>'; }).join("");
+  const T = {
+    stone: { rim: ["#a9a196", "#6d665c"], face: ["#c9c1b2", "#8f877a"], tick: "#4a4238", n: "#8a2f1c", pt: ["#f3e6c4", "#5a4630"] },
+    brass: { rim: ["#f2d27a", "#8a6420"], face: ["#fbf3dc", "#e3d3a6"], tick: "#5b4316", n: "#a3271b", pt: ["#ffd75e", "#3a2a08"] },
+    wood:  { rim: ["#b07a45", "#5b3517"], face: ["#f6ecd0", "#dccb9c"], tick: "#4b3214", n: "#a3271b", pt: ["#ffd75e", "#3a2a08"] }
+  }[style] || {};
+  const rose = style === "stone"
+    ? '<path d="M0-30 L5-6 L30 0 L5 6 L0 30 L-5 6 L-30 0 L-5-6Z" fill="none" stroke="' + T.tick + '" stroke-width="2" opacity=".55"/>'
+    : '<path d="M0-31 L6-6 L31 0 L6 6 L0 31 L-6 6 L-31 0 L-6-6Z" fill="' + T.tick + '" opacity=".22"/><path d="M0-31 L6-6 L0 0Z M31 0 L6 6 L0 0Z M0 31 L-6 6 L0 0Z M-31 0 L-6-6 L0 0Z" fill="' + T.tick + '" opacity=".55"/>';
+  return '<svg viewBox="-50 -50 100 100" width="100%" height="100%"><defs>' +
+    '<radialGradient id="wc-r" cx=".4" cy=".35"><stop offset="0" stop-color="' + T.rim[0] + '"/><stop offset="1" stop-color="' + T.rim[1] + '"/></radialGradient>' +
+    '<radialGradient id="wc-f" cx=".42" cy=".38"><stop offset="0" stop-color="' + T.face[0] + '"/><stop offset="1" stop-color="' + T.face[1] + '"/></radialGradient></defs>' +
+    '<circle r="48" fill="url(#wc-r)" stroke="#000" stroke-width="2.5"/><circle r="42" fill="url(#wc-f)"/>' +
+    '<g id="w-rose">' + rose + '<g stroke="' + T.tick + '" stroke-width="2">' + ticks + '</g>' +
+    '<path d="M0-44 L6-33 L-6-33Z" fill="' + T.n + '"/><text x="0" y="-19" text-anchor="middle" font-size="15" font-weight="900" font-family="Georgia,serif" fill="' + T.n + '">N</text></g>' +
+    '<g id="w-arrow"><path d="M0-36 L11-4 L4-6 L4 22 L-4 22 L-4-6 L-11-4Z" fill="' + T.pt[0] + '" stroke="' + T.pt[1] + '" stroke-width="3" stroke-linejoin="round"/></g>' +
+    '<circle r="4.5" fill="' + T.pt[1] + '"/></svg>';
+}
+const CMP = { style: "", needle: 0, north: 0, nd: null, rd: null, dist: "" };
+function compassSetup(sid) { const el = document.getElementById("w-comp"); if (!el) return; const st = COMPASS[sid] || "brass"; if (CMP.style === st && el.firstChild) return; CMP.style = st; el.className = "wc-" + st; el.innerHTML = compassSVG(st); CMP.nd = el.querySelector("#w-arrow"); CMP.rd = el.querySelector("#w-rose"); CMP.needle = CMP.north = 1e9; }
+const unwrapDeg = (prev, a) => prev > 1e8 ? a : prev + ((((a - prev) % 360) + 540) % 360 - 180);
+function compassStep(tg, dt) {
+  if (!CMP.nd) compassSetup(L.sid); if (!CMP.nd) return;
+  // screen angles, clockwise from straight up: the camera looks along (sin camYaw, cos camYaw) and +x is on its left
+  const north = L.camYaw * 180 / Math.PI;
+  const goal = tg ? -(Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw) * 180 / Math.PI : north;
+  const k = Math.min(1, dt * 12), sm = (prev, a) => { const u = unwrapDeg(prev, a); return prev > 1e8 ? u : prev + (u - prev) * k; };
+  const n2 = sm(CMP.north, north), g2 = sm(CMP.needle, goal);
+  if (Math.abs(n2 - CMP.north) > 0.2) { CMP.north = n2; CMP.rd.setAttribute("transform", "rotate(" + n2.toFixed(1) + ")"); }
+  if (Math.abs(g2 - CMP.needle) > 0.2) { CMP.needle = g2; CMP.nd.setAttribute("transform", "rotate(" + g2.toFixed(1) + ")"); }
+  const d = tg ? Math.hypot(tg.def.x - L.pos.x, tg.def.z - L.pos.z) : 0;
+  const txt = !tg ? "" : d < 4 ? "here" : (d < 50 ? Math.round(d) : Math.round(d / 5) * 5) + " m";
+  if (txt !== CMP.dist) { CMP.dist = txt; const e = document.getElementById("w-dist"); if (e) { e.textContent = txt; e.hidden = !txt; } }
+}
+// the in-world guide: six glowing footprints from 1.6 m to about 7 m ahead of her, toward the next stop, stopping at
+// water or walls and 2.5 m short of the stop. One InstancedMesh (1 draw call), additive, a wave rolling away from her.
+function trailStep(tg, dt) {
+  const sc = L.zone === "out" && L.lvl && L.lvl.scene; if (!sc) return;
+  let tr = L.lvl._trail;
+  if (!tr) {
+    const g = new THREE.CircleGeometry(0.5, 12); g.rotateX(-Math.PI / 2); g.scale(0.22, 1, 0.5);
+    const m = new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    tr = new THREE.InstancedMesh(g, m, 6); tr.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(18), 3);
+    tr.frustumCulled = false; tr.renderOrder = 3; tr.userData.noMerge = true; tr.name = "guide-trail"; sc.add(tr); L.lvl._trail = tr; tr._t = 0; tr._m = new THREE.Matrix4(); tr._q = new THREE.Quaternion(); tr._v = new THREE.Vector3(); tr._s = new THREE.Vector3(1, 1, 1);
+  }
+  const d = tg ? Math.hypot(tg.def.x - L.pos.x, tg.def.z - L.pos.z) : 0;
+  const show = !!tg && d > 5 && !L.cardOpen && !(F.armed && F.lay) && L.phase === "active";
+  tr.visible = show; if (!show) return;
+  tr._t += dt; const ux = (tg.def.x - L.pos.x) / d, uz = (tg.def.z - L.pos.z) / d, yaw = Math.atan2(ux, uz);
+  tr._q.setFromAxisAngle(UP, yaw); let n = 0;
+  for (let i = 0; i < 6; i++) {
+    const s = 1.6 + i * 1.1; if (s > d - 2.5) break;
+    const side = i % 2 ? 0.14 : -0.14, x = L.pos.x + ux * s + uz * side, z = L.pos.z + uz * s - ux * side;
+    if (!walkable(x, z) || inWater(x, z)) break;
+    tr._v.set(x, supportY(x, z) + 0.04, z); tr._m.compose(tr._v, tr._q, tr._s); tr.setMatrixAt(i, tr._m);
+    const b = (0.18 + 0.5 * Math.max(0, Math.sin(tr._t * 3.2 - i * 0.8))) * (1 - i / 7); tr.instanceColor.setXYZ(i, b, b * 0.86, b * 0.45); n++;
+  }
+  tr.count = n; tr.instanceMatrix.needsUpdate = true; tr.instanceColor.needsUpdate = true;
 }
 // ---- per-frame ----
 const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
@@ -1062,7 +1162,7 @@ const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
 // v2.8.1 (John: "the camera gets glitchy near a tree or building"): pad > 0 inflates every hard shape (a sphere cast
 // along the ray). Tree canopies (raised round occluders, o.soft) no longer pull the camera: brushing past leaves used to
 // snap it in and out every few frames. The camera may pass through foliage (back faces are culled, so it just slips by).
-function camBlocked(x, y, z, pad = 0) {
+function camBlocked(x, y, z, pad = 0, occ = null) {
   const B = L.mods.B;
   if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 - pad || y > 4.2 - pad;
   if (y < B.groundH(x, z) + 0.35) return true;
@@ -1070,7 +1170,7 @@ function camBlocked(x, y, z, pad = 0) {
     if (z > B.BOUNDS.iceZ - 0.35 - pad && (x < B.BOUNDS.cx0 + 0.5 + pad || x > B.BOUNDS.cx1 - 0.5 - pad)) return true;
     if (z > 189.8 - pad) return true;
   }
-  for (const o of L.lvl.camOcc || []) {
+  for (const o of occ || L.lvl.camOcc || []) {
     if (o.soft === undefined) o.soft = !!(o.r && !o.arc && o.y0 > -4.5 && o.r >= 1.0);   // tree canopies (and the decorated tree ring)
     if (o.soft || y <= o.y0 - pad || y >= o.y1 + pad) continue;
     if (o.arc) { const d = Math.hypot(x - o.x, z - o.z); if (Math.abs(d - o.r) < o.w + pad && Math.abs(wrapA(Math.atan2(z - o.z, x - o.x) - o.gapA)) > o.gapHalf) return true; continue; }
@@ -1079,7 +1179,7 @@ function camBlocked(x, y, z, pad = 0) {
   return false;
 }
 const LOOK_UP = 2.0;
-const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10;   // m/s: fastest pull-in
+const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10, CAM_OCC = [];   // m/s: fastest pull-in
 function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
@@ -1093,8 +1193,12 @@ function placeCamera(dt, snap) {
   const dx = L.camIdeal.x - tgt.x, dy = L.camIdeal.y - tgt.y, dz = L.camIdeal.z - tgt.z, len = Math.hypot(dx, dy, dz) || 1, ux = dx / len, uy = dy / len, uz = dz / len;
   // sphere cast: march with padded shapes, then refine the first hit by bisection (a smooth, not stepped, distance)
   let allow = len;
+  // v2.8.2: only the occluders near this segment are tested (the full list on every march step cost ~8% fps on Levels 3-4)
+  const occ = CAM_OCC; occ.length = 0;
+  { const x0 = Math.min(tgt.x, tgt.x + dx) - CAM_PAD, x1 = Math.max(tgt.x, tgt.x + dx) + CAM_PAD, z0 = Math.min(tgt.z, tgt.z + dz) - CAM_PAD, z1 = Math.max(tgt.z, tgt.z + dz) + CAM_PAD;
+    for (const o of (L.zone !== "cave" && L.lvl.camOcc) || []) { const e = o.arc ? o.r + o.w : o.r ? o.r : Math.max(o.hx, o.hz) * 1.415; if (o.x + e >= x0 && o.x - e <= x1 && o.z + e >= z0 && o.z - e <= z1) occ.push(o); } }
   for (let t = 0.4; t <= len + 0.001; t += 0.25) {
-    if (camBlocked(tgt.x + ux * t, tgt.y + uy * t, tgt.z + uz * t, CAM_PAD)) { let lo = Math.max(0, t - 0.25), hi = t; for (let i = 0; i < 5; i++) { const m = (lo + hi) / 2; if (camBlocked(tgt.x + ux * m, tgt.y + uy * m, tgt.z + uz * m, CAM_PAD)) hi = m; else lo = m; } allow = lo; break; }
+    if (camBlocked(tgt.x + ux * t, tgt.y + uy * t, tgt.z + uz * t, CAM_PAD, occ)) { let lo = Math.max(0, t - 0.25), hi = t; for (let i = 0; i < 5; i++) { const m = (lo + hi) / 2; if (camBlocked(tgt.x + ux * m, tgt.y + uy * m, tgt.z + uz * m, CAM_PAD, occ)) hi = m; else lo = m; } allow = lo; break; }
   }
   allow = Math.max(CAM_MIN, Math.min(len, allow)); L.camAllow = allow;
   // damped distance: fast pull-in, slow ease-out after a short hold (hysteresis: no in/out flutter)
@@ -1139,8 +1243,8 @@ function step(dt, raw) {
   if (L.manualT <= 0 && L.vel > 0.8 && sf > 0.25 && Math.abs(sx) < sf * 0.75 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
   if (L.fordFall) L.pos.y = L.mods.B.WATER_Y - 0.35;
-  if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold and fast. Hop across on the <b>stepping stones</b>."); teleport("out", B.FORD_RESPAWN); } } else L.wade = 0;
-  fordStep(); sortStep(dt);
+  if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold. Back onto the <b>stepping stones</b>."); teleport("out", fordRespawn()); } } else L.wade = 0;
+  fordStep(); fordHud(); sortStep(dt);
   // the glacier pass: bumping the closed gate shows a hint
   L.hintT = Math.max(0, L.hintT - dt);
   if (p.blocked && p.blocked.tag === "gate" && L.hintT <= 0) { L.hintT = 8; card(gateCard()); }
@@ -1156,9 +1260,8 @@ function step(dt, raw) {
   const pr = document.getElementById("w-prompt");
   if (near && !L.cardOpen) { const lab = near.def.icon + " " + near.def.label(); if (pr.dataset.k !== lab) { pr.dataset.k = lab; pr.innerHTML = esc(lab) + ' <span class="w-key">' + (L.touch ? "tap ✋" : "press E") + "</span>"; } pr.hidden = false; } else if (!pr.hidden) { pr.hidden = true; pr.dataset.k = ""; }
   const tg = nextTarget(); L.target = tg;
+  compassStep(tg, dt); trailStep(tg, dt);
   if (tg) {
-    const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
-    document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
     const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Earn your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
     const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) { el.textContent = txt; const ob = el.parentNode, era = document.getElementById("w-era"); if (era) era.style.top = (ob.offsetTop + ob.offsetHeight + 4) + "px"; }
   }
@@ -1198,11 +1301,11 @@ window.__world = {
   get pos() { return { x: L.pos.x, y: L.pos.y, z: L.pos.z, yaw: L.yaw }; },
   get cam() { const c = L.camPos || { x: 0, y: 0, z: 0 }; return { yaw: L.camYaw, x: c.x, y: c.y, z: c.z, pulled: !!L.camPulled, blocked: !!(L.built && L.camPos && camBlocked(c.x, c.y, c.z)) }; },
   camBlocked: (x, y, z) => camBlocked(x, y, z),
-  get banner() { const e = document.getElementById("w-obj-t"); return e ? e.textContent : ""; }, get target() { return L.target && L.target.def.id; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
+  get banner() { const e = document.getElementById("w-obj-t"); return e ? e.textContent : ""; }, get target() { return L.target && L.target.def.id; }, get compass() { const t = L.target; return { style: CMP.style, needle: CMP.needle, north: CMP.north, dist: CMP.dist, camYaw: L.camYaw, tx: t ? t.def.x : null, tz: t ? t.def.z : null, x: L.pos.x, z: L.pos.z, trail: L.lvl && L.lvl._trail ? (L.lvl._trail.visible ? L.lvl._trail.count : 0) : 0 }; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
   rings: () => (L.built ? L.lvl.rings.concat(L.cave.rings).map(r => ({ id: r.def.id, zone: r.def.zone || "out", x: r.def.x, z: r.def.z, state: r.state })) : []),
   teleport(x, z, zone) { if (!L.built) return false; L.zone = zone || (x > 2000 ? "cave" : "out"); L.pos.set(x, 0, z); L.wade = 0; moveHeroTo(x, z, L.zone); return true; },
-  faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },
-  ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0 }),
+  faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); if (L.built && L.hero) placeCamera(0, true); return true; },   // v2.8.2: a scripted view jump snaps the camera (no rate-limited pull-in from the old view)
+  ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0, miss: F.miss.slice(), good: F.good && { row: F.good.row, x: F.good.x, z: F.good.z }, marks: F.vis ? F.vis.items.map(i => ({ row: i.s.row, side: i.s.side, key: i.key, label: i.sp.visible, glow: i.gl.visible })) : [], strip: (() => { const e = document.getElementById("w-ford"); return e && !e.hidden ? e.textContent : ""; })(), respawn: L.mods && L.mods.B && L.mods.B.FORD_RESPAWN, riverZ: L.mods && L.mods.B && L.mods.B.riverZ ? L.mods.B.riverZ(-5) : null }),
   use: () => useRing(), card: () => (L.cardOpen ? document.getElementById("w-card").textContent : null), closeCard: () => closeCard(),
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),

@@ -12,7 +12,7 @@ Headless Chromium smoke test (puppeteer-core, v2.2; runs in Classic mode). It ch
 - persistence after reload
 - the 95% pass mark: 23 of 24 passes Section 1; 22 of 24 (91.7%) in Section 2 means review, then retake
 - lands passed under the old 80% mark stay passed after loading the save
-- the video player on every lesson with a videoKey, including Level 4's five clips, Roanoke, and Level 6 scrolls 1–3: a real file starts unmuted from the "Play with sound" click, decodes its narration track, and shows each caption at its `cueTimes`. Each slot shows a lower-third caption, at least 3 Key Facts, a check that stays locked until the end, +5★ per check question answered right the first time, and no stars on a retake. Roanoke's check questions join the Section 5 trial pool. The Parent Report lists the videos
+- the video player on every lesson with a videoKey, including Level 4's five clips, Roanoke, and all six Level 6 scrolls: a real file starts unmuted from the "Play with sound" click, decodes its narration track, and shows each caption at its `cueTimes`. Each slot shows a lower-third caption, at least 3 Key Facts, a check that stays locked until the end, +5★ per check question answered right the first time, and no stars on a retake. Roanoke's check questions join the Section 5 trial pool. The Parent Report lists the videos
 - every one of the 31 activities solved (19 classic + 6 geomaps + 6 timelines)
 - all 5 markets
 - the Grand Trial and its 50-star Crown

@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v3.1.1";
+  var GAME_VERSION = "v3.1.2";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */

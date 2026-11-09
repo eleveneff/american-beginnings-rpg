@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "newengland", title: "Scroll 1: The New England Colonies", video: null,
+      videoKey: "s6-newengland", videoTitle: "The New England Colonies",
       videoIdea: "Low-poly N64-style New England town: white meetinghouse, village green, fishing boats in a rocky harbor.",
       text: [
         "**Puritans** wanted to \"purify\" the Church of England. In **1630**, **John Winthrop** led them to found the **Massachusetts Bay Colony** (Boston). He hoped it would be **\"a city upon a hill\"**, a model community for the world.",
@@ -19,6 +20,7 @@ GAME_CONTENT.sections.push({
         "With rocky soil and long winters, New Englanders lived by **small farms, fishing, whaling, shipbuilding, and trade**."
       ] },
     { topic: "middle", title: "Scroll 2: The Middle Colonies", video: null,
+      videoKey: "s6-middle", videoTitle: "The Middle Colonies",
       videoIdea: "Low-poly N64-style: golden wheat fields, a busy Philadelphia waterfront, and William Penn meeting the Lenape under an elm tree.",
       text: [
         "The **Middle Colonies** were **New York, New Jersey, Pennsylvania, and Delaware**.",
@@ -27,6 +29,7 @@ GAME_CONTENT.sections.push({
         "The Middle Colonies were the most **diverse**, with Dutch, English, German, Swedish, Scots-Irish, and other settlers."
       ] },
     { topic: "southern", title: "Scroll 3: The Southern Colonies", video: null,
+      videoKey: "s6-southern", videoTitle: "The Southern Colonies",
       videoIdea: "Low-poly N64-style: a Southern river plantation with rice fields and indigo dye vats, a ship loading barrels at the dock.",
       text: [
         "The **Southern Colonies** were **Maryland, Virginia, North Carolina, South Carolina, and Georgia**.",

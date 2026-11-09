@@ -793,6 +793,84 @@ GAME_CONTENT.videos = {
         choices: ["It remains unsolved; CROATOAN was carved, but no conclusive answer is known", "It was fully solved in 1590", "All colonists returned safely to London in 1588", "Virginia Dare governed Croatoan"],
         explain: "Honest teaching keeps the mystery open; do not invent a solved ending." }
     ]
+  },
+  "s6-newengland": {
+    title: "The New England Colonies",
+    cueTimes: [0, 7.74, 15.35, 22.71, 30.9], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1630, John Winthrop leads Puritans to Massachusetts Bay. He hopes the colony will be a city upon a hill.",
+      "New England towns gather at the meetinghouse. At town meetings, citizens discuss and vote on local matters.",
+      "Rocky soil and cold winters push New Englanders toward fishing, shipbuilding, and trade along rocky harbors.",
+      "In 1675, the Wampanoag leader Metacom, called King Philip by the English, leads a war to defend Native land.",
+      "In 1692, fear in Salem Village leads to witch trials. Twenty people are executed before leaders admit a terrible mistake."
+    ],
+    facts: [
+      "In 1630 John Winthrop led Puritans to Massachusetts Bay; he hoped for a “city upon a hill.”",
+      "Town meetings at the meetinghouse were an early form of local self-government.",
+      "Rocky soil pushed New England toward fishing, shipbuilding, and trade.",
+      "King Philip’s War (1675–1676), led by Wampanoag leader Metacom, was one of the deadliest wars for its size in American history.",
+      "The Salem witch trials of 1692 executed 20 people; colonial leaders later admitted a terrible mistake—a warning about fear overriding fair trials."
+    ],
+    check: [
+      { q: "Who led Native nations in King Philip’s War (1675–1676)?",
+        choices: ["Metacom, a Wampanoag leader and son of Massasoit", "King Philip II of Spain", "Powhatan", "John Winthrop"],
+        explain: "The English called Metacom “King Philip.”" },
+      { q: "What happened in Salem Village in 1692?",
+        choices: ["Witch trials led to the execution of 20 people", "The first Thanksgiving", "The founding of Harvard", "A battle with Spain"],
+        explain: "Colony leaders later admitted the trials were a mistake." }
+    ]
+  },
+  "s6-middle": {
+    title: "The Middle Colonies",
+    cueTimes: [0, 7.53, 14.51, 20.85, 28.76], // narration starts 0.5 s after each cue
+    cues: [
+      "The Middle Colonies are New York, New Jersey, Pennsylvania, and Delaware. Fertile soil makes them the breadbasket colonies.",
+      "In 1681, the Quaker William Penn founds Pennsylvania as a holy experiment of religious freedom.",
+      "Penn deals fairly with the Lenape. Philadelphia, the city of brotherly love, grows as the colony's capital.",
+      "German-speaking settlers come in large numbers. Neighbors call them the Pennsylvania Dutch, from Deutsch, the German word for German.",
+      "In 1688, settlers in Germantown write the first protest against slavery in the English colonies."
+    ],
+    facts: [
+      "The Middle Colonies—New York, New Jersey, Pennsylvania, and Delaware—were called the “breadbasket” for their grain farms.",
+      "William Penn, a Quaker, founded Pennsylvania in 1681 as a “holy experiment” of religious freedom.",
+      "Philadelphia (“city of brotherly love”) grew as the capital; Penn sought fair dealings with the Lenape.",
+      "German-speaking settlers were called “Pennsylvania Dutch” from Deutsch, the German word for German.",
+      "In 1688, Germantown settlers wrote the first protest against slavery in the English colonies."
+    ],
+    check: [
+      { q: "Why were German settlers in Pennsylvania called the “Pennsylvania Dutch”?",
+        choices: ["From “Deutsch,” the German word for German", "They came from the Netherlands", "They built windmills", "They spoke only Dutch"],
+        explain: "It’s a mix-up of the word Deutsch." },
+      { q: "Where was the first protest against slavery in the English colonies written in 1688?",
+        choices: ["Germantown, Pennsylvania", "Jamestown, Virginia", "Charleston, South Carolina", "St. Augustine, Florida"],
+        explain: "Quakers and other settlers in Germantown wrote it." }
+    ]
+  },
+  "s6-southern": {
+    title: "The Southern Colonies",
+    cueTimes: [0, 8.15, 17.19, 23.95, 30.68], // narration starts 0.5 s after each cue
+    cues: [
+      "The Southern Colonies are Maryland, Virginia, North Carolina, South Carolina, and Georgia. Long summers favor cash crops.",
+      "Plantations grow tobacco, rice, and indigo. North Carolina's pine forests yield naval stores: tar, pitch, and turpentine.",
+      "In 1676, Nathaniel Bacon leads poor Virginians against the governor and burns Jamestown.",
+      "Afterward, many planters turn from indentured servants to enslaved Africans held in slavery for life.",
+      "Enslaved West Africans bring expert knowledge of growing rice, which makes Carolina planters rich. Slavery is a deep wrong in colonial life."
+    ],
+    facts: [
+      "The Southern Colonies were Maryland, Virginia, North Carolina, South Carolina, and Georgia.",
+      "Cash crops included tobacco, rice, and indigo; North Carolina pine forests yielded naval stores (tar, pitch, turpentine).",
+      "Bacon’s Rebellion (1676) burned Jamestown; afterward many planters turned toward lifelong enslaved African labor.",
+      "Enslaved West Africans brought expert rice-growing knowledge that enriched Carolina planters.",
+      "Honest history names slavery as a deep wrong while also teaching the skill and endurance of the enslaved."
+    ],
+    check: [
+      { q: "What did Nathaniel Bacon’s followers do in 1676?",
+        choices: ["Rebelled against Virginia’s governor and burned Jamestown", "Founded Georgia", "Signed the Mayflower Compact", "Explored the Mississippi"],
+        explain: "Bacon’s Rebellion included poor free and indentured colonists." },
+      { q: "What knowledge did enslaved West Africans bring that made South Carolina planters rich?",
+        choices: ["How to grow rice", "How to trap beavers", "How to mine silver", "How to build windmills"],
+        explain: "Rice had long been grown in parts of West Africa." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

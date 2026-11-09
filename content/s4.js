@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "conquest", title: "Scroll 1: Conquistadors", video: null,
+      videoKey: "s4-conquest", videoTitle: "Conquistadors: Conquest and Indigenous Choices",
       videoIdea: "Low-poly N64-style: Spanish ships arrive on the Mexican coast; distant view of the island city of Tenochtitlán.",
       text: [
         "Spanish soldier-explorers called **conquistadors** came to the Americas seeking gold, land, and glory.",
@@ -18,6 +19,7 @@ GAME_CONTENT.sections.push({
         "The Spanish won with small armies because of **steel weapons, horses, Native allies**, and especially **smallpox**, which had already killed huge numbers of people."
       ] },
     { topic: "spanishNA", title: "Scroll 2: Spain in North America", video: null,
+      videoKey: "s4-spanish-na", videoTitle: "Spain in North America",
       videoIdea: "Low-poly N64-style: the stone fort of St. Augustine on the Florida coast, then explorers crossing a desert mesa.",
       text: [
         "**Juan Ponce de León** explored **Florida** in 1513. **Hernando de Soto** explored the Southeast and reached the **Mississippi River** in 1541. **Francisco Vásquez de Coronado** searched the Southwest for the legendary **Seven Cities of Gold** but found none.",
@@ -25,6 +27,7 @@ GAME_CONTENT.sections.push({
         "Spanish settlements included **missions** (religious communities where priests taught Christianity), **presidios** (forts), and **pueblos** (towns)."
       ] },
     { topic: "spanishLife", title: "Scroll 3: Life in New Spain", video: null,
+      videoKey: "s4-spanish-life", videoTitle: "Life in New Spain: Labor, Reform, and Resistance",
       videoIdea: "Low-poly N64-style mission with adobe church and bell tower, farmers in the fields.",
       text: [
         "Under the **encomienda system**, Spanish colonists were given the right to demand labor or tribute from Native people. Many were treated harshly.",
@@ -33,6 +36,7 @@ GAME_CONTENT.sections.push({
         "New Spain had a social order: **peninsulares** (born in Spain) at the top, then **creoles** (Spanish parents, born in America), then **mestizos** (mixed Spanish and Native ancestry), with Native and enslaved African people at the bottom."
       ] },
     { topic: "france", title: "Scroll 4: New France", video: null,
+      videoKey: "s4-france", videoTitle: "New France: Rivers, Furs, and Native Partners",
       videoIdea: "Low-poly N64-style: French fur traders in canoes on the St. Lawrence River trading with Huron villagers near the walls of Quebec.",
       text: [
         "Explorers searched for a **Northwest Passage**, a hoped-for water route through North America to Asia. **Jacques Cartier** explored the **St. Lawrence River** for France in the 1530s.",
@@ -41,6 +45,7 @@ GAME_CONTENT.sections.push({
         "In 1673 **Marquette and Jolliet** explored the Mississippi. In 1682 **La Salle** traveled to its mouth and claimed the whole river basin for France, naming it **Louisiana** after King Louis XIV. New Orleans was founded in 1718."
       ] },
     { topic: "dutch", title: "Scroll 5: New Netherland", video: null,
+      videoKey: "s4-dutch", videoTitle: "New Netherland: Trade, Diversity, and New York",
       videoIdea: "Low-poly N64-style Dutch windmill and stepped-gable houses at New Amsterdam on Manhattan, ships in the harbor.",
       text: [
         "**Henry Hudson**, an English sailor working for the **Dutch**, explored the river now named for him, the **Hudson River**, in **1609**.",

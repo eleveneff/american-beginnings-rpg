@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "roanoke", title: "Scroll 1: Roanoke and the Virginia Company", video: null,
+      videoKey: "s5-roanoke", videoTitle: "Roanoke: The Lost Colony",
       videoIdea: "Low-poly N64-style: an empty palisade in a misty forest with the word CROATOAN carved into a post.",
       text: [
         "England's first tries at a colony failed. In 1587, John White led settlers to **Roanoke Island** (in present-day North Carolina). His granddaughter, **Virginia Dare**, was the first English child born in the Americas.",

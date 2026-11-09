@@ -20,6 +20,11 @@ Section 5 keys (all six are embedded and verified):
 - `s5-pilgrim-voyage.mp4`: Scroll 5, the Mayflower voyage in 1620
 - `s5-new-england.mp4`: Scroll 6, Squanto and the Wampanoag, the first harvest, and New England
 
+Section 6 keys (scrolls 1–3 are embedded and verified; scrolls 4–6 are still placeholders):
+- `s6-newengland.mp4`: Scroll 1, the New England colonies
+- `s6-middle.mp4`: Scroll 2, the Middle Colonies
+- `s6-southern.mp4`: Scroll 3, the Southern Colonies
+
 Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 
 **Mayflower voyage clip (`s5-pilgrim-voyage.mp4`):** the opening departure from Plymouth (September 6, 1620) and the Mayflower Compact cabin scene (November 11, 1620) are AI-generated, animated from generated period stills (Separatist-era dress: doublets, falling collars, coifs, capotains, no buckles), and were checked frame by frame. Seven animation takes were made for each scene and only the cleanest was kept. On-screen fact cards use [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) and [IM Fell English SC](https://fonts.google.com/specimen/IM+Fell+English+SC) (both SIL Open Font License 1.1).
@@ -49,5 +54,7 @@ The four Level 1 clips above use the same narrator voice, ambience beds, and fac
 **Level 2 clips (Section 2, six scrolls):** `s2-culture-regions.mp4`, `s2-pacific-northwest.mp4`, `s2-great-plains.mp4`, `s2-southwest.mp4`, `s2-iroquois.mp4`, and `s2-southeast.mp4`, five scenes each, one per caption. All scenes are AI-generated animations of generated stills, at least two takes for scenes with people or animals moving, checked frame by frame, with the cleanest kept. Takes were rejected for: a modern steel hatchet (Northwest carver; replaced by an adze-like carving tool), glass-paned windows in a plank house, a sail on an Eastern Woodlands canoe, a metal-looking shovel in a Pueblo field, cloned identical people on a pueblo roof, and props that popped in and out. A Southeast council-house still was regenerated because the people and dress did not look like Southeastern Native nations. Accuracy choices: Plains scenes before the horse show hunting on foot (under wolf skins) and dog travois, and the horse scene is carded "1600s–1700s"; the Northwest cards say tall totem poles came mostly in the 1800s; Pueblo walls are stone with adobe plaster (no molded bricks before the Spanish); Navajo sheep and wool weaving are labeled as after the Spanish; the wampum belt follows the Hiawatha belt design; the Iroquois council shot is cropped to keep a skylight-like smoke hole out of frame.
 
 The Mound Builders clip was rebuilt in the Level 2 update with a new Cahokia shot (an earlier take showed smoke rising from the tall post).
+
+**Level 6 scrolls 1–3 (v3.1.2):** `s6-newengland.mp4`, `s6-middle.mp4`, and `s6-southern.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later).
 
 **Level 4 and Roanoke (v3.1.1):** `s4-conquest.mp4`, `s4-spanish-na.mp4`, `s4-spanish-life.mp4`, `s4-france.mp4`, `s4-dutch.mp4`, and `s5-roanoke.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later). The files are stored under these canonical names.

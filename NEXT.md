@@ -1,5 +1,6 @@
 # NEXT: resume notes for American Beginnings RPG
 
+- **v3.1.2 (Nov 9):** Level 6 scrolls 1–3 are real files (`s6-newengland`, `s6-middle`, `s6-southern`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. Scrolls 4–6 stay placeholders. No new save fields.
 - **v3.1.1 (Nov 9):** Level 4's five scroll videos and Level 5 Roanoke are real files (`s4-conquest`, `s4-spanish-na`, `s4-spanish-life`, `s4-france`, `s4-dutch`, `s5-roanoke`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields. Other video slots are unchanged.
 - **v3.0, Level 7 "The French and Indian War" (Nov 1 night, John: "start with chapters 7 and 8 only"):** Unit 2 begins (unit: 2;
   the Grand Trial still covers Levels 1-6). content/s7.js (7 narrative scrolls + 2 source scrolls: Washington's journal 1754 and
@@ -96,5 +97,5 @@ Live-action (Grok Imagine), fact cards, Piper en_GB-aru-medium speaker 3 narrati
 - [x] L3 s3 (5): motives → s3-motives, navigation → s3-navigation, columbus → s3-columbus, afterColumbus → s3-after-columbus, exchange → s3-columbian-exchange (accuracy log: /workspace/abrpg-videos/l3/accuracy-log.md)
 - [x] L4 s4 (5): conquest → s4-conquest, spanishNA → s4-spanish-na, spanishLife → s4-spanish-life, france → s4-france, dutch → s4-dutch
 - [x] L5 s5 (1): roanoke → s5-roanoke
-- [ ] L6 s6 (6): newengland, middle, southern, government, dailylife, ideas
+- [ ] L6 s6 (6): newengland → s6-newengland, middle → s6-middle, southern → s6-southern; still open: government, dailylife, ideas
 - After the last level: run world-test.js once; add a lessons-learned note for Princess Prep.

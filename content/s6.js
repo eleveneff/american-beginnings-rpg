@@ -39,6 +39,7 @@ GAME_CONTENT.sections.push({
         "Plantations relied more and more on the labor of **enslaved Africans**. Many were brought across the Atlantic on the brutal voyage called the **Middle Passage**, part of the **triangular trade** among the Americas, Europe, and Africa."
       ] },
     { topic: "government", title: "Scroll 4: Trade and Colonial Government", video: null,
+      videoKey: "s6-government", videoTitle: "Trade and Colonial Government",
       videoIdea: "Low-poly N64-style: a colonial assembly hall with representatives debating; ships flying the British Union flag of 1707 in the harbor.",
       text: [
         "England followed **mercantilism**: the idea that a nation grows rich by **exporting more than it imports**, with colonies supplying raw materials and buying finished goods.",
@@ -48,6 +49,7 @@ GAME_CONTENT.sections.push({
         "In 1735, printer **John Peter Zenger** was found not guilty after printing criticism of New York's governor, an early victory for **freedom of the press**."
       ] },
     { topic: "dailylife", title: "Scroll 5: Daily Life and Colonial Crafts", video: null,
+      videoKey: "s6-dailylife", videoTitle: "Daily Life and Colonial Crafts",
       videoIdea: "Low-poly N64-style colonial kitchen: a girl dips candles in tallow, another stitches an alphabet sampler, a spinning wheel turns.",
       text: [
         "Most colonists lived on farms, and families made much of what they needed. Girls and women **spun wool and flax** into thread on spinning wheels, wove cloth, sewed, cooked, preserved food, and made **candles** by dipping wicks again and again into melted **tallow** (animal fat) or beeswax. They also made **soap** from fat and lye.",
@@ -56,6 +58,7 @@ GAME_CONTENT.sections.push({
         "New England valued reading so people could read the Bible. A **1647 Massachusetts law** required towns to set up schools, and children learned from the *New England Primer*. **Harvard College** was founded in **1636**."
       ] },
     { topic: "ideas", title: "Scroll 6: The Great Awakening and the Enlightenment", video: null,
+      videoKey: "s6-ideas", videoTitle: "The Great Awakening and the Enlightenment",
       videoIdea: "Low-poly N64-style: a preacher speaks to a huge outdoor crowd; then Ben Franklin flies a kite toward a stormy sky.",
       text: [
         "The **Great Awakening** (1730s–1740s) was a **religious revival** that swept the colonies. Preachers **Jonathan Edwards** and **George Whitefield** drew huge crowds. People felt more free to choose their own churches, which encouraged ideas of equality and independence.",

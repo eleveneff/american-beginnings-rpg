@@ -871,6 +871,84 @@ GAME_CONTENT.videos = {
         choices: ["How to grow rice", "How to trap beavers", "How to mine silver", "How to build windmills"],
         explain: "Rice had long been grown in parts of West Africa." }
     ]
+  },
+  "s6-government": {
+    title: "Trade and Colonial Government",
+    cueTimes: [0, 7.14, 13.89, 21.72, 28.12], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1619, Virginia's House of Burgesses meets. It is the first elected assembly in English America.",
+      "Colonial assemblies hold the power of the purse. They vote on taxes and even on the governor's salary.",
+      "England's Navigation Acts support mercantilism. Colonies send raw materials and buy finished goods across the Atlantic.",
+      "For many years England enforces trade laws loosely, a policy later called salutary neglect.",
+      "Under that habit of self-rule, Americans grow used to governing themselves."
+    ],
+    facts: [
+      "Virginia’s House of Burgesses (1619) was the first elected assembly in English America.",
+      "Colonial assemblies held the “power of the purse”: they voted on taxes and the governor’s salary.",
+      "Mercantilism and the Navigation Acts shaped Atlantic trade—colonies supplied raw materials and bought finished goods.",
+      "Salutary neglect: for many years England loosely enforced trade laws, so colonists grew used to self-government.",
+      "Self-rule under assemblies prepared Americans to insist on rights as English people—and later as citizens."
+    ],
+    check: [
+      { q: "What was the “power of the purse” that colonial assemblies held?",
+        choices: ["They voted on taxes and the governor’s salary", "They printed all the money in England", "They owned all the ships", "They chose the king"],
+        explain: "Controlling money gave assemblies real power." },
+      { q: "What was salutary neglect?",
+        choices: ["England’s loose enforcement of its trade laws for many years", "A kind of medicine", "Ignoring a church sermon", "A law against reading"],
+        explain: "Colonists grew used to running their own affairs." }
+    ]
+  },
+  "s6-dailylife": {
+    title: "Daily Life and Colonial Crafts",
+    cueTimes: [0, 5.64, 11.76, 17.74, 24.25], // narration starts 0.5 s after each cue
+    cues: [
+      "Most colonial families live on farms and make much of what they need by hand.",
+      "Children learn letters from a hornbook, a wooden paddle with a printed page under a clear sheet of horn.",
+      "Women and girls dip wicks again and again into melted tallow or beeswax to make candles.",
+      "Boys may apprentice to a printer. Workers set metal type by hand, ink it, and press one sheet at a time.",
+      "New England values reading so people can read the Bible. Massachusetts requires towns to set up schools."
+    ],
+    facts: [
+      "Most colonists lived on farms and made much of what they needed at home.",
+      "A hornbook is a wooden paddle with a printed alphabet page under a clear sheet of horn.",
+      "Candles were dipped repeatedly in tallow or beeswax (also bayberry).",
+      "Printers set metal type by hand, inked it, and pressed one sheet at a time—Franklin began as a printer’s apprentice.",
+      "New England valued literacy for Bible reading; a 1647 Massachusetts law required towns to set up schools."
+    ],
+    check: [
+      { q: "What is a hornbook?",
+        choices: ["A wooden paddle with a printed alphabet page under a clear sheet of horn", "A musical horn", "A book about cattle", "A newspaper"],
+        explain: "Young children learned their letters from hornbooks." },
+      { q: "How were colonial candles often made?",
+        choices: ["By dipping wicks again and again into melted tallow or beeswax", "By buying them only from England", "By pouring plastic molds", "By carving them from wood"],
+        explain: "Families dipped candles at home." }
+    ]
+  },
+  "s6-ideas": {
+    title: "The Great Awakening and the Enlightenment",
+    cueTimes: [0, 9.51, 16.36, 24.84, 34.06], // narration starts 0.5 s after each cue
+    cues: [
+      "In the 1730s and forties, the Great Awakening sweeps the colonies. Preachers Jonathan Edwards and George Whitefield call people to personal faith.",
+      "Huge outdoor gatherings hear Whitefield's voice. People feel freer to choose their own churches.",
+      "The Enlightenment teaches that reason and science can explain the world. John Locke writes of natural rights to life, liberty, and property.",
+      "In 1731, Benjamin Franklin helps start the Library Company of Philadelphia, a lending library. He also publishes Poor Richard's Almanack.",
+      "In 1752, Franklin's kite experiment shows that lightning is electricity. Ideas of rights and reason will shape a new nation."
+    ],
+    facts: [
+      "The Great Awakening (1730s–1740s) was a religious revival; Jonathan Edwards and George Whitefield were leading preachers.",
+      "Whitefield’s outdoor voice reached huge gatherings; people felt freer to choose their own churches.",
+      "Enlightenment thinkers like John Locke wrote of natural rights to life, liberty, and property.",
+      "Franklin helped found the Library Company of Philadelphia (1731) and published Poor Richard’s Almanack.",
+      "Franklin’s 1752 kite experiment showed lightning is electricity; rights-and-reason ideas later shaped the nation."
+    ],
+    check: [
+      { q: "Which of these did Benjamin Franklin start in 1731?",
+        choices: ["The Library Company of Philadelphia, a lending library", "Harvard College", "The House of Burgesses", "The Dutch West India Company"],
+        explain: "Members pooled money to buy books to share." },
+      { q: "Which Enlightenment idea did John Locke emphasize?",
+        choices: ["Natural rights to life, liberty, and property", "Divine right of kings only", "That colonies must never trade", "That reading was unnecessary"],
+        explain: "Locke’s rights ideas later influenced American founders." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

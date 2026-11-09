@@ -642,6 +642,157 @@ GAME_CONTENT.videos = {
         choices: ["They had no immunity to diseases from Europe", "They refused all medicine", "It came from American crops", "It only affected children"],
         explain: "Native Americans had never been exposed to these diseases, so their bodies had no defenses." }
     ]
+  },
+  "s4-conquest": {
+    title: "Conquistadors: Conquest and Indigenous Choices",
+    cueTimes: [0, 9.54, 19.92, 31.18, 40.44], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1519, Hernan Cortes enters Mexico, seeking wealth and an empire for Spain. The Aztec capital, Tenochtitlan, stands on a lake.",
+      "He does not conquer alone. Thousands of Indigenous allies oppose the Aztec Empire. An Indigenous interpreter, Doña Marina, helps him negotiate alliances.",
+      "Spanish steel weapons, horses, alliances, and disease all matter. After a devastating siege, Tenochtitlan falls in 1521. Its people suffer terribly.",
+      "In 1532, Francisco Pizarro captures the Inca ruler Atahualpa in Peru. Disease and civil war have already weakened the empire.",
+      "Spain builds a vast empire, but conquest is not a story of a few men winning alone. Indigenous choices and resistance shape what follows."
+    ],
+    facts: [
+      "Cortés entered Mexico in 1519; Tenochtitlán fell in 1521 after a siege.",
+      "Tlaxcalans and other Indigenous allies were essential; they pursued their own political aims, not one shared Native position.",
+      "Malintzin (also called Doña Marina or La Malinche) was an Indigenous interpreter and negotiator.",
+      "Pizarro captured Atahualpa at Cajamarca in 1532. Conquest and Indigenous resistance continued beyond that date."
+    ],
+    check: [
+      { q: "Which explanation best accounts for the fall of Tenochtitlán?",
+        choices: ["Indigenous alliances, disease, siege, and Spanish military advantages together", "Spanish soldiers acted entirely alone", "The Aztec had no large cities", "The Inca helped defend Mexico"],
+        explain: "No single advantage explains the conquest; Indigenous allies and smallpox were crucial." },
+      { q: "Which pairing is correct?",
+        choices: ["Cortés—Aztec Empire; Pizarro—Inca Empire", "Pizarro—Aztec Empire; Cortés—Inca Empire", "Hudson—Inca Empire; Champlain—Aztec Empire", "Coronado—Quebec; Cortés—New Amsterdam"],
+        explain: "Cortés fought in Mexico; Pizarro captured the Inca ruler in Peru." }
+    ]
+  },
+  "s4-spanish-na": {
+    title: "Spain in North America",
+    cueTimes: [0, 8.87, 18.03, 26.66, 37.2], // narration starts 0.5 s after each cue
+    cues: [
+      "Spanish explorers push into lands that are now the United States, but these are already the homelands of many different Native nations.",
+      "Coronado leads an expedition from 1540 through 1542, searching the Southwest and Great Plains. He finds no cities of gold.",
+      "De Soto reached the Mississippi in 1541. His expedition brings violence and disruption to Native communities across the Southeast.",
+      "Spain founds Saint Augustine in Florida in 1565. It becomes the oldest continuously occupied European-founded city on the United States mainland.",
+      "Santa Fe follows around 1610. Missions spread Catholicism while settlements extend Spanish power. Native peoples adapt and resist."
+    ],
+    facts: [
+      "Coronado’s 1540–1542 expedition included many Indigenous Mexican allies and reached what is now Kansas.",
+      "De Soto reached the Mississippi in 1541; his expedition inflicted violence and disruption on southeastern Native societies.",
+      "St. Augustine, founded in 1565, is the oldest continuously occupied European-founded city on the United States mainland, not the oldest Indigenous settlement.",
+      "Santa Fe is conventionally dated to 1610; missions advanced conversion and colonial power, often provoking resistance."
+    ],
+    check: [
+      { q: "Which expedition sought wealthy cities in the Southwest and Great Plains?",
+        choices: ["Coronado’s expedition", "Champlain’s expedition", "Hudson’s expedition", "La Salle’s expedition"],
+        explain: "Coronado traveled north in 1540–1542 but found no cities of gold." },
+      { q: "Which settlement and founding date match?",
+        choices: ["St. Augustine—1565", "Santa Fe—1492", "Quebec—1532", "New Amsterdam—1519"],
+        explain: "Spain founded St. Augustine in Florida in 1565." }
+    ]
+  },
+  "s4-spanish-life": {
+    title: "Life in New Spain: Labor, Reform, and Resistance",
+    cueTimes: [0, 9.73, 19.94, 29.19, 38.95], // narration starts 0.5 s after each cue
+    cues: [
+      "In New Spain, Indigenous, European, and African people build a changing society. Markets connect farmers and craftspeople, but power is unequal.",
+      "The encomienda gives Spaniards rights to collect Indigenous tribute and labor, supposedly in return for protection and Christian teaching. Abuse becomes widespread.",
+      "The friar Las Casas condemns cruelty. In 1542, the New Laws try to limit abuse, but weak enforcement undermines reform.",
+      "In New Mexico, religious repression and heavy demands help spark the Pueblo Revolt of 1680. Pueblo communities unite and drive the Spanish out.",
+      "Spain later returns, but Pueblo peoples endure. Their resistance asks who holds power and whose rights are protected."
+    ],
+    facts: [
+      "Encomienda granted claims to Indigenous tribute and, especially in early practice, labor—not ownership of the land itself. Protection and religious teaching were the stated obligations.",
+      "Bartolomé de las Casas condemned colonial cruelty and advocated reform; the New Laws of 1542 did not end exploitation.",
+      "Religious repression, tribute demands, and other pressures helped cause the Pueblo Revolt of 1680.",
+      "Pueblo communities expelled Spanish colonists in 1680. Spanish reconquest began in 1692, and Pueblo peoples and cultures endure today."
+    ],
+    check: [
+      { q: "What was an encomienda?",
+        choices: ["A grant permitting collection of Indigenous tribute and labor under stated obligations", "An elected colonial legislature", "A Dutch trading ship", "A French canoe route"],
+        explain: "Its supposed protection and Christian instruction often masked coercion and abuse." },
+      { q: "Which outcome followed the Pueblo Revolt in 1680?",
+        choices: ["Spanish colonists were driven out of New Mexico for a time", "All Pueblo people vanished", "New Amsterdam became New York", "Cortés conquered Tenochtitlán"],
+        explain: "The Spanish returned beginning in 1692, but Pueblo peoples endured." }
+    ]
+  },
+  "s4-france": {
+    title: "New France: Rivers, Furs, and Native Partners",
+    cueTimes: [0, 9.14, 19.64, 29.3, 39.45], // narration starts 0.5 s after each cue
+    cues: [
+      "France builds a different North American empire, centered on rivers and the fur trade. Samuel de Champlain founds Quebec in 1608.",
+      "French traders depend on Native partners, including the Wendat, for furs, routes, and knowledge. Metal tools and cloth travel one way; beaver pelts travel the other.",
+      "Canoes link the Great Lakes to the Saint Lawrence. Alliances bring opportunities, but also draw the French into conflicts with the Haudenosaunee, or Iroquois.",
+      "Jesuit missionaries seek converts to Catholicism. Native communities make their own choices, while new diseases and warfare cause devastating losses.",
+      "In 1682, La Salle claims the Mississippi basin for France, naming it Louisiana. A claim on a European map does not erase Native homelands."
+    ],
+    facts: [
+      "Samuel de Champlain founded Quebec in 1608; it began as a small habitation, not the later walled city.",
+      "French traders relied on Indigenous trading networks, guides, and alliances, including Wendat partners.",
+      "Jesuits were Catholic missionaries. Indigenous communities responded in different ways; disease and warfare devastated many communities.",
+      "La Salle’s 1682 claim named Louisiana for Louis XIV. A French claim did not mean effective control of all the Mississippi basin."
+    ],
+    check: [
+      { q: "Why were Native partnerships essential to the French fur trade?",
+        choices: ["They supplied furs, travel knowledge, routes, and alliances", "They made rivers unnecessary", "They ended all conflict", "They gave France complete control of North America"],
+        explain: "The French depended on existing Indigenous networks and expertise." },
+      { q: "Which event happened in 1682?",
+        choices: ["La Salle claimed the Mississippi basin as Louisiana", "Champlain founded Quebec", "The English took New Amsterdam", "The Pueblo Revolt began"],
+        explain: "Quebec was founded in 1608; Louisiana was claimed in 1682." }
+    ]
+  },
+  "s4-dutch": {
+    title: "New Netherland: Trade, Diversity, and New York",
+    cueTimes: [0, 7.99, 16.57, 27.58, 36.7], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1609, Henry Hudson explores the river later named for him, sailing for the Dutch while searching for a route to Asia.",
+      "The Dutch develop New Netherland, a colony built around trade. Lenape partners exchange furs for cloth, tools, and other goods.",
+      "New Amsterdam grows on Manhattan. Its harbor connects the Hudson River to Atlantic commerce. Trade brings opportunity, but disputes over land also lead to violence.",
+      "The town attracts people from many backgrounds, but tolerance has limits. Enslaved Africans labor in the colony, and freedom is far from equal.",
+      "In 1664, the English take New Netherland, and New Amsterdam becomes New York. Dutch communities and traditions remain part of the American story."
+    ],
+    facts: [
+      "Henry Hudson was English, but his 1609 voyage was for the Dutch East India Company.",
+      "Dutch settlement in New Netherland began in 1624; New Amsterdam grew at Manhattan’s southern tip.",
+      "Lenape, Mohican, and Haudenosaunee peoples were distinct trading partners, not interchangeable cultures.",
+      "Religious diversity coexisted with restrictions and slavery. The 1664 English takeover did not erase Dutch communities; Dutch rule briefly returned in 1673–1674."
+    ],
+    check: [
+      { q: "Why did the Dutch develop New Netherland?",
+        choices: ["To profit from trade, especially furs", "To search for Aztec gold in Mexico", "To build the first Spanish mission", "To establish the Inca Empire"],
+        explain: "The Hudson River linked inland trade to Atlantic commerce." },
+      { q: "What happened to New Amsterdam in 1664?",
+        choices: ["The English took it and renamed it New York", "The French renamed it Quebec", "The Spanish renamed it Santa Fe", "It became the capital of the Aztec Empire"],
+        explain: "Dutch people and traditions remained despite the English takeover." }
+    ]
+  },
+  "s5-roanoke": {
+    title: "Roanoke: The Lost Colony",
+    cueTimes: [0, 9.72, 16.56, 25.98, 32.43], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1585, England plants a first colony on Roanoke Island, off the coast of present-day North Carolina. The settlers soon abandon it and sail home.",
+      "Algonquian peoples already live along these shores. Trade and conflict shape every English attempt to stay.",
+      "In 1587, John White leads a new group of men, women, and children. His granddaughter, Virginia Dare, is the first English child born in America.",
+      "White sails back to England for supplies. War with Spain delays his return for three years.",
+      "In 1590, White finds the settlement empty. The word CROATOAN is carved on a post. The colonists' fate remains unsolved."
+    ],
+    facts: [
+      "The 1585 Roanoke colony was abandoned; survivors returned to England with Sir Francis Drake in 1586.",
+      "Coastal Algonquian communities, including Croatoan/Hatteras peoples, were neighbors and trading partners—not empty wilderness.",
+      "Virginia Dare was born August 18, 1587, granddaughter of governor John White; she is the first recorded English child born in America.",
+      "White left for supplies in 1587; the Anglo-Spanish war delayed his return until 1590.",
+      "In 1590 White found the letters CROATOAN. No conclusive evidence explains the Lost Colony; historians debate migration, assimilation, and other possibilities without a settled answer."
+    ],
+    check: [
+      { q: "Which year marks John White's return to find Roanoke empty?",
+        choices: ["1590", "1585", "1607", "1492"],
+        explain: "White returned in 1590 after wartime delays; the carving read CROATOAN." },
+      { q: "What does the historical record say about the Lost Colony's fate?",
+        choices: ["It remains unsolved; CROATOAN was carved, but no conclusive answer is known", "It was fully solved in 1590", "All colonists returned safely to London in 1588", "Virginia Dare governed Croatoan"],
+        explain: "Honest teaching keeps the mystery open; do not invent a solved ending." }
+    ]
   }
 };
 GAME_CONTENT.videoAttach = { s1: { beringia: "s1-beringia", clovis: "s1-clovis-points", agriculture: "s1-early-maize" } }; // newer scrolls use videoKey on the lesson

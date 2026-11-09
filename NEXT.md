@@ -1,5 +1,6 @@
 # NEXT: resume notes for American Beginnings RPG
 
+- **v3.1.1 (Nov 9):** Level 4's five scroll videos and Level 5 Roanoke are real files (`s4-conquest`, `s4-spanish-na`, `s4-spanish-life`, `s4-france`, `s4-dutch`, `s5-roanoke`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields. Other video slots are unchanged.
 - **v3.0, Level 7 "The French and Indian War" (Nov 1 night, John: "start with chapters 7 and 8 only"):** Unit 2 begins (unit: 2;
   the Grand Trial still covers Levels 1-6). content/s7.js (7 narrative scrolls + 2 source scrolls: Washington's journal 1754 and
   "Join, or Die" 1754; 36 exam-style questions; s7-geomap map + s7-timeline + s7-sides sort + s7-washington dialogue + s7-mission;
@@ -93,7 +94,7 @@ Live-action (Grok Imagine), fact cards, Piper en_GB-aru-medium speaker 3 narrati
 - [x] L2 s2 (6): regions → s2-culture-regions, northwest → s2-pacific-northwest, plains → s2-great-plains, southwest → s2-southwest, iroquois → s2-iroquois, southeast → s2-southeast (s1-mound-builders Cahokia shot redone: no smoke from the post)
 - Tonight's order (John): L2 videos, then L7/L8 build (other job), then L3 videos, then L7 videos.
 - [x] L3 s3 (5): motives → s3-motives, navigation → s3-navigation, columbus → s3-columbus, afterColumbus → s3-after-columbus, exchange → s3-columbian-exchange (accuracy log: /workspace/abrpg-videos/l3/accuracy-log.md)
-- [ ] L4 s4 (5): conquest, spanishNA, spanishLife, france, dutch
-- [ ] L5 s5 (1): roanoke
+- [x] L4 s4 (5): conquest → s4-conquest, spanishNA → s4-spanish-na, spanishLife → s4-spanish-life, france → s4-france, dutch → s4-dutch
+- [x] L5 s5 (1): roanoke → s5-roanoke
 - [ ] L6 s6 (6): newengland, middle, southern, government, dailylife, ideas
 - After the last level: run world-test.js once; add a lessons-learned note for Princess Prep.

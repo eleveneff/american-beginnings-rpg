@@ -28,6 +28,12 @@ Section 6 keys (all six are embedded and verified):
 - `s6-dailylife.mp4`: Scroll 5, daily life and colonial crafts
 - `s6-ideas.mp4`: Scroll 6, the Great Awakening and the Enlightenment
 
+Section 8 keys (scrolls 1–4 are embedded and verified; scrolls 5–7 are still placeholders):
+- `s8-new-taxes.mp4`: Scroll 1, new taxes after the war
+- `s8-stamp-act.mp4`: Scroll 2, the Stamp Act crisis
+- `s8-daughters-liberty.mp4`: Scroll 3, the Daughters of Liberty
+- `s8-boston-massacre.mp4`: Scroll 4, the Boston Massacre
+
 Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 
 **Mayflower voyage clip (`s5-pilgrim-voyage.mp4`):** the opening departure from Plymouth (September 6, 1620) and the Mayflower Compact cabin scene (November 11, 1620) are AI-generated, animated from generated period stills (Separatist-era dress: doublets, falling collars, coifs, capotains, no buckles), and were checked frame by frame. Seven animation takes were made for each scene and only the cleanest was kept. On-screen fact cards use [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) and [IM Fell English SC](https://fonts.google.com/specimen/IM+Fell+English+SC) (both SIL Open Font License 1.1).
@@ -57,6 +63,8 @@ The four Level 1 clips above use the same narrator voice, ambience beds, and fac
 **Level 2 clips (Section 2, six scrolls):** `s2-culture-regions.mp4`, `s2-pacific-northwest.mp4`, `s2-great-plains.mp4`, `s2-southwest.mp4`, `s2-iroquois.mp4`, and `s2-southeast.mp4`, five scenes each, one per caption. All scenes are AI-generated animations of generated stills, at least two takes for scenes with people or animals moving, checked frame by frame, with the cleanest kept. Takes were rejected for: a modern steel hatchet (Northwest carver; replaced by an adze-like carving tool), glass-paned windows in a plank house, a sail on an Eastern Woodlands canoe, a metal-looking shovel in a Pueblo field, cloned identical people on a pueblo roof, and props that popped in and out. A Southeast council-house still was regenerated because the people and dress did not look like Southeastern Native nations. Accuracy choices: Plains scenes before the horse show hunting on foot (under wolf skins) and dog travois, and the horse scene is carded "1600s–1700s"; the Northwest cards say tall totem poles came mostly in the 1800s; Pueblo walls are stone with adobe plaster (no molded bricks before the Spanish); Navajo sheep and wool weaving are labeled as after the Spanish; the wampum belt follows the Hiawatha belt design; the Iroquois council shot is cropped to keep a skylight-like smoke hole out of frame.
 
 The Mound Builders clip was rebuilt in the Level 2 update with a new Cahokia shot (an earlier take showed smoke rising from the tall post).
+
+**Level 8 scrolls 1–4 (v3.1.4):** `s8-new-taxes.mp4`, `s8-stamp-act.mp4`, `s8-daughters-liberty.mp4`, and `s8-boston-massacre.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/s8-videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later). Scrolls 5–7 stay fact tours until their files land.
 
 **Level 6 scrolls 4–6 (v3.1.3):** `s6-government.mp4`, `s6-dailylife.mp4`, and `s6-ideas.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later).
 

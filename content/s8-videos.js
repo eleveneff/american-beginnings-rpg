@@ -1,15 +1,18 @@
-/* v3.1 Level 8 lesson videos. Same format as videos.js. Until a verified file is in
-   assets/video/<key>.mp4, each runs as a timed fact tour of its captions. */
+/* v3.1.4 Level 8 lesson videos. Same format as videos.js. Scrolls 1–4 have files in
+   assets/video/<key>.mp4. Scrolls 5–7 stay timed fact tours until a verified file is there. */
 (function () {
   var V = GAME_CONTENT.videos;
   V["s8-new-taxes"] = {
-    title: "Paying for an Empire",
+    title: "New Taxes After the War",
+    cueTimes: [0, 7.98, 16.86, 23.89, 31.49, 42.33, 51.94], // narration starts 0.5 s after each cue
     cues: [
-      "1763: Britain has won the French and Indian War, but it owes a huge **war debt**.",
-      "King **George III** draws the **Proclamation Line** along the **Appalachian Mountains**. No colonial settlers west of it.",
+      "In **1763**, Britain has won the French and Indian War, but the victory leaves a huge **war debt**.",
+      "King **George III** draws the **Proclamation Line** along the **Appalachian Mountains**. No colonial settlers may go west of it.",
+      "The land west of the line is left to **Native nations**, though many settlers ignore the order.",
       "**10,000** British troops stay in America, and Parliament wants the colonists to help pay for them.",
-      "Prime Minister **George Grenville** cracks down on **smuggling**, with royal judges instead of local juries.",
-      "1764: the **Sugar Act** lowers the molasses tax, but enforces it hard. Colonists say their **rights** are under attack."
+      "Prime Minister **George Grenville** cracks down on **smuggling**. **Writs of assistance** let officers search almost anywhere, and royal judges replace local juries.",
+      "In **1764**, the **Sugar Act** lowers the molasses tax, but enforces it hard. New England turns molasses into **rum**.",
+      "Colonists say their rights as Englishmen are under attack. They will not quietly surrender self-government."
     ],
     facts: [
       "**Writs of assistance** let customs officers search almost anywhere, even homes, for smuggled goods.",
@@ -28,12 +31,15 @@
   };
   V["s8-stamp-act"] = {
     title: "The Stamp Act Crisis",
+    cueTimes: [0, 9.86, 18.44, 26.96, 34.25, 42.25, 50.35], // narration starts 0.5 s after each cue
     cues: [
-      "1765: Parliament passes the **Stamp Act**. Newspapers, wills, licenses, and even **playing cards** must carry a tax stamp.",
-      "Colonists cry **\"No taxation without representation!\"** They have no vote in Parliament.",
-      "In Williamsburg, **Patrick Henry** says only Virginia's own assembly may tax Virginians.",
-      "In Boston, the **Sons of Liberty** hang an effigy of the stamp officer from the **Liberty Tree**.",
-      "October 1765: nine colonies meet at the **Stamp Act Congress** in New York. A boycott follows, and in **March 1766** the act is **repealed**."
+      "In **1765**, Parliament passes the **Stamp Act**. Newspapers, wills, licenses, and even **playing cards** must carry a tax stamp.",
+      "Colonists cry **\"No taxation without representation!\"** They have no vote in Parliament, yet Parliament taxes them.",
+      "In Williamsburg, young **Patrick Henry** tells the **House of Burgesses** that only Virginia's own assembly may tax Virginians.",
+      "In Boston, the **Sons of Liberty** hang an effigy of the stamp officer from a great elm, the **Liberty Tree**.",
+      "Some protests turn violent. A crowd wrecks the house of Lieutenant Governor **Thomas Hutchinson**.",
+      "In **October 1765**, nine colonies meet at the **Stamp Act Congress** in New York, and a boycott of British goods begins.",
+      "British merchants, losing sales, ask Parliament to repeal the tax. In **March 1766** the Stamp Act is **repealed**, but the same day Parliament claims power over the colonies \"in all cases whatsoever.\""
     ],
     facts: [
       "The Liberty Tree was a great **elm** near Boston Common, where Sons of Liberty met and posted notices.",
@@ -51,13 +57,16 @@
     ]
   };
   V["s8-daughters-liberty"] = {
-    title: "Homespun and Redcoats",
+    title: "The Daughters of Liberty",
+    cueTimes: [0, 9.03, 18.65, 26.39, 36.09, 43.29, 51.83], // narration starts 0.5 s after each cue
     cues: [
-      "1767: the **Townshend Acts** tax **glass, lead, paint, paper, and tea** arriving in colonial ports.",
-      "Merchants promise not to import British goods. **John Dickinson** writes the **Letters from a Farmer in Pennsylvania**.",
+      "In **1767**, the **Townshend Acts** tax **glass, lead, paint, paper, and tea** arriving in colonial ports.",
+      "Merchants promise not to import British goods. **John Dickinson** writes the **Letters from a Farmer in Pennsylvania**, defending colonial rights.",
       "The **Daughters of Liberty** hold **spinning bees**, making **homespun** cloth instead of buying British cloth.",
-      "They brew tea from local herbs and leaves, instead of taxed tea.",
-      "October 1768: British troops land at Boston's **Long Wharf** and camp in the middle of town."
+      "Wearing homespun becomes a sign of patriotism, even for wealthy families. They also brew tea from local herbs and leaves.",
+      "The **Quartering Act** makes colonists provide soldiers with housing, food, and fuel.",
+      "In **October 1768**, British troops land at Boston's **Long Wharf** and camp in the middle of town.",
+      "Off-duty soldiers take part-time jobs for low pay, which angers Boston's working men. Tension in the streets is rising."
     ],
     facts: [
       "A spinning bee could bring dozens of girls and women together to spin from dawn until dark.",
@@ -76,12 +85,15 @@
   };
   V["s8-boston-massacre"] = {
     title: "The Boston Massacre",
+    cueTimes: [0, 10.5, 19.92, 31.04, 41.9, 49.58, 56.83], // narration starts 0.5 s after each cue
     cues: [
-      "A cold night, **March 5, 1770**: a crowd surrounds a British sentry outside the Custom House on **King Street**.",
-      "People shout and throw snowballs, ice, and sticks. Captain **Thomas Preston** brings soldiers to help.",
-      "A soldier is knocked down. The soldiers fire. **Five colonists** die, among them **Crispus Attucks**.",
-      "**Paul Revere** sells an engraving of soldiers firing on a calm crowd: powerful **propaganda**.",
-      "The patriot lawyer **John Adams** defends the soldiers, because everyone deserves a **fair trial**."
+      "On a cold night, **March 5, 1770**, a crowd surrounds a British sentry outside the Custom House on **King Street**, near the Old State House.",
+      "People shout and throw snowballs, ice, and sticks. Captain **Thomas Preston** brings a small file of soldiers to help the sentry.",
+      "A soldier is knocked down. In the confusion, the soldiers fire. **Five colonists** die, among them **Crispus Attucks**, a sailor of African and Native American descent.",
+      "**Paul Revere** sells an engraving of soldiers firing in a neat line on a calm crowd. It is powerful **propaganda**, not a precise record of the chaos.",
+      "The patriot lawyer **John Adams** defends the soldiers, because everyone deserves a **fair trial** under the law.",
+      "Preston and six soldiers are found **not guilty**. Two are convicted of manslaughter.",
+      "Parliament then repeals every Townshend tax **except the tax on tea**. The quarrel over rights is not over."
     ],
     facts: [
       "Crispus Attucks was a sailor and dockworker of **African and Native American** descent.",

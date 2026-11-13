@@ -1,5 +1,6 @@
 # NEXT: resume notes for American Beginnings RPG
 
+- **v3.1.4 (Nov 13):** Level 8 scrolls 1–4 are real files (`s8-new-taxes`, `s8-stamp-act`, `s8-daughters-liberty`, `s8-boston-massacre`). Captions and cueTimes follow the cleared narration. Scrolls 5–7 stay placeholders. No new save fields.
 - **v3.1.3 (Nov 9):** Level 6 scrolls 4–6 are real files (`s6-government`, `s6-dailylife`, `s6-ideas`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields.
 - **v3.1.2 (Nov 9):** Level 6 scrolls 1–3 are real files (`s6-newengland`, `s6-middle`, `s6-southern`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. Scrolls 4–6 stay placeholders. No new save fields.
 - **v3.1.1 (Nov 9):** Level 4's five scroll videos and Level 5 Roanoke are real files (`s4-conquest`, `s4-spanish-na`, `s4-spanish-life`, `s4-france`, `s4-dutch`, `s5-roanoke`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields. Other video slots are unchanged.

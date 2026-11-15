@@ -24,19 +24,19 @@ export const REG = {
   ],
   s4: [
     { id: 'canoe', file: 'canoe', title: 'Paddle the St. Lawrence', icon: '🛶', station: 'landing', ring: [-17, 39.5], arena: [-26, 48, -Math.PI / 2], water: true },
-    { id: 'adobe', file: 'adobe', title: 'Make Adobe Bricks', icon: '🧱', station: 'santafe', ring: [38.5, -18.6], arena: [35.5, -21.4, 2.3] },
+    { id: 'adobe', file: 'adobe', title: 'Make Adobe Bricks', icon: '🧱', station: 'santafe', ring: [39.0, -22.6], arena: [35.5, -21.4, 2.3] },
   ],
   s5: [
-    { id: 'palisade', file: 'palisade', title: 'Raise the Palisade', icon: '🪵', station: 'jamestown', ring: [-12.5, -15.2], arena: [-9.2, -17.6, 2.2] },
-    { id: 'hornworm', file: 'hornworm', title: 'Hornworm Patrol', icon: '🐛', station: 'fields', ring: [8.8, -3.0], arena: [5.6, -0.2, -0.7] },
+    { id: 'palisade', file: 'palisade', title: 'Raise the Palisade', icon: '🪵', station: 'jamestown', ring: [-12.5, -20.2], arena: [-9.2, -17.6, 2.2] },
+    { id: 'hornworm', file: 'hornworm', title: 'Hornworm Patrol', icon: '🐛', station: 'fields', ring: [7.8, -4.0], arena: [5.6, -0.2, -0.7] },
   ],
   s6: [
-    { id: 'bucket', file: 'bucket', title: "Franklin's Bucket Brigade", icon: '🪣', station: 'philadelphia', ring: [-12.5, 21.5], arena: [-10.7, 25.3, 0.4] },
-    { id: 'postrider', file: 'postrider', title: 'Ride the Post Road', icon: '✉️', station: 'williamsburg', ring: [19.8, -17.9], arena: [28.5, -15.6, 1.31] },
+    { id: 'bucket', file: 'bucket', title: "Franklin's Bucket Brigade", icon: '🪣', station: 'philadelphia', ring: [-11.0, 19.5], arena: [-10.7, 25.3, 0.4] },
+    { id: 'postrider', file: 'postrider', title: 'Ride the Post Road', icon: '✉️', station: 'williamsburg', ring: [18.3, -15.9], arena: [28.5, -15.6, 1.31] },
   ],
 };
 // levels whose games are switched on (shipped in batches; the other files are present but unused until listed here)
-export const LIVE = ['s1', 's2', 's3'];
+export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6'];
 const PAY = { first: 10, practice: 2, perDay: 3 };   // mirrored from app.js (for the intro card text only)
 
 let A = null, S = null, cssOn = false, lastLvl = null;

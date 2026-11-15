@@ -1,5 +1,5 @@
-/* v3.1.4 Level 8 lesson videos. Same format as videos.js. Scrolls 1–4 have files in
-   assets/video/<key>.mp4. Scrolls 5–7 stay timed fact tours until a verified file is there. */
+/* v3.1.5 Level 8 lesson videos. Same format as videos.js. All seven scrolls have files in
+   assets/video/<key>.mp4. */
 (function () {
   var V = GAME_CONTENT.videos;
   V["s8-new-taxes"] = {
@@ -112,12 +112,15 @@
   };
   V["s8-tea-party"] = {
     title: "The Boston Tea Party",
+    cueTimes: [0, 9.83, 18.01, 27.86, 35.92, 44.86, 51.68], // narration starts 0.5 s after each cue
     cues: [
-      "1773: the **Tea Act** gives the British East India Company control of the tea trade. The tea still carries a tax.",
-      "Three ships, the **Dartmouth**, **Eleanor**, and **Beaver**, tie up at **Griffin's Wharf**.",
-      "December 16, 1773: thousands crowd the **Old South Meeting House**. Governor Hutchinson won't let the ships leave.",
-      "That night, men disguised roughly as **Mohawk** board the ships with hatchets.",
-      "They dump **342 chests** of tea into Boston Harbor, and break nothing else."
+      "In **1773**, the **Tea Act** lowers the price of British tea, but it keeps the tax and gives the East India Company a monopoly.",
+      "In late autumn, three ships, the **Dartmouth**, the **Eleanor**, and the brig **Beaver**, tie up at **Griffin's Wharf** in Boston.",
+      "On **December 16**, thousands crowd the **Old South Meeting House**. Governor **Hutchinson** will not let the ships leave without paying the tax.",
+      "That night, men with soot-darkened faces and blankets, loosely disguised as **Mohawk**, board the ships with hatchets.",
+      "They split open **342 chests** and dump the tea into the cold harbor. They break nothing else.",
+      "When they finish, they sweep the decks clean. A padlock they broke is later replaced.",
+      "The destroyed tea is worth nearly **10,000** pounds. In other ports, colonists turn the tea ships back. The quarrel over rights grows sharper."
     ],
     facts: [
       "The tea was worth nearly **£10,000**, a huge sum then.",
@@ -136,13 +139,15 @@
   };
   V["s8-intolerable-acts"] = {
     title: "The Intolerable Acts",
+    cueTimes: [0, 9.01, 18.74, 26.33, 36.36, 43.54, 53.13], // narration starts 0.5 s after each cue
     cues: [
-      "Early 1774: news of the Tea Party reaches London. King George III and Parliament decide to punish Boston.",
-      "1774: the **Coercive Acts** close **Boston Harbor** until the tea is paid for.",
-      "Town meetings are limited, and General **Thomas Gage** becomes governor of Massachusetts.",
-      "The **Quebec Act** stretches Canada south to the **Ohio River**.",
-      "Colonists call them the **Intolerable Acts**, and other colonies send **food** to Boston.",
-      "November 1774, King George III: \"We must either master them or totally leave them to themselves.\""
+      "Early in **1774**, news of the Tea Party reaches London. King **George III** and Parliament decide to punish Boston.",
+      "The **Coercive Acts** close **Boston Harbor** on **June 1, 1774**, until the tea is paid for. Wharves fall silent.",
+      "The **Massachusetts Government Act** takes away parts of the colony's charter and limits town meetings.",
+      "A new **Administration of Justice Act** lets officials be tried in Britain, and a new **Quartering Act** requires colonists to house soldiers.",
+      "**General Thomas Gage** arrives as governor, and British tents spread across Boston Common.",
+      "Colonists call the laws the **Intolerable Acts**. Other colonies send food to Boston: sheep from Connecticut, rice from South Carolina.",
+      "Parliament's **Quebec Act** stretches Canada south to the **Ohio River**. In November, the king writes, \"We must either master them, or totally leave them to themselves.\""
     ],
     facts: [
       "With the harbor closed, Boston's sailors, dockworkers, and merchants lost their work.",
@@ -161,12 +166,15 @@
   };
   V["s8-first-congress"] = {
     title: "The First Continental Congress",
+    cueTimes: [0, 9.66, 19.2, 28.75, 37.07, 46.55, 54.84], // narration starts 0.5 s after each cue
     cues: [
-      "September 1774: **56 delegates** from **12 colonies** meet at **Carpenters' Hall** in **Philadelphia**.",
-      "Among them: **Samuel** and **John Adams**, **George Washington**, **Patrick Henry**, and **John Jay**.",
-      "Patrick Henry: \"I am not a Virginian, but an American.\"",
-      "Congress votes to **boycott** British trade and asks Parliament to repeal **13 acts**.",
-      "It backs the **Suffolk Resolves**, and colonies begin training **militias**."
+      "In **September 1774**, delegates gather at **Carpenters' Hall** in **Philadelphia**, a modest red-brick hall, not the great State House.",
+      "**56** men take their seats, from **12** colonies. **Georgia**, wanting British help on its frontier, does not send delegates.",
+      "Among them are **Samuel Adams**, now fifty-one, his cousin **John Adams**, **George Washington** in a Virginia blue coat, **Patrick Henry**, and **John Jay**.",
+      "**Patrick Henry** tells the Congress, \"I am not a Virginian, but an American.\" The room hears a new kind of union.",
+      "Congress adopts a Declaration and Resolves, and asks Parliament to repeal **13** acts that violate colonial rights.",
+      "The delegates sign the **Continental Association**, a shared boycott of British trade, and they endorse the **Suffolk Resolves**.",
+      "They agree to meet again in **May 1775** if Britain does not answer. At home, **militias** begin to drill."
     ],
     facts: [
       "**Georgia**, which wanted British help on its frontier, did not send delegates.",

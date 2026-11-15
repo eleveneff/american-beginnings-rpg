@@ -6,6 +6,7 @@ const fs = require('fs');
 const SHOTS = process.env.SHOTS || '/tmp/wshots/'; fs.mkdirSync(SHOTS, { recursive: true });
 const BASE = process.env.BASE || 'http://localhost:8765/';
 const KEY = 'americanBeginningsRPG_v1', WKEY = 'americanBeginningsRPG_world', GKEY = 'americanBeginningsRPG_gfx';
+// v2.9: the optional mini-game rings (mg-*) are checked in tests/minigames-test.js, so the ring lists below leave them out
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let fails = 0;
 function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  ok -', m); }
@@ -57,7 +58,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await tp(12, 105); await sleep(3000); w = await W();
   assert(Math.abs(w.pos.x + 5) < 0.2 && w.pos.z < 100, 'wading 2 s in the icy river respawns her safely on the south bank (' + w.pos.x.toFixed(1) + ', ' + w.pos.z.toFixed(1) + ')');
   await closeCards();
-  const st = await p.evaluate(() => { const { x, z } = __world.rings().find(r => r.id === 's1-timeline'); return { x, z }; });
+  const st = await p.evaluate(() => { const { x, z } = __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === 's1-timeline'); return { x, z }; });
   await tp(st.x, st.z); await sleep(900); w = await W();
   { const f = await p.evaluate(() => __world.ford());
     assert(w.near === 's1-timeline' && f.armed && f.row === 0 && f.labels === 2 && f.rows.length === 8, 'south bank: the Timeline ring sits by the ford, the stones arm as a timeline and row 1 shows 2 labels');
@@ -217,7 +218,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   console.log('v2.4 Section 2: Native Nations level:');
   { const s2base = () => base({ players: { s1: { gender: 'girl', name: 'Abigail' }, s2: { gender: 'girl', name: 'Abigail' } }, sections: { s1: { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} } } });
     const enterS2 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s2"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
-    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const ringAt = id => p.evaluate(id => __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === id), id);
     const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
     await seed(s2base(), null);
     const before2 = await p.evaluate(k => localStorage.getItem(k), KEY);
@@ -233,7 +234,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
       const S = g.S; assert(S.nw.z > 30 && S.nw.x > 20 && S.plains.x > 40 && S.sw.z < -30 && S.sw.x > 20 && S.ew.x < -20 && S.ew.z > 30 && S.mound.x < -20 && S.mound.z < -30 && S.plaza.x < -40, 'stations sit in their real directions (Northwest Coast north-west, Plains west, Southwest south-west, Woodlands north-east, mound town south-east)');
       const gm = await ringAt('s2-geomap'); assert(g.nz < -0.99 && gm.z < g.hz, 'the painted hide map faces south and its ring is on its south side (she reads it facing north, west on her left)'); }
     // rings: on (or right beside) the roads, standable, never in the sea
-    { const rs = await p.evaluate(() => { const S = __world.stations(); return __world.rings().map(r => ({ id: r.id, d: __world.pathDist(r.x, r.z), w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })); });
+    { const rs = await p.evaluate(() => { const S = __world.stations(); return __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => ({ id: r.id, d: __world.pathDist(r.x, r.z), w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })); });
       const off = rs.filter(r => !(r.d <= 3.2) || !r.w || r.s); assert(rs.length === 17 && !off.length, 'all 17 rings are standable and within 3.2 m of a road (' + JSON.stringify(off) + ')'); }
     console.log('  walls, shore and camera:');
     { await tp(-42, 48 + 17.5); await p.evaluate(() => __world.faceCam(Math.PI)); await hold('KeyW', 2500); w = await W();
@@ -258,7 +259,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     { await tp(52, -1); await sleep(400); const bn = await p.evaluate(() => __world.banner);
       assert(/^Marker 3 · Great Plains/.test(bn) && (await p.evaluate(() => __world.target)) === 's2-l2', 'standing in the Plains camp the banner names its unread scroll, not Marker 1 ("' + bn + '")');
       await tp(20, -22); await sleep(400);
-      const exp = await p.evaluate(() => { const pos = __world.pos; let best = null, bd = 1e9; for (const r of __world.rings()) if (/^s2-/.test(r.id) && r.state === 'new') { const d = Math.hypot(r.x - pos.x, r.z - pos.z); if (d < bd) { bd = d; best = r.id; } } return best; });
+      const exp = await p.evaluate(() => { const pos = __world.pos; let best = null, bd = 1e9; for (const r of __world.rings().filter(r => !/^mg-/.test(r.id))) if (/^s2-/.test(r.id) && r.state === 'new') { const d = Math.hypot(r.x - pos.x, r.z - pos.z); if (d < bd) { bd = d; best = r.id; } } return best; });
       assert((await p.evaluate(() => __world.target)) === exp, 'between camps the banner points to the nearest unfinished marker (' + exp + ')'); }
     await tpRing('trial'); await p.evaluate(() => __world.use()); await sleep(300);
     assert(/all 7 scrolls/.test((await W()).card || '') && (await W()).phase === 'active', 'the meeting-ground Trial ring stays locked until all 7 scrolls are read');
@@ -351,7 +352,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
     const s3base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G }, sections: { s1: DONE(), s2: DONE() }, ...extra });
     const enterS3 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s3"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
-    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const ringAt = id => p.evaluate(id => __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === id), id);
     const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
     await seed(s3base(), null);
     const before3 = await p.evaluate(k => localStorage.getItem(k), KEY);
@@ -379,7 +380,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     // geography: north = +z, WEST = +x. Canaries south-west of Palos, the Bahamas far west, Hispaniola south-east of San Salvador
     { const S = await p.evaluate(() => __world.stations());
       assert(S.canary.x > S.pier.x && S.canary.z < S.pier.z && S.ss.x > S.canary.x + 40 && S.hisp.z < S.ss.z - 30 && S.hisp.x <= S.ss.x, 'the ports sit in their real directions (Canaries SW of Palos, San Salvador far west, Hispaniola south-east of it)'); }
-    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
       const off = rs.filter(r => !r.w || r.s); assert(rs.length === 27 && !off.length, 'all 27 rings are on dry, open land (' + JSON.stringify(off) + ')'); }
     { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
       assert(hb.length === 4 && hb.every(h => h.w && !h.s), 'all 4 harbor landing spots are walkable (' + JSON.stringify(hb) + ')'); }
@@ -485,7 +486,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
     const s4base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE() }, ...extra });
     const enterS4 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s4"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
-    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const ringAt = id => p.evaluate(id => __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === id), id);
     const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
     const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
     await seed(s4base(), null);
@@ -499,11 +500,11 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     // geography: north = +z, WEST = +x. Santa Fe far west, Quebec far north, New Amsterdam east on the coast, St. Augustine south-east
     { const S = await p.evaluate(() => __world.stations());
       assert(S.santafe.x > S.staug.x + 60 && S.quebec.z > S.staug.z + 80 && S.market.x < S.beaver.x && S.market.z > S.staug.z + 40 && S.quebec.z > S.market.z, 'the colonies sit in their real directions (Santa Fe far west, Quebec far north, New Amsterdam north of St. Augustine on the east coast)'); }
-    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
       const off = rs.filter(r => !r.w || r.s); assert(rs.length === 25 && !off.length, 'all 25 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
     { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
       assert(hb.length === 2 && hb.every(h => h.w && !h.s), 'both canoe landings are walkable (' + JSON.stringify(hb) + ')'); }
-    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().map(r => r.id)));
+    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => r.id)));
       for (const id of ids) { await tpRing(id);
         for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(260); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
       assert(n === ids.length * 4 && !bad.length, 'camera never inside a building, tree or mesa at ' + ids.length + ' rings × 4 views (' + bad.join(', ') + ')'); }
@@ -601,7 +602,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
     const s5base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G, s5: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE(), s4: DONE() }, ...extra });
     const enterS5 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s5"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
-    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const ringAt = id => p.evaluate(id => __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === id), id);
     const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
     const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
     await seed(s5base(), null);
@@ -615,14 +616,14 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     // geography: north = +z, WEST = +x. Roanoke south, James Fort north of it across the James River, Plymouth far north
     { const S = await p.evaluate(() => __world.stations());
       assert(S.jamestown.z > S.roanoke.z + 20 && S.plymouth.z > S.jamestown.z + 40 && S.mayflower.x < S.plymouth.x && S.fields.x > S.jamestown.x && S.wampanoag.x > S.plymouth.x, 'the places sit in their real directions (Roanoke south, Virginia, then New England north; the Cape Cod coast east)'); }
-    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
       const off = rs.filter(r => !r.w || r.s); assert(rs.length === 31 && !off.length, 'all 31 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
-    { const rs = await p.evaluate(() => __world.rings()), close = [];
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id))), close = [];
       for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) if (Math.hypot(rs[i].x - rs[j].x, rs[i].z - rs[j].z) < 2.6) close.push(rs[i].id + '/' + rs[j].id);
       assert(!close.length, 'no two rings overlap (' + close.join(', ') + ')'); }
     { const hb = await p.evaluate(() => { const H = __world._dbg().L.mods.B.HARBORS; return Object.keys(H).map(k => ({ k, w: __world.walkable(H[k].x, H[k].z), s: __world.solid(H[k].x, H[k].z) })); });
       assert(hb.length === 2 && hb.every(h => h.w && !h.s), 'both ship landings are walkable (' + JSON.stringify(hb) + ')'); }
-    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().map(r => r.id)));
+    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => r.id)));
       for (const id of ids) { await tpRing(id);
         for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(260); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
       assert(n === ids.length * 4 && !bad.length, 'camera never inside a building, wall or tree at ' + ids.length + ' rings × 4 views (' + bad.join(', ') + ')'); }
@@ -692,7 +693,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
     const s6base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G, s5: G, s6: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE(), s4: DONE(), s5: DONE() }, ...extra });
     const enterS6 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s6"]').click()); await waitPhase('active', 40000); await sleep(800); await closeCards(); };
-    const ringAt = id => p.evaluate(id => __world.rings().find(r => r.id === id), id);
+    const ringAt = id => p.evaluate(id => __world.rings().filter(r => !/^mg-/.test(r.id)).find(r => r.id === id), id);
     const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
     const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
     await seed(s6base(), null);
@@ -706,12 +707,12 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     // geography: north = +z, WEST = +x. Charles Town south, Virginia, Pennsylvania, then Boston north on the coast (east); Albany west of Boston
     { const S = await p.evaluate(() => __world.stations());
       assert(S.williamsburg.z > S.charleston.z && S.philadelphia.z > S.williamsburg.z && S.boston.z > S.philadelphia.z + 20 && S.gate.x > S.boston.x + 40 && S.boston.x < S.village.x, 'the places sit in their real directions (south to north up the coast; Albany inland, west of Boston)'); }
-    { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
       const off = rs.filter(r => !r.w || r.s); assert(rs.length === 28 && !off.length, 'all 28 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
-    { const rs = await p.evaluate(() => __world.rings()), close = [];
+    { const rs = await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id))), close = [];
       for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) if (Math.hypot(rs[i].x - rs[j].x, rs[i].z - rs[j].z) < 2.6) close.push(rs[i].id + '/' + rs[j].id);
       assert(!close.length, 'no two rings overlap (' + close.join(', ') + ')'); }
-    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().map(r => r.id)));
+    { let bad = [], n = 0; const ids = (await p.evaluate(() => __world.rings().filter(r => !/^mg-/.test(r.id)).map(r => r.id)));
       for (const id of ids) { await tpRing(id);
         for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { await p.evaluate(a => __world.faceCam(a), a); await sleep(260); const c = await p.evaluate(() => __world.cam); n++; if (c.blocked) bad.push(id + '@' + a.toFixed(1)); } }
       assert(n === ids.length * 4 && !bad.length, 'camera never inside a building, wall or tree at ' + ids.length + ' rings × 4 views (' + bad.join(', ') + ')'); }

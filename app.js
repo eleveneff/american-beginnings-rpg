@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v3.1.5";
+  var GAME_VERSION = "v3.2";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -160,6 +160,7 @@
 
   /* ---------------- stars economy ---------------- */
   var SRC_LABEL = { gear: "Gear milestones (every 5 correct)", question: "Quiz answers (first time right)", activity: "Activities (first play / better score)", practice: "Activity practice replays", badge: "Badges", crown: "Grand Trial crown", carried: "Carried over from v1 progress", video: "Video checks (first time right)", skill: "Map & timeline placements (first time right)" };
+  SRC_LABEL.minigame = "3D mini-games (first win)"; SRC_LABEL.mgpractice = "3D mini-game replays";   // v2.9
   function addStars(n, src, note) {
     n = Math.max(0, Math.floor(n || 0)); if (!n) return 0;
     S.stars.balance += n; S.stars.earned += n; S.stars.bySource[src] = (S.stars.bySource[src] || 0) + n;
@@ -1363,7 +1364,7 @@
     L.push("STARS: balance " + S.stars.balance + " | earned " + S.stars.earned + " | spent " + S.stars.spent);
     Object.keys(S.stars.bySource).forEach(function (k) { L.push(" - " + (SRC_LABEL[k] || k) + ": " + S.stars.bySource[k]); });
     L.push("");
-    L.push("HISTORY ACTIVITIES (" + Object.keys(S.acts).length + " of " + allActs().length + " tried; 3 stars = no mistakes):");
+    L.push("HISTORY ACTIVITIES (" + Object.keys(S.acts).filter(function (k) { return k.indexOf("mg-") !== 0; }).length + " of " + allActs().length + " tried; 3 stars = no mistakes):");
     allActs().forEach(function (x) { var r = S.acts[x.a.id]; if (r && r.plays) L.push(" - [" + x.s.title + "] " + x.a.title + ": played " + r.plays + "x, best " + r.best + "/3, last " + r.history[r.history.length - 1].mistakes + " mistakes, stars " + r.earned); });
     L.push("");
     var vk = Object.keys(C.videos || {});
@@ -1526,6 +1527,17 @@
         finish: function () { finishActivity(sid, a, mistakes, back); }
       };
     },
+    // v2.9 3D mini-games (world/minigames): 10 stars the first win, then the activity practice rule (2 stars, 3 a day). Records
+    // live in S.acts under "mg-<sid>-<id>" (same shape as activity records, so no new save fields); allActs() never lists them.
+    miniGame: function (sid, id, title) {
+      var SC = C.stars, key = "mg-" + sid + "-" + id, FIRST = 10, n = 0, first = false;
+      var r = S.acts[key] || (S.acts[key] = { best: 0, bestStars: 0, plays: 0, firstAt: now(), lastAt: null, earned: 0, practiceDay: "", practiceCount: 0, history: [] });
+      if (!r.bestStars) { n = addStars(FIRST, "minigame", key); r.bestStars = FIRST; first = true; }
+      else { if (r.practiceDay !== today()) { r.practiceDay = today(); r.practiceCount = 0; } if (r.practiceCount < SC.practicePerDay) { r.practiceCount++; n = addStars(SC.practice, "mgpractice", key); } }
+      r.best = 3; r.plays++; r.lastAt = now(); r.earned += n; r.history.push({ at: now(), mistakes: 0, rating: 3, stars: n }); if (r.history.length > 20) r.history = r.history.slice(-20);
+      save(); renderHero(); return { stars: n, first: first, plays: r.plays };
+    },
+    miniGameRec: function (sid, id) { var r = S.acts["mg-" + sid + "-" + id]; var left = C.stars.practicePerDay - (r && r.practiceDay === today() ? r.practiceCount : 0); return r ? { won: r.bestStars > 0, plays: r.plays, practiceLeft: Math.max(0, left) } : { won: false, plays: 0, practiceLeft: C.stars.practicePerDay }; },
     trial: function (sid) { if (S.run && S.run.sid === sid && (S.run.phase === "trial" || S.run.phase === "review")) enterSection(sid, true); else startTrial(sid); } };
   home();
 })();

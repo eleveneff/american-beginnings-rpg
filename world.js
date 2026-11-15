@@ -146,6 +146,7 @@ const scrollRead = (sid, i) => W.read[sid].includes(i) || (SRC_LESSON[sid] || []
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
 let RINGS = null;
+let MGM = null;   // v2.9: world/minigames/index.js once loaded
 function ringDefs(B) {
   return [
     lessonRing("s1-l0", 0, -3.5, 1, "camp"),
@@ -971,6 +972,7 @@ async function ensureBuilt(sid = L.sid) {
     const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s8" ? "./world/boston74.js" : sid === "s7" ? "./world/frontier.js" : sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
     const rings = sid === "s8" ? ringDefsS8(B) : sid === "s7" ? ringDefsS7(B) : sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    try { MGM = MGM || await import("./world/minigames/index.js"); MGM.attach({ THREE, L, keys, joy, toast, esc, supportY, clearHeld, snapCam: () => placeCamera(0, true) }); rings.push(...MGM.ringDefs(sid)); } catch (e) { console.warn("mini-games off", e); }   // v2.9 mini-games (world/minigames)
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
@@ -1187,7 +1189,7 @@ function wireTouch() {
 let near = null;
 function activeRings() { const zr = L.zone === "cave" ? L.cave.rings : L.lvl.rings; return zr; }
 function findNear() { let best = null, bd = 1.6; for (const r of activeRings()) { const d = Math.hypot(L.pos.x - r.def.x, L.pos.z - r.def.z); if (d < bd) { bd = d; best = r; } } return best; }
-function useRing() { if (L.phase !== "active" || L.cardOpen || L.frozen) return; const r = findNear(); if (r) r.def.act(); }
+function useRing() { if (MGM && MGM.active()) return MGM.action(); if (L.phase !== "active" || L.cardOpen || L.frozen) return; const r = findNear(); if (r) r.def.act(); }
 function refreshRings() { const { setRingState } = L.mods.B; for (const r of L.lvl.rings.concat(L.cave.rings)) setRingState(r, r.def.state()); L.lvl.setGateOpen(hasCloak()); }
 // v2.3: the objective names the next unfinished marker along the trail at or ahead of her (projected onto the PATH
 // polyline), not the first unfinished one from camp. Gate first while she has no cloak; the cave door when nothing is left ahead.
@@ -1370,6 +1372,7 @@ function placeCamera(dt, snap) {
   L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, L.camD / 7), tgt.z);   // aim a little above her head (eases with the smoothed distance, so no tilt jumps)
 }
 function step(dt, raw) {
+  if (MGM && MGM.step(dt, raw)) return;   // v2.9: a mini-game is running (it drives the hero + camera itself)
   const B = L.mods.B;
   let sx = 0, sf = 0;
   if (!L.cardOpen && !L.frozen) { if (keys.has("f")) sf += 1; if (keys.has("b")) sf -= 1; if (keys.has("r")) sx += 1; if (keys.has("l")) sx -= 1; sx += joy.x; sf += joy.y; }

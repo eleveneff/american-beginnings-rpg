@@ -5,12 +5,34 @@ Section 1 keys (all three are embedded and verified):
 - `s1-clovis-points.mp4`: Scroll 3, Clovis point technology
 - `s1-early-maize.mp4`: Scroll 4, farming and early maize
 
-Section 5 keys (all five are embedded and verified):
+Section 4 keys (all five are embedded and verified):
+- `s4-conquest.mp4`: Scroll 1, conquistadors, Indigenous allies, and the fall of Tenochtitlán
+- `s4-spanish-na.mp4`: Scroll 2, Spain in North America
+- `s4-spanish-life.mp4`: Scroll 3, life in New Spain
+- `s4-france.mp4`: Scroll 4, New France
+- `s4-dutch.mp4`: Scroll 5, New Netherland
+
+Section 5 keys (all six are embedded and verified):
+- `s5-roanoke.mp4`: Scroll 1, Roanoke, the Lost Colony
 - `s5-jamestown-settlers.mp4`: Scroll 2, the first settlers of Jamestown in 1607
 - `s5-virginia-founders.mp4`: Scroll 3, founders of Virginia
 - `s5-virginia-struggles.mp4`: Scroll 4, early Virginia's struggles and recovery
 - `s5-pilgrim-voyage.mp4`: Scroll 5, the Mayflower voyage in 1620
 - `s5-new-england.mp4`: Scroll 6, Squanto and the Wampanoag, the first harvest, and New England
+
+Section 6 keys (all six are embedded and verified):
+- `s6-newengland.mp4`: Scroll 1, the New England colonies
+- `s6-middle.mp4`: Scroll 2, the Middle Colonies
+- `s6-southern.mp4`: Scroll 3, the Southern Colonies
+- `s6-government.mp4`: Scroll 4, trade and colonial government
+- `s6-dailylife.mp4`: Scroll 5, daily life and colonial crafts
+- `s6-ideas.mp4`: Scroll 6, the Great Awakening and the Enlightenment
+
+Section 8 keys (scrolls 1–4 are embedded and verified; scrolls 5–7 are still placeholders):
+- `s8-new-taxes.mp4`: Scroll 1, new taxes after the war
+- `s8-stamp-act.mp4`: Scroll 2, the Stamp Act crisis
+- `s8-daughters-liberty.mp4`: Scroll 3, the Daughters of Liberty
+- `s8-boston-massacre.mp4`: Scroll 4, the Boston Massacre
 
 Use H.264 MP4, 720p or less, and keep each file under about 20 MB.
 
@@ -37,3 +59,15 @@ Every key also has captions, Key Facts, and a check in `content/videos.js`. They
 **Mound Builders clip (`s1-mound-builders.mp4`):** five scenes, one per caption: workers carrying baskets of earth up a mound, Cahokia and Monks Mound around 1100 (before its log wall was built), Hohokam irrigation canals in the Arizona desert, Pueblo Bonito at Chaco Canyon, and Cliff Palace at Mesa Verde (with turkeys, which Ancestral Puebloans raised). All are AI-generated animations of generated stills, checked frame by frame.
 
 The four Level 1 clips above use the same narrator voice, ambience beds, and fact-card fonts as the other clips.
+
+**Level 2 clips (Section 2, six scrolls):** `s2-culture-regions.mp4`, `s2-pacific-northwest.mp4`, `s2-great-plains.mp4`, `s2-southwest.mp4`, `s2-iroquois.mp4`, and `s2-southeast.mp4`, five scenes each, one per caption. All scenes are AI-generated animations of generated stills, at least two takes for scenes with people or animals moving, checked frame by frame, with the cleanest kept. Takes were rejected for: a modern steel hatchet (Northwest carver; replaced by an adze-like carving tool), glass-paned windows in a plank house, a sail on an Eastern Woodlands canoe, a metal-looking shovel in a Pueblo field, cloned identical people on a pueblo roof, and props that popped in and out. A Southeast council-house still was regenerated because the people and dress did not look like Southeastern Native nations. Accuracy choices: Plains scenes before the horse show hunting on foot (under wolf skins) and dog travois, and the horse scene is carded "1600s–1700s"; the Northwest cards say tall totem poles came mostly in the 1800s; Pueblo walls are stone with adobe plaster (no molded bricks before the Spanish); Navajo sheep and wool weaving are labeled as after the Spanish; the wampum belt follows the Hiawatha belt design; the Iroquois council shot is cropped to keep a skylight-like smoke hole out of frame.
+
+The Mound Builders clip was rebuilt in the Level 2 update with a new Cahokia shot (an earlier take showed smoke rising from the tall post).
+
+**Level 8 scrolls 1–4 (v3.1.4):** `s8-new-taxes.mp4`, `s8-stamp-act.mp4`, `s8-daughters-liberty.mp4`, and `s8-boston-massacre.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/s8-videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later). Scrolls 5–7 stay fact tours until their files land.
+
+**Level 6 scrolls 4–6 (v3.1.3):** `s6-government.mp4`, `s6-dailylife.mp4`, and `s6-ideas.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later).
+
+**Level 6 scrolls 1–3 (v3.1.2):** `s6-newengland.mp4`, `s6-middle.mp4`, and `s6-southern.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later).
+
+**Level 4 and Roanoke (v3.1.1):** `s4-conquest.mp4`, `s4-spanish-na.mp4`, `s4-spanish-life.mp4`, `s4-france.mp4`, `s4-dutch.mp4`, and `s5-roanoke.mp4` use the same narrator (`en_GB-aru-medium`, speaker 3) and burned-in fact cards. Captions in `content/videos.js` match the cleared scripts, and `cueTimes` is the caption start (narration begins 0.5 s later). The files are stored under these canonical names.

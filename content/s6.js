@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "newengland", title: "Scroll 1: The New England Colonies", video: null,
+      videoKey: "s6-newengland", videoTitle: "The New England Colonies",
       videoIdea: "Low-poly N64-style New England town: white meetinghouse, village green, fishing boats in a rocky harbor.",
       text: [
         "**Puritans** wanted to \"purify\" the Church of England. In **1630**, **John Winthrop** led them to found the **Massachusetts Bay Colony** (Boston). He hoped it would be **\"a city upon a hill\"**, a model community for the world.",
@@ -19,6 +20,7 @@ GAME_CONTENT.sections.push({
         "With rocky soil and long winters, New Englanders lived by **small farms, fishing, whaling, shipbuilding, and trade**."
       ] },
     { topic: "middle", title: "Scroll 2: The Middle Colonies", video: null,
+      videoKey: "s6-middle", videoTitle: "The Middle Colonies",
       videoIdea: "Low-poly N64-style: golden wheat fields, a busy Philadelphia waterfront, and William Penn meeting the Lenape under an elm tree.",
       text: [
         "The **Middle Colonies** were **New York, New Jersey, Pennsylvania, and Delaware**.",
@@ -27,6 +29,7 @@ GAME_CONTENT.sections.push({
         "The Middle Colonies were the most **diverse**, with Dutch, English, German, Swedish, Scots-Irish, and other settlers."
       ] },
     { topic: "southern", title: "Scroll 3: The Southern Colonies", video: null,
+      videoKey: "s6-southern", videoTitle: "The Southern Colonies",
       videoIdea: "Low-poly N64-style: a Southern river plantation with rice fields and indigo dye vats, a ship loading barrels at the dock.",
       text: [
         "The **Southern Colonies** were **Maryland, Virginia, North Carolina, South Carolina, and Georgia**.",
@@ -36,6 +39,7 @@ GAME_CONTENT.sections.push({
         "Plantations relied more and more on the labor of **enslaved Africans**. Many were brought across the Atlantic on the brutal voyage called the **Middle Passage**, part of the **triangular trade** among the Americas, Europe, and Africa."
       ] },
     { topic: "government", title: "Scroll 4: Trade and Colonial Government", video: null,
+      videoKey: "s6-government", videoTitle: "Trade and Colonial Government",
       videoIdea: "Low-poly N64-style: a colonial assembly hall with representatives debating; ships flying the British Union flag of 1707 in the harbor.",
       text: [
         "England followed **mercantilism**: the idea that a nation grows rich by **exporting more than it imports**, with colonies supplying raw materials and buying finished goods.",
@@ -45,6 +49,7 @@ GAME_CONTENT.sections.push({
         "In 1735, printer **John Peter Zenger** was found not guilty after printing criticism of New York's governor, an early victory for **freedom of the press**."
       ] },
     { topic: "dailylife", title: "Scroll 5: Daily Life and Colonial Crafts", video: null,
+      videoKey: "s6-dailylife", videoTitle: "Daily Life and Colonial Crafts",
       videoIdea: "Low-poly N64-style colonial kitchen: a girl dips candles in tallow, another stitches an alphabet sampler, a spinning wheel turns.",
       text: [
         "Most colonists lived on farms, and families made much of what they needed. Girls and women **spun wool and flax** into thread on spinning wheels, wove cloth, sewed, cooked, preserved food, and made **candles** by dipping wicks again and again into melted **tallow** (animal fat) or beeswax. They also made **soap** from fat and lye.",
@@ -53,6 +58,7 @@ GAME_CONTENT.sections.push({
         "New England valued reading so people could read the Bible. A **1647 Massachusetts law** required towns to set up schools, and children learned from the *New England Primer*. **Harvard College** was founded in **1636**."
       ] },
     { topic: "ideas", title: "Scroll 6: The Great Awakening and the Enlightenment", video: null,
+      videoKey: "s6-ideas", videoTitle: "The Great Awakening and the Enlightenment",
       videoIdea: "Low-poly N64-style: a preacher speaks to a huge outdoor crowd; then Ben Franklin flies a kite toward a stormy sky.",
       text: [
         "The **Great Awakening** (1730s–1740s) was a **religious revival** that swept the colonies. Preachers **Jonathan Edwards** and **George Whitefield** drew huge crowds. People felt more free to choose their own churches, which encouraged ideas of equality and independence.",

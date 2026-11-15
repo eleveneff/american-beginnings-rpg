@@ -181,6 +181,160 @@ GAME_CONTENT.videos = {
         explain: "Hohokam canals carried river water to fields of corn, beans, squash, and cotton." }
     ]
   },
+  "s2-culture-regions": {
+    title: "Land Shapes Life: Culture Regions",
+    cueTimes: [0, 6.58, 15.64, 22.69, 29.13], // narration starts 0.5 s after each cue
+    cues: [
+      "By the **1400s**, **millions** of Native Americans lived in North America, speaking **hundreds of languages**.",
+      "Historians group them into **culture regions**. The land, climate, plants, and animals shaped food, homes, and clothing.",
+      "In the far north **Arctic**, the **Inuit** hunted seals, whales, and caribou, using light skin boats called **kayaks**.",
+      "In winter, Inuit hunters built **snow houses (igloos)** for shelter while they hunted on the ice.",
+      "In the dry **Great Basin**, the **Shoshone** and **Ute** moved often, gathering seeds, nuts, and roots."
+    ],
+    facts: [
+      "By the **1400s**, millions of Native Americans lived in North America, speaking **hundreds of languages**.",
+      "A **culture region** is an area where groups shared similar ways of life because of their environment.",
+      "The **Inuit** of the **Arctic** hunted seals, whales, and caribou and traveled in **kayaks**.",
+      "Inuit hunters built **snow houses (igloos)** for shelter while hunting in winter.",
+      "In the **Great Basin**, the **Shoshone** and **Ute** gathered seeds, nuts, and roots and hunted small animals."
+    ],
+    check: [
+      { q: "What do historians call an area where groups shared similar ways of life because of their environment?",
+        choices: ["A culture region", "A colony", "A confederacy", "A city-state"],
+        explain: "Land, climate, plants, and animals shaped each culture region's food, homes, and clothing." },
+      { q: "How did Inuit hunters travel on the Arctic waters?",
+        choices: ["In light skin boats called kayaks", "In birchbark canoes with sails", "On horseback along the shore", "In large wooden ships"],
+        explain: "Kayaks were light boats of skin stretched over a frame of wood or bone." }
+    ]
+  },
+  "s2-pacific-northwest": {
+    title: "The Pacific Northwest: People of the Cedar and Salmon",
+    cueTimes: [0, 9.11, 14.97, 20.55, 29.54], // narration starts 0.5 s after each cue
+    cues: [
+      "Along the rainy **Pacific Northwest** coast, the **Kwakwaka'wakw**, **Haida**, and **Tlingit** found plenty of food: **salmon**, shellfish, whales, and berries.",
+      "Giant **cedar** trees gave them wood for large **plank houses**, shared by related families.",
+      "From a **single cedar log**, they carved **canoes** big enough to travel the ocean coast.",
+      "They carved cedar **house posts** showing **family crests**. The very tall **totem poles** came later, mostly in the **1800s**.",
+      "At a **potlatch**, a family held a great feast and **gave away gifts** to show its wealth and status."
+    ],
+    facts: [
+      "Pacific Northwest peoples such as the **Kwakwaka'wakw (Kwakiutl)**, **Haida**, and **Tlingit** lived on salmon, shellfish, whales, and berries.",
+      "Giant **cedar** trees gave wood for **plank houses** and ocean-going **canoes** carved from one log.",
+      "Carved cedar **house posts** showed **family crests**; very tall freestanding **totem poles** came mostly in the **1800s**.",
+      "At a **potlatch**, the host family held a feast and **gave gifts away** to show its wealth and status."
+    ],
+    check: [
+      { q: "What happened at a potlatch?",
+        choices: ["A family held a feast and gave gifts away", "Leaders voted on a new constitution", "Hunters raced horses", "Farmers planted the Three Sisters"],
+        explain: "Giving gifts away at a potlatch showed a family's wealth and status." },
+      { q: "Which tree gave Pacific Northwest peoples wood for plank houses and canoes?",
+        choices: ["Cedar", "Palm", "Saguaro cactus", "Birch only"],
+        explain: "Giant western red cedars grow in the rainy Northwest forests." }
+    ]
+  },
+  "s2-great-plains": {
+    title: "The Great Plains: People of the Buffalo",
+    cueTimes: [0, 8.84, 17.29, 23.8, 32.0], // narration starts 0.5 s after each cue
+    cues: [
+      "On the wide grasslands of the **Great Plains**, the **Lakota**, **Cheyenne**, and **Comanche** depended on the **buffalo (bison)**.",
+      "For centuries, Plains hunters had **no horses**. They hunted buffalo **on foot**, sometimes creeping close under wolf skins.",
+      "They used nearly **every part**: meat for food, hides for clothing and shelters, and bones for tools.",
+      "Many lived in **tepees**, cone-shaped homes of poles and hides. **Dogs** pulled loads on frames called **travois**.",
+      "Then **horses, brought by the Spanish**, spread north in the **1600s and 1700s**, making hunting and travel much faster."
+    ],
+    facts: [
+      "Plains peoples such as the **Lakota (Sioux)**, **Cheyenne**, and **Comanche** depended on the **buffalo (bison)**.",
+      "**Before horses**, Plains hunters hunted buffalo **on foot**, and **dogs** pulled **travois** loads.",
+      "They used nearly every part of the buffalo: meat, hides, and bones.",
+      "**Tepees** of poles and hides could be packed up and moved quickly.",
+      "**Horses brought by the Spanish** spread north in the **1600s–1700s** and changed Plains life."
+    ],
+    check: [
+      { q: "Where did the Plains peoples' horses come from?",
+        choices: ["The Spanish brought them; they spread north in the 1600s and 1700s", "They had always lived wild on the Plains", "The Inuit traded them south", "The English brought them to Plymouth"],
+        explain: "Before the Spanish arrived, Plains hunters went on foot and used dogs to pull travois." },
+      { q: "Why were tepees a good home for Plains peoples?",
+        choices: ["They could be packed up and moved quickly", "They were built of stone to last forever", "They floated on rivers", "They were made of snow blocks"],
+        explain: "Tepees of poles and buffalo hides moved with the people as they followed the herds." }
+    ]
+  },
+  "s2-southwest": {
+    title: "The Southwest: Pueblos, Kivas, and Corn",
+    cueTimes: [0, 8.6, 14.55, 21.14, 27.62], // narration starts 0.5 s after each cue
+    cues: [
+      "In the dry **Southwest**, the **Hopi**, **Zuni**, and other **Pueblo peoples** farmed corn, beans, and squash, using careful methods to **save water**.",
+      "They built homes of stone and **adobe**, sun-dried clay, and women plastered the walls smooth.",
+      "Buildings shared by many families, several stories tall and reached by ladders, are called **pueblos**.",
+      "A **kiva** is a round room, often underground, used for **religious ceremonies and meetings**.",
+      "Later arrivals, the **Navajo (Diné)** and **Apache**, became skilled hunters and traders. After the Spanish came, the Navajo raised **sheep** and wove **wool**."
+    ],
+    facts: [
+      "The **Hopi**, **Zuni**, and other **Pueblo peoples** farmed corn, beans, and squash with water-saving methods.",
+      "They built with stone and **adobe** (sun-dried clay); many-family buildings are called **pueblos**.",
+      "A **kiva** is a round, often underground room for ceremonies and meetings.",
+      "The **Navajo (Diné)** and **Apache** arrived later; after the Spanish came, the Navajo raised **sheep** and wove **wool**."
+    ],
+    check: [
+      { q: "What is a kiva?",
+        choices: ["A round, often underground room for ceremonies and meetings", "A cedar canoe", "A buffalo-hide tent", "A shell-bead belt"],
+        explain: "Pueblo peoples still use kivas for ceremonies today." },
+      { q: "What were many-family adobe buildings in the Southwest called?",
+        choices: ["Pueblos", "Longhouses", "Igloos", "Plank houses"],
+        explain: "Pueblos were several stories tall and were reached by ladders." }
+    ]
+  },
+  "s2-iroquois": {
+    title: "Eastern Woodlands: The Iroquois Confederacy",
+    cueTimes: [0, 7.04, 14.07, 23.08, 29.77], // narration starts 0.5 s after each cue
+    cues: [
+      "In the **Eastern Woodlands**, people hunted deer, fished, and farmed the **Three Sisters**: corn, beans, and squash.",
+      "The **Iroquois (Haudenosaunee)** lived in **longhouses**, long bark-covered homes shared by several related families.",
+      "Five nations, the **Mohawk, Oneida, Onondaga, Cayuga, and Seneca**, formed the **Iroquois Confederacy** under the **Great Law of Peace**.",
+      "Women held real power. **Clan mothers** chose the male leaders, called **sachems**, and could remove them.",
+      "**Wampum**, beads made from shells, was woven into **belts** to record agreements."
+    ],
+    facts: [
+      "Eastern Woodlands peoples hunted deer, fished, and farmed the **Three Sisters** (corn, beans, squash).",
+      "The **Iroquois (Haudenosaunee)** lived in bark-covered **longhouses** shared by related families.",
+      "The **Mohawk, Oneida, Onondaga, Cayuga, and Seneca** formed the **Iroquois Confederacy** under the **Great Law of Peace** (later joined by the Tuscarora).",
+      "**Clan mothers** chose the **sachems** (male leaders) and could remove them.",
+      "**Wampum** shell-bead belts recorded agreements and were used in ceremonies."
+    ],
+    check: [
+      { q: "Who chose the Iroquois sachems and could remove them?",
+        choices: ["The clan mothers", "The Spanish governor", "The youngest warriors", "The English king"],
+        explain: "Iroquois women held real political power through the clan mothers." },
+      { q: "Which group of nations formed the Iroquois Confederacy?",
+        choices: ["Mohawk, Oneida, Onondaga, Cayuga, and Seneca", "Hopi, Zuni, and Navajo", "Lakota, Cheyenne, and Comanche", "Haida, Tlingit, and Kwakwaka'wakw"],
+        explain: "These five nations united under the Great Law of Peace; the Tuscarora joined later." }
+    ]
+  },
+  "s2-southeast": {
+    title: "The Southeast: Farming Towns and the Green Corn Ceremony",
+    cueTimes: [0, 7.49, 13.46, 19.37, 26.4], // narration starts 0.5 s after each cue
+    cues: [
+      "In the warm, fertile **Southeast**, the **Cherokee**, the **Creek (Muscogee)**, and the **Choctaw** lived in **farming towns** along rivers.",
+      "Women farmed fields of **corn, beans, and squash**, while men hunted deer and fished.",
+      "Each town had a central **plaza** and a **council house**, where leaders met to make decisions.",
+      "Each summer, many Southeastern peoples held the **Green Corn Ceremony**, to give thanks for the harvest and begin a new year.",
+      "Towns played **stickball**, a fast team game. The **Cherokee, Muscogee, and Choctaw nations** are still thriving today."
+    ],
+    facts: [
+      "The **Cherokee**, **Creek (Muscogee)**, and **Choctaw** lived in farming towns in the Southeast.",
+      "Women farmed **corn, beans, and squash**; men hunted deer and fished.",
+      "Each town had a central **plaza** and a **council house** where leaders met.",
+      "The summer **Green Corn Ceremony** gave thanks for the harvest and began a new year.",
+      "These nations still thrive today."
+    ],
+    check: [
+      { q: "What was the Green Corn Ceremony?",
+        choices: ["A summer ceremony giving thanks for the harvest and beginning a new year", "A buffalo hunt on horseback", "A gift-giving feast on the Pacific coast", "A winter igloo festival"],
+        explain: "Many Southeastern peoples held it each summer when the new corn ripened." },
+      { q: "Where did leaders in a Southeastern town meet to make decisions?",
+        choices: ["In the council house by the central plaza", "In a kiva", "On a cedar canoe", "In a snow house"],
+        explain: "The council house stood at the heart of the town." }
+    ]
+  },
   "s1-early-maize": {
     title: "Early Maize: The Gift of Farming",
     cueTimes: [0, 5.37, 13.7, 20.52, 26.93], // narration starts 0.5 s after each cue
@@ -357,6 +511,443 @@ GAME_CONTENT.videos = {
       { q: "Who helped the Plymouth survivors after the first hard winter?",
         choices: ["Squanto and Massasoit's Wampanoag", "John Smith and the Powhatan", "Spanish soldiers from Florida", "Dutch traders from New Amsterdam"],
         explain: "Squanto taught them to plant corn, and the Wampanoag made peace with them." }
+    ]
+  },
+  "s3-motives": {
+    title: "Why Explore? Spices, Silk, and a Sea Route",
+    cueTimes: [0, 7.34, 15.69, 27.51, 32.05], // narration starts 0.5 s after each cue
+    cues: [
+      "In the **1400s**, Europeans prized goods from Asia: **spices** like pepper, cinnamon, and cloves, and shining **silk**.",
+      "**Marco Polo**, an Italian merchant, wrote a famous book about his travels to **China**, and Europeans grew curious about Asia.",
+      "But these goods crossed long **overland routes** and passed through many **middlemen**, so prices were high. After the **Ottoman Turks** captured **Constantinople** in **1453**, trade grew even harder.",
+      "So Europeans began searching for an **all-water route to Asia**.",
+      "Their motives are summed up as **God, gold, and glory**: spreading Christianity, finding wealth, and winning fame. The new learning of the **Renaissance** fed their curiosity."
+    ],
+    facts: [
+      "Europeans wanted Asian **spices** (pepper, cinnamon, cloves) and **silk**.",
+      "**Marco Polo** of Venice wrote about his years in **China**, making Asia's riches famous in Europe.",
+      "Overland routes passed through many **middlemen**, so prices were high.",
+      "The **Ottoman Turks** captured **Constantinople** in **1453**, making trade with Asia even harder.",
+      "Explorers' motives are summed up as **\"God, gold, and glory.\"**"
+    ],
+    check: [
+      { q: "What were Europeans searching for to reach Asia more cheaply?",
+        choices: ["An all-water route to Asia", "A new road across Africa", "A tunnel under the mountains", "A railroad across Russia"],
+        explain: "A sea route would skip the many middlemen on the long overland routes." },
+      { q: "What do \"God, gold, and glory\" stand for?",
+        choices: ["Spreading Christianity, finding wealth, and winning fame", "Building churches, mining coal, and writing books", "Farming, fishing, and trading furs", "Peace, freedom, and equality"],
+        explain: "These three motives drove many European explorers." }
+    ]
+  },
+  "s3-navigation": {
+    title: "The Science of Sailing",
+    cueTimes: [0, 8.01, 16.99, 24.34, 30.0], // narration starts 0.5 s after each cue
+    cues: [
+      "Sailing far from land took new tools. The **magnetic compass**, first developed in **China**, showed sailors which way was **north**.",
+      "The **astrolabe** measured the height of the sun or a star above the horizon. That told sailors their **latitude**, how far north or south they were.",
+      "The Portuguese built the **caravel**, a small, fast ship. Its triangular **lateen sails** let it sail into the wind.",
+      "**Prince Henry the Navigator** of Portugal supported sailors, mapmakers, and shipbuilders.",
+      "In **1488**, **Bartolomeu Dias** sailed around Africa's **Cape of Good Hope**. Ten years later, **Vasco da Gama** reached **India** by sea."
+    ],
+    facts: [
+      "The **magnetic compass**, first developed in China, shows which way is north.",
+      "The **astrolabe** measured the sun or a star to find **latitude**.",
+      "The **caravel** was a small, fast Portuguese ship with triangular **lateen sails**.",
+      "**Prince Henry the Navigator** paid for Portuguese voyages down the coast of Africa.",
+      "**Dias** rounded the **Cape of Good Hope** in **1488**, and **da Gama** reached **India** in **1498**."
+    ],
+    check: [
+      { q: "What did sailors use an astrolabe to find?",
+        choices: ["Their latitude, how far north or south they were", "The depth of the water", "The speed of the wind", "The time of the next storm"],
+        explain: "The astrolabe measured the height of the sun or a star above the horizon." },
+      { q: "Who reached India by sailing around Africa in 1498?",
+        choices: ["Vasco da Gama", "Bartolomeu Dias", "Christopher Columbus", "Prince Henry"],
+        explain: "Dias rounded the Cape of Good Hope in 1488; ten years later da Gama reached India." }
+    ]
+  },
+  "s3-columbus": {
+    title: "Columbus Crosses the Atlantic",
+    cueTimes: [0, 9.65, 17.18, 27.38, 36.96], // narration starts 0.5 s after each cue
+    cues: [
+      "**Christopher Columbus**, a sailor from **Genoa**, believed he could reach Asia by sailing **west**. Spain's **King Ferdinand** and **Queen Isabella** agreed to pay for his voyage.",
+      "In August **1492**, he set sail from **Palos** with three ships: the **Niña**, the **Pinta**, and the **Santa María**.",
+      "On **October 12**, after five weeks on the open ocean, his crew reached an island in the **Bahamas**. Columbus named it **San Salvador** and met the **Taíno** people.",
+      "His crossing was a bold feat of seamanship that **linked two worlds**. Columbus believed he had reached the **Indies** near Asia, so he called the people **Indians**.",
+      "But Columbus and the Spanish also **enslaved** many Taíno and forced them to work. Harsh treatment and **disease** made the Taíno population fall sharply."
+    ],
+    facts: [
+      "**Columbus**, from **Genoa**, sailed for **Spain**, paid for by **Ferdinand and Isabella**.",
+      "He left **Palos** on **August 3, 1492**, with the **Niña**, **Pinta**, and **Santa María**.",
+      "On **October 12, 1492**, he landed in the **Bahamas** and met the **Taíno**.",
+      "His voyage linked the **Eastern and Western Hemispheres** for good.",
+      "The Spanish **enslaved** many Taíno; harsh treatment and **disease** made their numbers fall sharply."
+    ],
+    check: [
+      { q: "Which rulers paid for Columbus's 1492 voyage?",
+        choices: ["King Ferdinand and Queen Isabella of Spain", "King Henry VII of England", "Prince Henry of Portugal", "The Doge of Venice"],
+        explain: "Spain's monarchs agreed to fund his plan to reach Asia by sailing west." },
+      { q: "What happened to the Taíno after the Spanish arrived?",
+        choices: ["Many were enslaved, and harsh treatment and disease made their population fall sharply", "They sailed to Spain and became rulers there", "Nothing changed in their lives", "They moved to the Great Plains"],
+        explain: "Columbus's voyage linked two worlds, but it brought great suffering to the Taíno." }
+    ]
+  },
+  "s3-after-columbus": {
+    title: "A New World on the Map",
+    cueTimes: [0, 8.35, 17.4, 25.79, 32.9], // narration starts 0.5 s after each cue
+    cues: [
+      "In **1494**, Spain and Portugal signed the **Treaty of Tordesillas**, drawing a line to divide the newly found lands between them.",
+      "**Amerigo Vespucci**, an Italian explorer, argued that these lands were a **New World**, not Asia. A mapmaker named them **America** after him.",
+      "In **1497**, **John Cabot**, sailing for **England**, reached the coast of North America, probably **Newfoundland**, giving England a claim.",
+      "In **1519**, **Ferdinand Magellan** led five Spanish ships west to find a way around **South America**.",
+      "Magellan was killed in the **Philippines**, but in **1522** one ship, the **Victoria**, made it home: the **first voyage all the way around the world**."
+    ],
+    facts: [
+      "The **Treaty of Tordesillas** (**1494**) divided newly found lands between **Spain** and **Portugal**.",
+      "On a **1507** map, **Martin Waldseemüller** named the new lands **America** after **Amerigo Vespucci**.",
+      "**John Cabot** reached North America for **England** in **1497**.",
+      "**Magellan's** expedition (**1519–1522**) was the first to sail around the world.",
+      "Only one of Magellan's five ships, the **Victoria**, made it back to Spain."
+    ],
+    check: [
+      { q: "Who were the lands of the Americas named after?",
+        choices: ["Amerigo Vespucci", "Christopher Columbus", "John Cabot", "Ferdinand Magellan"],
+        explain: "Vespucci argued the lands were a New World, and a 1507 map named them America." },
+      { q: "What did Magellan's expedition accomplish?",
+        choices: ["The first voyage all the way around the world", "The first landing in the Bahamas", "The first sea route to India", "The founding of Jamestown"],
+        explain: "Magellan died in the Philippines, but the Victoria returned to Spain in 1522." }
+    ]
+  },
+  "s3-columbian-exchange": {
+    title: "The Columbian Exchange",
+    cueTimes: [0, 10.22, 19.53, 24.27, 34.55], // narration starts 0.5 s after each cue
+    cues: [
+      "Columbus's voyages connected the **Eastern** and **Western Hemispheres**. The movement of plants, animals, people, and diseases between them is called the **Columbian Exchange**.",
+      "From the **Americas** came **corn**, **potatoes**, **tomatoes**, beans, squash, peppers, **cacao**, and tobacco. Potatoes and corn helped feed millions of people.",
+      "From **Europe** came **horses**, **cattle**, pigs, sheep, **wheat**, and **sugarcane**.",
+      "Sadly, Europeans also brought diseases such as **smallpox**. Native Americans had **no immunity**, and millions died, one of the greatest tragedies in history.",
+      "The exchange changed what people ate around the world, from **potatoes in Ireland** to **tomatoes in Italy** and **corn in Africa and China**."
+    ],
+    facts: [
+      "The **Columbian Exchange** was the movement of plants, animals, people, and diseases between the hemispheres.",
+      "From the Americas: **corn, potatoes, tomatoes, beans, squash, peppers, cacao, and tobacco**.",
+      "From Europe: **horses, cattle, pigs, sheep, wheat, and sugarcane**.",
+      "**Smallpox** and other diseases killed millions of Native Americans, who had **no immunity**.",
+      "The **1500s Florentine Codex** shows Aztec people suffering from smallpox."
+    ],
+    check: [
+      { q: "Which of these came to the Americas from Europe in the Columbian Exchange?",
+        choices: ["Horses", "Potatoes", "Corn", "Cacao"],
+        explain: "Horses, cattle, pigs, sheep, wheat, and sugarcane came from Europe; potatoes, corn, and cacao came from the Americas." },
+      { q: "Why did smallpox kill so many Native Americans?",
+        choices: ["They had no immunity to diseases from Europe", "They refused all medicine", "It came from American crops", "It only affected children"],
+        explain: "Native Americans had never been exposed to these diseases, so their bodies had no defenses." }
+    ]
+  },
+  "s4-conquest": {
+    title: "Conquistadors: Conquest and Indigenous Choices",
+    cueTimes: [0, 9.54, 19.92, 31.18, 40.44], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1519, Hernan Cortes enters Mexico, seeking wealth and an empire for Spain. The Aztec capital, Tenochtitlan, stands on a lake.",
+      "He does not conquer alone. Thousands of Indigenous allies oppose the Aztec Empire. An Indigenous interpreter, Doña Marina, helps him negotiate alliances.",
+      "Spanish steel weapons, horses, alliances, and disease all matter. After a devastating siege, Tenochtitlan falls in 1521. Its people suffer terribly.",
+      "In 1532, Francisco Pizarro captures the Inca ruler Atahualpa in Peru. Disease and civil war have already weakened the empire.",
+      "Spain builds a vast empire, but conquest is not a story of a few men winning alone. Indigenous choices and resistance shape what follows."
+    ],
+    facts: [
+      "Cortés entered Mexico in 1519; Tenochtitlán fell in 1521 after a siege.",
+      "Tlaxcalans and other Indigenous allies were essential; they pursued their own political aims, not one shared Native position.",
+      "Malintzin (also called Doña Marina or La Malinche) was an Indigenous interpreter and negotiator.",
+      "Pizarro captured Atahualpa at Cajamarca in 1532. Conquest and Indigenous resistance continued beyond that date."
+    ],
+    check: [
+      { q: "Which explanation best accounts for the fall of Tenochtitlán?",
+        choices: ["Indigenous alliances, disease, siege, and Spanish military advantages together", "Spanish soldiers acted entirely alone", "The Aztec had no large cities", "The Inca helped defend Mexico"],
+        explain: "No single advantage explains the conquest; Indigenous allies and smallpox were crucial." },
+      { q: "Which pairing is correct?",
+        choices: ["Cortés—Aztec Empire; Pizarro—Inca Empire", "Pizarro—Aztec Empire; Cortés—Inca Empire", "Hudson—Inca Empire; Champlain—Aztec Empire", "Coronado—Quebec; Cortés—New Amsterdam"],
+        explain: "Cortés fought in Mexico; Pizarro captured the Inca ruler in Peru." }
+    ]
+  },
+  "s4-spanish-na": {
+    title: "Spain in North America",
+    cueTimes: [0, 8.87, 18.03, 26.66, 37.2], // narration starts 0.5 s after each cue
+    cues: [
+      "Spanish explorers push into lands that are now the United States, but these are already the homelands of many different Native nations.",
+      "Coronado leads an expedition from 1540 through 1542, searching the Southwest and Great Plains. He finds no cities of gold.",
+      "De Soto reached the Mississippi in 1541. His expedition brings violence and disruption to Native communities across the Southeast.",
+      "Spain founds Saint Augustine in Florida in 1565. It becomes the oldest continuously occupied European-founded city on the United States mainland.",
+      "Santa Fe follows around 1610. Missions spread Catholicism while settlements extend Spanish power. Native peoples adapt and resist."
+    ],
+    facts: [
+      "Coronado’s 1540–1542 expedition included many Indigenous Mexican allies and reached what is now Kansas.",
+      "De Soto reached the Mississippi in 1541; his expedition inflicted violence and disruption on southeastern Native societies.",
+      "St. Augustine, founded in 1565, is the oldest continuously occupied European-founded city on the United States mainland, not the oldest Indigenous settlement.",
+      "Santa Fe is conventionally dated to 1610; missions advanced conversion and colonial power, often provoking resistance."
+    ],
+    check: [
+      { q: "Which expedition sought wealthy cities in the Southwest and Great Plains?",
+        choices: ["Coronado’s expedition", "Champlain’s expedition", "Hudson’s expedition", "La Salle’s expedition"],
+        explain: "Coronado traveled north in 1540–1542 but found no cities of gold." },
+      { q: "Which settlement and founding date match?",
+        choices: ["St. Augustine—1565", "Santa Fe—1492", "Quebec—1532", "New Amsterdam—1519"],
+        explain: "Spain founded St. Augustine in Florida in 1565." }
+    ]
+  },
+  "s4-spanish-life": {
+    title: "Life in New Spain: Labor, Reform, and Resistance",
+    cueTimes: [0, 9.73, 19.94, 29.19, 38.95], // narration starts 0.5 s after each cue
+    cues: [
+      "In New Spain, Indigenous, European, and African people build a changing society. Markets connect farmers and craftspeople, but power is unequal.",
+      "The encomienda gives Spaniards rights to collect Indigenous tribute and labor, supposedly in return for protection and Christian teaching. Abuse becomes widespread.",
+      "The friar Las Casas condemns cruelty. In 1542, the New Laws try to limit abuse, but weak enforcement undermines reform.",
+      "In New Mexico, religious repression and heavy demands help spark the Pueblo Revolt of 1680. Pueblo communities unite and drive the Spanish out.",
+      "Spain later returns, but Pueblo peoples endure. Their resistance asks who holds power and whose rights are protected."
+    ],
+    facts: [
+      "Encomienda granted claims to Indigenous tribute and, especially in early practice, labor—not ownership of the land itself. Protection and religious teaching were the stated obligations.",
+      "Bartolomé de las Casas condemned colonial cruelty and advocated reform; the New Laws of 1542 did not end exploitation.",
+      "Religious repression, tribute demands, and other pressures helped cause the Pueblo Revolt of 1680.",
+      "Pueblo communities expelled Spanish colonists in 1680. Spanish reconquest began in 1692, and Pueblo peoples and cultures endure today."
+    ],
+    check: [
+      { q: "What was an encomienda?",
+        choices: ["A grant permitting collection of Indigenous tribute and labor under stated obligations", "An elected colonial legislature", "A Dutch trading ship", "A French canoe route"],
+        explain: "Its supposed protection and Christian instruction often masked coercion and abuse." },
+      { q: "Which outcome followed the Pueblo Revolt in 1680?",
+        choices: ["Spanish colonists were driven out of New Mexico for a time", "All Pueblo people vanished", "New Amsterdam became New York", "Cortés conquered Tenochtitlán"],
+        explain: "The Spanish returned beginning in 1692, but Pueblo peoples endured." }
+    ]
+  },
+  "s4-france": {
+    title: "New France: Rivers, Furs, and Native Partners",
+    cueTimes: [0, 9.14, 19.64, 29.3, 39.45], // narration starts 0.5 s after each cue
+    cues: [
+      "France builds a different North American empire, centered on rivers and the fur trade. Samuel de Champlain founds Quebec in 1608.",
+      "French traders depend on Native partners, including the Wendat, for furs, routes, and knowledge. Metal tools and cloth travel one way; beaver pelts travel the other.",
+      "Canoes link the Great Lakes to the Saint Lawrence. Alliances bring opportunities, but also draw the French into conflicts with the Haudenosaunee, or Iroquois.",
+      "Jesuit missionaries seek converts to Catholicism. Native communities make their own choices, while new diseases and warfare cause devastating losses.",
+      "In 1682, La Salle claims the Mississippi basin for France, naming it Louisiana. A claim on a European map does not erase Native homelands."
+    ],
+    facts: [
+      "Samuel de Champlain founded Quebec in 1608; it began as a small habitation, not the later walled city.",
+      "French traders relied on Indigenous trading networks, guides, and alliances, including Wendat partners.",
+      "Jesuits were Catholic missionaries. Indigenous communities responded in different ways; disease and warfare devastated many communities.",
+      "La Salle’s 1682 claim named Louisiana for Louis XIV. A French claim did not mean effective control of all the Mississippi basin."
+    ],
+    check: [
+      { q: "Why were Native partnerships essential to the French fur trade?",
+        choices: ["They supplied furs, travel knowledge, routes, and alliances", "They made rivers unnecessary", "They ended all conflict", "They gave France complete control of North America"],
+        explain: "The French depended on existing Indigenous networks and expertise." },
+      { q: "Which event happened in 1682?",
+        choices: ["La Salle claimed the Mississippi basin as Louisiana", "Champlain founded Quebec", "The English took New Amsterdam", "The Pueblo Revolt began"],
+        explain: "Quebec was founded in 1608; Louisiana was claimed in 1682." }
+    ]
+  },
+  "s4-dutch": {
+    title: "New Netherland: Trade, Diversity, and New York",
+    cueTimes: [0, 7.99, 16.57, 27.58, 36.7], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1609, Henry Hudson explores the river later named for him, sailing for the Dutch while searching for a route to Asia.",
+      "The Dutch develop New Netherland, a colony built around trade. Lenape partners exchange furs for cloth, tools, and other goods.",
+      "New Amsterdam grows on Manhattan. Its harbor connects the Hudson River to Atlantic commerce. Trade brings opportunity, but disputes over land also lead to violence.",
+      "The town attracts people from many backgrounds, but tolerance has limits. Enslaved Africans labor in the colony, and freedom is far from equal.",
+      "In 1664, the English take New Netherland, and New Amsterdam becomes New York. Dutch communities and traditions remain part of the American story."
+    ],
+    facts: [
+      "Henry Hudson was English, but his 1609 voyage was for the Dutch East India Company.",
+      "Dutch settlement in New Netherland began in 1624; New Amsterdam grew at Manhattan’s southern tip.",
+      "Lenape, Mohican, and Haudenosaunee peoples were distinct trading partners, not interchangeable cultures.",
+      "Religious diversity coexisted with restrictions and slavery. The 1664 English takeover did not erase Dutch communities; Dutch rule briefly returned in 1673–1674."
+    ],
+    check: [
+      { q: "Why did the Dutch develop New Netherland?",
+        choices: ["To profit from trade, especially furs", "To search for Aztec gold in Mexico", "To build the first Spanish mission", "To establish the Inca Empire"],
+        explain: "The Hudson River linked inland trade to Atlantic commerce." },
+      { q: "What happened to New Amsterdam in 1664?",
+        choices: ["The English took it and renamed it New York", "The French renamed it Quebec", "The Spanish renamed it Santa Fe", "It became the capital of the Aztec Empire"],
+        explain: "Dutch people and traditions remained despite the English takeover." }
+    ]
+  },
+  "s5-roanoke": {
+    title: "Roanoke: The Lost Colony",
+    cueTimes: [0, 9.72, 16.56, 25.98, 32.43], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1585, England plants a first colony on Roanoke Island, off the coast of present-day North Carolina. The settlers soon abandon it and sail home.",
+      "Algonquian peoples already live along these shores. Trade and conflict shape every English attempt to stay.",
+      "In 1587, John White leads a new group of men, women, and children. His granddaughter, Virginia Dare, is the first English child born in America.",
+      "White sails back to England for supplies. War with Spain delays his return for three years.",
+      "In 1590, White finds the settlement empty. The word CROATOAN is carved on a post. The colonists' fate remains unsolved."
+    ],
+    facts: [
+      "The 1585 Roanoke colony was abandoned; survivors returned to England with Sir Francis Drake in 1586.",
+      "Coastal Algonquian communities, including Croatoan/Hatteras peoples, were neighbors and trading partners—not empty wilderness.",
+      "Virginia Dare was born August 18, 1587, granddaughter of governor John White; she is the first recorded English child born in America.",
+      "White left for supplies in 1587; the Anglo-Spanish war delayed his return until 1590.",
+      "In 1590 White found the letters CROATOAN. No conclusive evidence explains the Lost Colony; historians debate migration, assimilation, and other possibilities without a settled answer."
+    ],
+    check: [
+      { q: "Which year marks John White's return to find Roanoke empty?",
+        choices: ["1590", "1585", "1607", "1492"],
+        explain: "White returned in 1590 after wartime delays; the carving read CROATOAN." },
+      { q: "What does the historical record say about the Lost Colony's fate?",
+        choices: ["It remains unsolved; CROATOAN was carved, but no conclusive answer is known", "It was fully solved in 1590", "All colonists returned safely to London in 1588", "Virginia Dare governed Croatoan"],
+        explain: "Honest teaching keeps the mystery open; do not invent a solved ending." }
+    ]
+  },
+  "s6-newengland": {
+    title: "The New England Colonies",
+    cueTimes: [0, 7.74, 15.35, 22.71, 30.9], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1630, John Winthrop leads Puritans to Massachusetts Bay. He hopes the colony will be a city upon a hill.",
+      "New England towns gather at the meetinghouse. At town meetings, citizens discuss and vote on local matters.",
+      "Rocky soil and cold winters push New Englanders toward fishing, shipbuilding, and trade along rocky harbors.",
+      "In 1675, the Wampanoag leader Metacom, called King Philip by the English, leads a war to defend Native land.",
+      "In 1692, fear in Salem Village leads to witch trials. Twenty people are executed before leaders admit a terrible mistake."
+    ],
+    facts: [
+      "In 1630 John Winthrop led Puritans to Massachusetts Bay; he hoped for a “city upon a hill.”",
+      "Town meetings at the meetinghouse were an early form of local self-government.",
+      "Rocky soil pushed New England toward fishing, shipbuilding, and trade.",
+      "King Philip’s War (1675–1676), led by Wampanoag leader Metacom, was one of the deadliest wars for its size in American history.",
+      "The Salem witch trials of 1692 executed 20 people; colonial leaders later admitted a terrible mistake—a warning about fear overriding fair trials."
+    ],
+    check: [
+      { q: "Who led Native nations in King Philip’s War (1675–1676)?",
+        choices: ["Metacom, a Wampanoag leader and son of Massasoit", "King Philip II of Spain", "Powhatan", "John Winthrop"],
+        explain: "The English called Metacom “King Philip.”" },
+      { q: "What happened in Salem Village in 1692?",
+        choices: ["Witch trials led to the execution of 20 people", "The first Thanksgiving", "The founding of Harvard", "A battle with Spain"],
+        explain: "Colony leaders later admitted the trials were a mistake." }
+    ]
+  },
+  "s6-middle": {
+    title: "The Middle Colonies",
+    cueTimes: [0, 7.53, 14.51, 20.85, 28.76], // narration starts 0.5 s after each cue
+    cues: [
+      "The Middle Colonies are New York, New Jersey, Pennsylvania, and Delaware. Fertile soil makes them the breadbasket colonies.",
+      "In 1681, the Quaker William Penn founds Pennsylvania as a holy experiment of religious freedom.",
+      "Penn deals fairly with the Lenape. Philadelphia, the city of brotherly love, grows as the colony's capital.",
+      "German-speaking settlers come in large numbers. Neighbors call them the Pennsylvania Dutch, from Deutsch, the German word for German.",
+      "In 1688, settlers in Germantown write the first protest against slavery in the English colonies."
+    ],
+    facts: [
+      "The Middle Colonies—New York, New Jersey, Pennsylvania, and Delaware—were called the “breadbasket” for their grain farms.",
+      "William Penn, a Quaker, founded Pennsylvania in 1681 as a “holy experiment” of religious freedom.",
+      "Philadelphia (“city of brotherly love”) grew as the capital; Penn sought fair dealings with the Lenape.",
+      "German-speaking settlers were called “Pennsylvania Dutch” from Deutsch, the German word for German.",
+      "In 1688, Germantown settlers wrote the first protest against slavery in the English colonies."
+    ],
+    check: [
+      { q: "Why were German settlers in Pennsylvania called the “Pennsylvania Dutch”?",
+        choices: ["From “Deutsch,” the German word for German", "They came from the Netherlands", "They built windmills", "They spoke only Dutch"],
+        explain: "It’s a mix-up of the word Deutsch." },
+      { q: "Where was the first protest against slavery in the English colonies written in 1688?",
+        choices: ["Germantown, Pennsylvania", "Jamestown, Virginia", "Charleston, South Carolina", "St. Augustine, Florida"],
+        explain: "Quakers and other settlers in Germantown wrote it." }
+    ]
+  },
+  "s6-southern": {
+    title: "The Southern Colonies",
+    cueTimes: [0, 8.15, 17.19, 23.95, 30.68], // narration starts 0.5 s after each cue
+    cues: [
+      "The Southern Colonies are Maryland, Virginia, North Carolina, South Carolina, and Georgia. Long summers favor cash crops.",
+      "Plantations grow tobacco, rice, and indigo. North Carolina's pine forests yield naval stores: tar, pitch, and turpentine.",
+      "In 1676, Nathaniel Bacon leads poor Virginians against the governor and burns Jamestown.",
+      "Afterward, many planters turn from indentured servants to enslaved Africans held in slavery for life.",
+      "Enslaved West Africans bring expert knowledge of growing rice, which makes Carolina planters rich. Slavery is a deep wrong in colonial life."
+    ],
+    facts: [
+      "The Southern Colonies were Maryland, Virginia, North Carolina, South Carolina, and Georgia.",
+      "Cash crops included tobacco, rice, and indigo; North Carolina pine forests yielded naval stores (tar, pitch, turpentine).",
+      "Bacon’s Rebellion (1676) burned Jamestown; afterward many planters turned toward lifelong enslaved African labor.",
+      "Enslaved West Africans brought expert rice-growing knowledge that enriched Carolina planters.",
+      "Honest history names slavery as a deep wrong while also teaching the skill and endurance of the enslaved."
+    ],
+    check: [
+      { q: "What did Nathaniel Bacon’s followers do in 1676?",
+        choices: ["Rebelled against Virginia’s governor and burned Jamestown", "Founded Georgia", "Signed the Mayflower Compact", "Explored the Mississippi"],
+        explain: "Bacon’s Rebellion included poor free and indentured colonists." },
+      { q: "What knowledge did enslaved West Africans bring that made South Carolina planters rich?",
+        choices: ["How to grow rice", "How to trap beavers", "How to mine silver", "How to build windmills"],
+        explain: "Rice had long been grown in parts of West Africa." }
+    ]
+  },
+  "s6-government": {
+    title: "Trade and Colonial Government",
+    cueTimes: [0, 7.14, 13.89, 21.72, 28.12], // narration starts 0.5 s after each cue
+    cues: [
+      "In 1619, Virginia's House of Burgesses meets. It is the first elected assembly in English America.",
+      "Colonial assemblies hold the power of the purse. They vote on taxes and even on the governor's salary.",
+      "England's Navigation Acts support mercantilism. Colonies send raw materials and buy finished goods across the Atlantic.",
+      "For many years England enforces trade laws loosely, a policy later called salutary neglect.",
+      "Under that habit of self-rule, Americans grow used to governing themselves."
+    ],
+    facts: [
+      "Virginia’s House of Burgesses (1619) was the first elected assembly in English America.",
+      "Colonial assemblies held the “power of the purse”: they voted on taxes and the governor’s salary.",
+      "Mercantilism and the Navigation Acts shaped Atlantic trade—colonies supplied raw materials and bought finished goods.",
+      "Salutary neglect: for many years England loosely enforced trade laws, so colonists grew used to self-government.",
+      "Self-rule under assemblies prepared Americans to insist on rights as English people—and later as citizens."
+    ],
+    check: [
+      { q: "What was the “power of the purse” that colonial assemblies held?",
+        choices: ["They voted on taxes and the governor’s salary", "They printed all the money in England", "They owned all the ships", "They chose the king"],
+        explain: "Controlling money gave assemblies real power." },
+      { q: "What was salutary neglect?",
+        choices: ["England’s loose enforcement of its trade laws for many years", "A kind of medicine", "Ignoring a church sermon", "A law against reading"],
+        explain: "Colonists grew used to running their own affairs." }
+    ]
+  },
+  "s6-dailylife": {
+    title: "Daily Life and Colonial Crafts",
+    cueTimes: [0, 5.64, 11.76, 17.74, 24.25], // narration starts 0.5 s after each cue
+    cues: [
+      "Most colonial families live on farms and make much of what they need by hand.",
+      "Children learn letters from a hornbook, a wooden paddle with a printed page under a clear sheet of horn.",
+      "Women and girls dip wicks again and again into melted tallow or beeswax to make candles.",
+      "Boys may apprentice to a printer. Workers set metal type by hand, ink it, and press one sheet at a time.",
+      "New England values reading so people can read the Bible. Massachusetts requires towns to set up schools."
+    ],
+    facts: [
+      "Most colonists lived on farms and made much of what they needed at home.",
+      "A hornbook is a wooden paddle with a printed alphabet page under a clear sheet of horn.",
+      "Candles were dipped repeatedly in tallow or beeswax (also bayberry).",
+      "Printers set metal type by hand, inked it, and pressed one sheet at a time—Franklin began as a printer’s apprentice.",
+      "New England valued literacy for Bible reading; a 1647 Massachusetts law required towns to set up schools."
+    ],
+    check: [
+      { q: "What is a hornbook?",
+        choices: ["A wooden paddle with a printed alphabet page under a clear sheet of horn", "A musical horn", "A book about cattle", "A newspaper"],
+        explain: "Young children learned their letters from hornbooks." },
+      { q: "How were colonial candles often made?",
+        choices: ["By dipping wicks again and again into melted tallow or beeswax", "By buying them only from England", "By pouring plastic molds", "By carving them from wood"],
+        explain: "Families dipped candles at home." }
+    ]
+  },
+  "s6-ideas": {
+    title: "The Great Awakening and the Enlightenment",
+    cueTimes: [0, 9.51, 16.36, 24.84, 34.06], // narration starts 0.5 s after each cue
+    cues: [
+      "In the 1730s and forties, the Great Awakening sweeps the colonies. Preachers Jonathan Edwards and George Whitefield call people to personal faith.",
+      "Huge outdoor gatherings hear Whitefield's voice. People feel freer to choose their own churches.",
+      "The Enlightenment teaches that reason and science can explain the world. John Locke writes of natural rights to life, liberty, and property.",
+      "In 1731, Benjamin Franklin helps start the Library Company of Philadelphia, a lending library. He also publishes Poor Richard's Almanack.",
+      "In 1752, Franklin's kite experiment shows that lightning is electricity. Ideas of rights and reason will shape a new nation."
+    ],
+    facts: [
+      "The Great Awakening (1730s–1740s) was a religious revival; Jonathan Edwards and George Whitefield were leading preachers.",
+      "Whitefield’s outdoor voice reached huge gatherings; people felt freer to choose their own churches.",
+      "Enlightenment thinkers like John Locke wrote of natural rights to life, liberty, and property.",
+      "Franklin helped found the Library Company of Philadelphia (1731) and published Poor Richard’s Almanack.",
+      "Franklin’s 1752 kite experiment showed lightning is electricity; rights-and-reason ideas later shaped the nation."
+    ],
+    check: [
+      { q: "Which of these did Benjamin Franklin start in 1731?",
+        choices: ["The Library Company of Philadelphia, a lending library", "Harvard College", "The House of Burgesses", "The Dutch West India Company"],
+        explain: "Members pooled money to buy books to share." },
+      { q: "Which Enlightenment idea did John Locke emphasize?",
+        choices: ["Natural rights to life, liberty, and property", "Divine right of kings only", "That colonies must never trade", "That reading was unnecessary"],
+        explain: "Locke’s rights ideas later influenced American founders." }
     ]
   }
 };

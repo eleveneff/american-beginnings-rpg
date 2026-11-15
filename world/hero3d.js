@@ -162,6 +162,8 @@ const GEAR = {
   'saya': (col) => ({ outfit: { tunic: col, top: shade(col, -0.12), hem: '#1a1a1a', sleeve: shade(col, -0.12), long: true, collar: '#f6efe0' } }),
   'jak': (col, d) => ({ outfit: { tunic: col, top: d.top || shade(col, -0.2), hem: shade(col, -0.3), sleeve: d.top || col, long: true, collar: '#f6efe0', peplum: true } }),
   'waistcoat-dress': (col, d) => ({ outfit: { tunic: col, top: d.top || col, hem: shade(col, -0.3), sleeve: d.top || col, long: true, collar: '#f6efe0', peplum: true } }),
+  /* v3.0: frontier short gown: a hip-length jacket (top) over a wool petticoat (tunic/skirt) */
+  'short-gown': (col, d) => ({ outfit: { tunic: d.skirt || '#3a4a6a', top: d.top || col, hem: shade(d.skirt || '#3a4a6a', -0.3), sleeve: d.top || col, long: true, collar: '#fbf8f0', peplum: true } }),
   'gown': (col, d) => ({ outfit: { tunic: col, top: d.top || col, skirt: d.skirt || '#8a2b3a', hem: shade(col, -0.3), sleeve: d.top || col, long: true, collar: '#fbf8f0', stomacher: '#e8d18a' } }),
   'plain-gown': (col) => ({ outfit: { tunic: col, hem: shade(col, -0.25), sleeve: col, long: true, collar: '#fbf8f0' } }),
   'jerkin': (col) => ({ outfit: { top: col, sleeve: col } }),

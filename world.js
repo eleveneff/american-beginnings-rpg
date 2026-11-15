@@ -95,7 +95,7 @@ function bgFrame(dt) {
 const W = loadW();
 function loadW() {
   // x / z / yaw / zone are Beringia's spot (as in v2.2); other levels keep theirs in at[sid] (v2.4)
-  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [], s6: [] }, seen: {}, at: {} };
+  const d = { ver: 1, mode: null, zone: "out", x: null, z: null, yaw: 0, seenIntro: false, season: { tracks: [] }, read: { s1: [], s2: [], s3: [], s4: [], s5: [], s6: [], s7: [], s8: [] }, seen: {}, at: {} };
   let w = null; try { w = JSON.parse(localStorage.getItem(WKEY) || "null"); } catch (e) { w = null; }
   if (!w || typeof w !== "object" || Array.isArray(w)) return d;
   if (w.mode === "walk" || w.mode === "classic") d.mode = w.mode;
@@ -108,7 +108,9 @@ function loadW() {
   for (const k of ["s2", "s3", "s4"]) if (w.read && Array.isArray(w.read[k])) d.read[k] = [...new Set(w.read[k].filter(i => Number.isInteger(i) && i >= 0 && i < 7))].sort();
   if (w.read && Array.isArray(w.read.s5)) d.read.s5 = [...new Set(w.read.s5.filter(i => Number.isInteger(i) && i >= 0 && i < 10))].sort((a, b) => a - b);   // v2.7: Section 5 has 10 scrolls
   if (w.read && Array.isArray(w.read.s6)) d.read.s6 = [...new Set(w.read.s6.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v2.8: Section 6 has 9 scrolls
-  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills", "help6", "rice", "indigo", "port6", "capitol", "trade6", "whitefield", "library", "penn", "hornbook", "townmeeting", "joinordie"]) if (w.seen[k] === true) d.seen[k] = true;
+  if (w.read && Array.isArray(w.read.s7)) d.read.s7 = [...new Set(w.read.s7.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v3.0: Section 7 has 9 scrolls
+  if (w.read && Array.isArray(w.read.s8)) d.read.s8 = [...new Set(w.read.s8.filter(i => Number.isInteger(i) && i >= 0 && i < 9))].sort((a, b) => a - b);   // v3.1: Section 8 has 9 scrolls
+  if (w.seen && typeof w.seen === "object" && !Array.isArray(w.seen)) for (const k of ["sign", "journey", "gate", "help", "help2", "kiva", "mound", "chunkey", "help3", "royal", "perez", "stars", "sails", "ships", "rudder", "taino", "after", "wreck", "sail-canary", "sail-ss", "sail-hisp", "help4", "fort", "timucua", "palace", "adobe", "beaver", "furtrade", "wendat", "windmill", "manhattan", "help5", "croatoan", "ships", "fort5", "starving", "assembly", "tobacco", "powhatan", "mayship", "plymouth", "colonies", "wampanoag", "cornhills", "help6", "rice", "indigo", "port6", "capitol", "trade6", "whitefield", "library", "penn", "hornbook", "townmeeting", "joinordie", "help7", "cabin", "furtrade7", "necessity", "duquesne", "braddock", "hendrick", "snake7", "wolfe", "plains", "help8", "tree", "troops", "massacre8", "engraving", "oldsouth8", "wheatley", "teaships", "gifts", "edenton", "carpenters"]) if (w.seen[k] === true) d.seen[k] = true;
   const a2 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s2 : null;   // Native Nations bounds (world/nations.js BOUNDS)
   if (a2 && typeof a2 === "object" && Number.isFinite(a2.x) && Number.isFinite(a2.z) && a2.x > -80 && a2.x < 86 && a2.z > -66 && a2.z < 70) d.at.s2 = { x: a2.x, z: a2.z, yaw: Number.isFinite(a2.yaw) ? wrapA(a2.yaw) : 0 };
   const a3 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s3 : null;   // Voyage of 1492 bounds (world/voyage.js BOUNDS)
@@ -119,6 +121,10 @@ function loadW() {
   if (a5 && typeof a5 === "object" && Number.isFinite(a5.x) && Number.isFinite(a5.z) && a5.x > -70 && a5.x < 70 && a5.z > -72 && a5.z < 70) d.at.s5 = { x: a5.x, z: a5.z, yaw: Number.isFinite(a5.yaw) ? wrapA(a5.yaw) : 0 };
   const a6 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s6 : null;   // Thirteen Colonies bounds (world/thirteen.js BOUNDS)
   if (a6 && typeof a6 === "object" && Number.isFinite(a6.x) && Number.isFinite(a6.z) && a6.x > -70 && a6.x < 70 && a6.z > -72 && a6.z < 70) d.at.s6 = { x: a6.x, z: a6.z, yaw: Number.isFinite(a6.yaw) ? wrapA(a6.yaw) : 0 };
+  const a7 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s7 : null;   // Frontier bounds (world/frontier.js BOUNDS)
+  if (a7 && typeof a7 === "object" && Number.isFinite(a7.x) && Number.isFinite(a7.z) && a7.x > -70 && a7.x < 70 && a7.z > -72 && a7.z < 90) d.at.s7 = { x: a7.x, z: a7.z, yaw: Number.isFinite(a7.yaw) ? wrapA(a7.yaw) : 0 };
+  const a8 = w.at && typeof w.at === "object" && !Array.isArray(w.at) ? w.at.s8 : null;   // Boston 1765–1774 bounds (world/boston74.js BOUNDS)
+  if (a8 && typeof a8 === "object" && Number.isFinite(a8.x) && Number.isFinite(a8.z) && a8.x > -70 && a8.x < 70 && a8.z > -72 && a8.z < 92) d.at.s8 = { x: a8.x, z: a8.z, yaw: Number.isFinite(a8.yaw) ? wrapA(a8.yaw) : 0 };
   return d;
 }
 function saveW() { try { localStorage.setItem(WKEY, JSON.stringify(W)); } catch (e) { } }
@@ -128,14 +134,14 @@ window.addEventListener("ab:lesson", e => { const d = e.detail || {}, r = W.read
 
 const L = { sid: "s1", phase: "off", built: false, building: null, cam: null, mods: null, dirty: true, zone: "out", pos: new THREE.Vector3(), yaw: 0, vel: 0, wade: 0, hintT: 0, saveT: 0, fps: { n: 0, t: 0, last: 0 }, ctxLost: 0, userMap: false, bypass: false };
 const S1 = () => window.ABRPG && window.ABRPG.sectionById("s1");
-const WALK = ["s1", "s2", "s3", "s4", "s5", "s6"];                                       // sections with a walkable level
+const WALK = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"];                                       // sections with a walkable level
 const CUR = () => window.ABRPG && window.ABRPG.sectionById(L.sid);
 const ST = () => window.ABRPG && window.ABRPG.state();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const toast = m => window.ABRPG && window.ABRPG.toast(m);
 
 // ---- ring definitions (marker order: camp → herds → steppe → hearth → ford → gate → corridor → cave) ----
-const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]], s6: [[7, "src6a"], [8, "src6b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
+const SRC_LESSON = { s1: [[7, "src1"]], s2: [[6, "src2"]], s3: [[6, "src3"]], s4: [[6, "src4"]], s5: [[8, "src5a"], [9, "src5b"]], s6: [[7, "src6a"], [8, "src6b"]], s7: [[7, "src7a"], [8, "src7b"]], s8: [[7, "src8a"], [8, "src8b"]] };      // a primary-source scroll also counts once its questions were played (v2.7: Section 5 has two)
 const scrollRead = (sid, i) => W.read[sid].includes(i) || (SRC_LESSON[sid] || []).some(([j, t]) => i === j && !!(ST().srcQ && ST().srcQ[t] && ST().srcQ[t].plays > 0));
 function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, station, icon: "📜", scored: true, label: () => window.ABRPG.sectionById(sid).lessons[i].title, act: () => openPanel(() => window.ABRPG.lesson(sid, i, false)), state: () => scrollRead(sid, i) ? "done" : "new" }; }
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
@@ -478,6 +484,132 @@ function nextTargetS6() {
   const n0 = Math.min(...todo.map(r => S[r.def.station].n)); return pick(todo.filter(r => S[r.def.station].n === n0));
 }
 
+// ---- v3.0 Level 7 (The French and Indian War, 1753–1763): a frontier farm → the trading post at Wills Creek → Fort
+// Necessity → the Forks of the Ohio → Albany 1754 → a story jump to 1759: Point Lévis → a boat across the St. Lawrence to
+// the Anse au Foulon, up the cliff path → the Plains of Abraham (Trial). The boat rings fade her across; nothing is saved
+// but at.s7. Info cards mark W.seen like the other levels; no new progress-save fields.
+function ringDefsS7(B) {
+  const A = B.RING_AT, at = (id, o) => ({ ...o, x: A[id][0], z: A[id][1] });
+  const info = (id, station, icon, title, cardFn) => at(id, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L7 = (id, i, st) => lessonRing("s7-" + id, i, A[id][0], A[id][1], st, "s7");
+  const A7 = (id, actId, icon, title, st) => actRing("s7-" + id, actId, icon, title, A[id][0], A[id][1], st, "s7");
+  const boat = (side, station) => at("boat-" + side, { id: "boat-" + side, station, icon: "🛶", label: () => side === "south" ? "Story jump to 1759: cross the St. Lawrence by boat" : "Take the boat back to Point Lévis", act: () => card(boatCardS7(side)), state: () => "done" });
+  return [
+    L7("l0", 0, "farm"), info("cabin", "farm", "🏡", "A frontier farm, 1753", cabinCard7), A7("mission", "s7-mission", "✉️", "Washington’s Winter Mission, 1753", "farm"),
+    L7("l2", 2, "willscreek"), info("furtrade7", "willscreek", "🦫", "Trading at Wills Creek", furtrade7Card), A7("sides", "s7-sides", "⚔️", "Who fought on which side?", "willscreek"),
+    at("market", { id: "market", station: "willscreek", icon: "🛍️", label: () => "The Trading Post at Wills Creek", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m6"); }), state: () => "done" }),
+    L7("l1", 1, "meadows"), L7("l7", 7, "meadows"), A7("washington", "s7-washington", "🎖️", "Talk with young George Washington", "meadows"), info("necessity", "meadows", "🪵", "Fort Necessity, July 3, 1754", necessityCard),
+    L7("l4", 4, "forks"), info("duquesne", "forks", "⚜️", "The Forks of the Ohio and Fort Duquesne", duquesneCard), info("braddock", "forks", "🥁", "Braddock’s defeat, July 9, 1755", braddockCard),
+    L7("l3", 3, "albany"), L7("l8", 8, "albany"), info("hendrick", "albany", "🪶", "Hendrick and the Six Nations", hendrickCard), info("snake7", "albany", "🐍", "“JOIN, or DIE.” and the Albany Plan", snake7Card),
+    info("wolfe", "levis", "⛺", "Wolfe’s army at Point Lévis, 1759", wolfeCard), boat("south", "levis"), boat("north", "gate"),
+    L7("l5", 5, "gate"), L7("l6", 6, "gate"), info("plains", "gate", "🎖️", "The Plains of Abraham, September 13, 1759", plainsCard),
+    A7("geomap", "s7-geomap", "🧭", "Map the French and Indian War", "gate"), A7("timeline", "s7-timeline", "📓", "Timeline of the French and Indian War", "gate"),
+    at("trial", { id: "trial", station: "gate", icon: "⚔️", label: () => trialLabelS7(), act: () => gateOpenS7() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s7"); } finally { L.bypass = false; } }) : card(gateLockedCardS7()), state: () => !gateOpenS7() ? "locked" : (sec("s7").completed ? "star" : "new") })
+  ];
+}
+const S7_ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const missingS7 = () => S7_ALL.filter(i => !scrollRead("s7", i));
+const gateOpenS7 = () => missingS7().length === 0 || (sec("s7").attempts || 0) > 0 || !!sec("s7").completed || trialActive("s7");
+function trialLabelS7() { const st = sec("s7"); if (trialActive("s7")) return "Resume the Trial on the Plains of Abraham"; if (st.completed) return "The Plains of Abraham Trial (mastered " + st.bestPct + "%) — try again"; return "The Plains of Abraham: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCardS7() { return { title: "🎖️ The Plains of Abraham", body: "<p>Here, outside the walls of <b>Quebec</b>, the battle that decided the French and Indian War was fought on <b>September 13, 1759</b>. The Trial opens once you have read <b>all 9 scrolls</b> of the French and Indian War. Still to read:</p>", btns: missingS7().map(i => lessonBtnS("s7", i)) }; }
+function boatCardS7(side) {
+  if (side === "north") return { title: "🛶 Back across the St. Lawrence", body: "<p>Ready to row back across the river to the British camp at <b>Point Lévis</b>, and the road south to Albany and the Ohio country?</p>", btns: [{ t: "🛶 Row back to Point Lévis", f: () => { closeCard(); boatToS7("south"); } }] };
+  return { title: "🛶 A story jump: 1759", body: "<p>Five years pass. The war that began in the Ohio Valley in 1754 has spread around the world. Britain’s leader <b>William Pitt</b> has sent thousands of soldiers and a great fleet to America, and in the summer of <b>1759</b> General <b>James Wolfe</b> has brought an army up the St. Lawrence River to <b>Quebec</b>, the capital of New France.</p><p>The city sits high on cliffs. In the dark before dawn on <b>September 13, 1759</b>, Wolfe’s soldiers drift downriver in flat-bottomed boats to a little cove, the <b>Anse au Foulon</b>, and climb a narrow path up the cliff. Will you go with them?</p>", btns: [{ t: "🛶 Cross the river to the Anse au Foulon", f: () => { closeCard(); boatToS7("north"); } }] };
+}
+const ARRIVE7 = {
+  north: "🌙 The Anse au Foulon, before dawn on <b>September 13, 1759</b>. Climb the steep path up the cliff, as Wolfe’s soldiers did, to the <b>Plains of Abraham</b>.",
+  south: "⛺ Point Lévis, 1759: the British camp on the south shore of the St. Lawrence."
+};
+function boatToS7(side) { const h = L.mods.B.HARBORS[side]; if (!h) return false; teleport("out", h); setTimeout(() => toast(ARRIVE7[side]), 600); return true; }
+function cabinCard7() { return { title: "🏡 A frontier farm, 1753", body: "<p>By the 1750s, colonists were moving west from the coast into the <b>backcountry</b> of Virginia and Pennsylvania. They cleared the forest, built log cabins like this one, fenced their fields with zig-zag split rails, and planted corn. Across the mountains lay the rich <b>Ohio River Valley</b>.</p><p>In <b>1749</b> King George II granted a group of Virginians, the <b>Ohio Company</b>, 200,000 acres there. But <b>France</b> claimed the same land, and in <b>1753</b> French soldiers built a chain of forts south from Lake Erie to hold it.</p><p>The whole truth: the Ohio Valley was the home and hunting ground of the <b>Shawnee</b>, the <b>Delaware</b> (Lenape) and the <b>Mingo</b> (Seneca and other Haudenosaunee people living along the Ohio), and they had never given it to either king. That winter, Virginia’s governor sent a 21-year-old militia officer north to warn the French away: <b>George Washington</b>.</p>" }; }
+function furtrade7Card() { return { title: "🦫 Trading at Wills Creek", body: "<p>About <b>1750</b>, the Ohio Company built a storehouse here at <b>Wills Creek</b> on the Potomac River, at the edge of the mountains. Traders brought wool cloth, blankets, kettles, knives, guns and beads to trade with Native hunters for <b>deerskins</b> and <b>beaver furs</b>.</p><p>The French were the great fur traders of North America. New France had <b>far fewer colonists</b> (well under 100,000) than the British colonies (more than a million), and most French traders came to trade, not to clear farms. That is a big reason many Native nations <b>sided with the French</b>: British settlers wanted their land.</p><p>Here in 1754–1755 the British built <b>Fort Cumberland</b>, and in 1755 General Braddock’s army set out from it toward the Forks of the Ohio.</p>" }; }
+function necessityCard() { return { title: "🪵 Fort Necessity, July 3, 1754", body: "<p>In the spring of 1754, Lieutenant Colonel <b>George Washington</b>, age 22, led about 160 Virginia soldiers toward the Forks of the Ohio. On <b>May 28, 1754</b>, guided by the Seneca leader <b>Tanacharison</b> (the “Half King”), they surprised a small French party in a rocky glen. The French commander, <b>Jumonville</b>, and nine others were killed. The French called it murder; the first shots of a world war had been fired.</p><p>Washington fell back to the <b>Great Meadows</b> and built this little <b>round stockade</b>, about 53 feet across, around a storehouse, with shallow trenches outside. He named it <b>Fort Necessity</b>.</p><p>On <b>July 3, 1754</b>, about 600 French soldiers and 100 Native allies attacked in pouring rain. The trenches filled with water and the gunpowder got wet. That night Washington <b>surrendered</b>, and his men marched home on July 4. Washington learned hard lessons here, and he never stopped serving his country. A copy of the fort stands on this spot today.</p>" }; }
+function duquesneCard() { return { title: "⚜️ The Forks of the Ohio and Fort Duquesne", body: "<p>Here the <b>Allegheny River</b> (from the north) and the <b>Monongahela River</b> (from the south) join to make the <b>Ohio River</b>, which flows west to the Mississippi. Whoever held this point could control the whole Ohio Valley.</p><p>In early 1754 a few Virginians began building a fort here. In April a French force of about 500 arrived, ordered them to leave, and built <b>Fort Duquesne</b>, a square fort of logs and earth with four pointed corners called <b>bastions</b>. It flew the <b>white flag of the French king</b>, with gold <b>fleurs-de-lis</b> (lilies).</p><p>The soldiers in grey-white coats with blue cuffs are French <b>troupes de la Marine</b>; the men in blanket coats and red caps are <b>Canadian militia</b>. In <b>1758</b>, as a British army under General John Forbes closed in, the French <b>blew up</b> Fort Duquesne and left. The British built <b>Fort Pitt</b>, named for William Pitt. Today this point is the city of <b>Pittsburgh</b>.</p>" }; }
+function braddockCard() { return { title: "🥁 Braddock’s defeat, July 9, 1755", body: "<p>In 1755 Britain sent General <b>Edward Braddock</b> with two regiments of red-coated regulars. With colonial troops, his army cut a road over the mountains from Wills Creek toward Fort Duquesne. Washington went along as a volunteer aide.</p><p>On <b>July 9, 1755</b>, near the Monongahela River about ten miles from the fort, about 900 French soldiers, Canadians and <b>Native warriors</b> attacked from the woods. Braddock’s men were used to fighting in open fields in neat lines, and they did not know how to fight hidden enemies. Almost two-thirds of them were killed or wounded, and <b>Braddock was mortally wounded</b>.</p><p>Washington rode back and forth through the fire to organize the retreat. He wrote afterward that he had “4 Bullets through my Coat, and two Horses shot under me,” yet he escaped unhurt. Americans remembered his courage.</p>" }; }
+function hendrickCard() { return { title: "🪶 Hendrick and the Six Nations", body: "<p>The <b>Haudenosaunee</b> (Iroquois) Confederacy was the most powerful Native alliance in the Northeast: the <b>Mohawk, Oneida, Onondaga, Cayuga, Seneca</b> and, since about 1722, the <b>Tuscarora</b>. That is why it was called the <b>Six Nations</b>. Its Great Law of Peace united them under one council.</p><p>At the <b>Albany Congress</b> in the summer of 1754, the colonies hoped to win the Six Nations to the British side. The Mohawk leader <b>Hendrick Theyanoguin</b>, an old friend of the British, spoke sharply: the British had left their frontier forts weak while the French built strong ones everywhere.</p><p>Most of the Confederacy tried to stay <b>neutral</b> at first. Hendrick himself fought beside the British and was killed at the Battle of Lake George in <b>1755</b>. Later in the war, as the British began winning, more Haudenosaunee joined them.</p>" }; }
+function snake7Card() { return { title: "🐍 “JOIN, or DIE.” and the Albany Plan", body: "<p>On <b>May 9, 1754</b>, after news came that the French had taken the Forks of the Ohio, <b>Benjamin Franklin</b> printed this woodcut in his <b>Pennsylvania Gazette</b>. The snake is cut into <b>8 pieces</b>: South Carolina, North Carolina, Virginia, Maryland, Pennsylvania, New Jersey, New York and New England. (Georgia and Delaware are not shown.) An old belief said a cut snake could live again if its pieces were joined before sunset.</p><p>In <b>June and July 1754</b>, delegates from <b>seven colonies</b> met at Albany. Franklin proposed the <b>Albany Plan of Union</b>: one grand council of delegates from all the colonies, with a president chosen by the king, to raise armies and deal with the Native nations.</p><p>The delegates approved it, but <b>every colonial assembly turned it down</b>, and Britain ignored it. The colonies were not yet ready to share power. Twenty-two years later, the idea of union came back.</p>" }; }
+function wolfeCard() { return { title: "⛺ Wolfe’s army at Point Lévis, 1759", body: "<p>In the summer of <b>1759</b>, a British fleet carried General <b>James Wolfe</b> and about 9,000 soldiers up the St. Lawrence River. They camped here at <b>Point Lévis</b>, on the south shore across from <b>Quebec</b>, and their cannons fired on the city all summer.</p><p>But Quebec stood on high cliffs, and the French general, the <b>Marquis de Montcalm</b>, kept his army safe behind its defenses. Wolfe’s attacks failed, and autumn was coming, when ice would trap his ships.</p><p>So Wolfe made a bold plan. He found a little cove west of the city, the <b>Anse au Foulon</b>, where a narrow path climbed the cliff. Take the boat to see what happened next.</p>" }; }
+function plainsCard() { return { title: "🎖️ The Plains of Abraham, September 13, 1759", body: "<p>In the night of September 12–13, Wolfe’s boats slipped downriver. About <b>4,500</b> soldiers climbed the cliff path and, by morning, stood in lines on this open farmland, the <b>Plains of Abraham</b>, just west of the city walls. (The fields were named for Abraham Martin, a river pilot who had farmed here more than a hundred years before.)</p><p>Montcalm marched out to fight. The British held their fire until the French came close, then fired together. The battle was over in less than an hour. <b>Both generals were mortally wounded</b>: Wolfe died on the field, and Montcalm the next morning. Quebec surrendered five days later.</p><p>In <b>1760</b> Montreal fell too, and in the <b>Treaty of Paris</b> of <b>1763</b> France gave up Canada and its lands east of the Mississippi. The British flag now flew over most of North America east of the Mississippi.</p>" }; }
+function helpCardS7() {
+  card({ title: "❔ How to explore the French and Indian War", body: "<p>You are <b>" + esc(heroName()) + "</b>, a girl on the <b>Virginia frontier</b> in 1753. Britain and France both claim the Ohio Valley, and war is coming. Walk from your family’s farm to the trading post at Wills Creek, Washington’s <b>Fort Necessity</b>, the <b>Forks of the Ohio</b> and the <b>Albany Congress</b>; then a story jump takes you to <b>Quebec in 1759</b>.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>In real life these places are hundreds of miles apart. Here they are close together, but the directions are true: <b>north is ahead</b> when you start, so <b>west is on your left</b>.</li><li>At <b>Point Lévis</b> (marker 6) a boat carries you across the St. Lawrence River; climb the cliff path to the <b>Plains of Abraham</b>. Read all <b>9 scrolls</b> to open the Trial there.</li></ul>" });
+  W.seen.help7 = true; saveW();
+}
+// Level 8 (v3.1): the Road to Revolution. Boston 1765–1774, then a story jump down the post road to Philadelphia, 1774.
+function ringDefsS8(B) {
+  const A = B.RING_AT, at = (pos, o) => ({ ...o, x: A[pos][0], z: A[pos][1] });
+  const info = (id, pos, station, icon, title, cardFn) => at(pos, { id, station, icon, scored: true, label: () => title, act: () => { W.seen[id] = true; saveW(); card(cardFn()); }, state: () => W.seen[id] ? "done" : "new" });
+  const L8 = (id, i, st) => lessonRing("s8-" + id, i, A[id][0], A[id][1], st, "s8");
+  const A8 = (id, actId, icon, title, st) => actRing("s8-" + id, actId, icon, title, A[id][0], A[id][1], st, "s8");
+  const ride = (side, station) => at("ride-" + side, { id: "ride-" + side, station, icon: "🐎", label: () => side === "south" ? "Story jump to September 1774: ride the post road to Philadelphia" : "Ride the post road back to Boston", act: () => card(rideCardS8(side)), state: () => "done" });
+  return [
+    L8("l0", 0, "libertytree"), info("tree", "tree", "libertytree", "🌳", "The Liberty Tree", treeCard8), L8("l1", 1, "libertytree"), A8("lawprotest", "s8-law-protest", "⚖️", "British Law or Colonial Protest?", "libertytree"), L8("l7", 7, "libertytree"),
+    L8("l2", 2, "longwharf"), info("troops", "troops", "longwharf", "🥁", "Redcoats land at Long Wharf, 1768", troopsCard8),
+    at("market", { id: "market", station: "longwharf", icon: "🛍️", label: () => "Mistress Crane’s Shop on Long Wharf", act: () => openPanel(() => { L.inMarket = true; window.ABRPG.market("m7"); }), state: () => "done" }),
+    L8("l8", 8, "longwharf"),
+    L8("l3", 3, "kingstreet"), info("massacre8", "massacre", "kingstreet", "❄️", "King Street, March 5, 1770", massacreCard8), A8("samadams", "s8-samadams", "🗣️", "Talk with Samuel Adams", "kingstreet"), info("engraving", "engraving", "kingstreet", "🖼️", "Paul Revere’s engraving", engravingCard8),
+    info("oldsouth8", "oldsouth", "oldsouth", "⛪", "The Old South Meeting House", oldsouthCard8), A8("teaparty", "s8-teaparty", "🫖", "The Night of the Tea Party", "oldsouth"), info("wheatley", "meeting", "oldsouth", "🪶", "Phillis Wheatley", wheatleyCard8),
+    L8("l4", 4, "griffins"), info("teaships", "teaships", "griffins", "⛵", "The tea ships at Griffin’s Wharf", teashipsCard8),
+    L8("l5", 5, "faneuil"), info("gifts", "gifts", "faneuil", "🐑", "Faneuil Hall and help for Boston, 1774", giftsCard8), info("edenton", "edenton", "faneuil", "🫖", "The Edenton Tea Party, 1774", edentonCard8), ride("south", "faneuil"),
+    ride("north", "gate"), L8("l6", 6, "gate"), info("carpenters", "carpenters", "gate", "🏛️", "Carpenters’ Hall, Philadelphia, 1774", carpentersCard8),
+    A8("geomap", "s8-geomap", "🧭", "Map the Road to Revolution", "gate"), A8("timeline", "s8-timeline", "📜", "Timeline: The Road to Revolution", "gate"),
+    at("trial", { id: "trial", station: "gate", icon: "🏛️", label: () => trialLabelS8(), act: () => gateOpenS8() ? openPanel(() => { L.bypass = true; try { window.ABRPG.trial("s8"); } finally { L.bypass = false; } }) : card(gateLockedCardS8()), state: () => !gateOpenS8() ? "locked" : (sec("s8").completed ? "star" : "new") })
+  ];
+}
+const S8_ALL = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const missingS8 = () => S8_ALL.filter(i => !scrollRead("s8", i));
+const gateOpenS8 = () => missingS8().length === 0 || (sec("s8").attempts || 0) > 0 || !!sec("s8").completed || trialActive("s8");
+function trialLabelS8() { const st = sec("s8"); if (trialActive("s8")) return "Resume the Trial at Carpenters’ Hall"; if (st.completed) return "The Carpenters’ Hall Trial (mastered " + st.bestPct + "%) — try again"; return "Carpenters’ Hall: the Trial (" + ((window.GAME_CONTENT && GAME_CONTENT.passPercent) || 95) + "% to master)"; }
+function gateLockedCardS8() { return { title: "🏛️ Carpenters’ Hall", body: "<p>Here in <b>Philadelphia</b>, delegates from twelve colonies met as the <b>First Continental Congress</b> in <b>September 1774</b>. The Trial opens once you have read <b>all 9 scrolls</b> of the Road to Revolution. Still to read:</p>", btns: missingS8().map(i => lessonBtnS("s8", i)) }; }
+function rideCardS8(side) {
+  if (side === "north") return { title: "🐎 Back up the post road", body: "<p>Ready to ride the long post road north again, back to <b>Boston</b> and its closed harbor?</p>", btns: [{ t: "🐎 Ride back to Boston", f: () => { closeCard(); rideToS8("south"); } }] };
+  return { title: "🐎 A story jump: September 1774", body: "<p>The summer of <b>1774</b> passes. British warships close Boston Harbor, and General <b>Thomas Gage</b> now governs Massachusetts. But Boston is not alone. Twelve colonies have chosen delegates to meet together in <b>Philadelphia</b>.</p><p>In August, Massachusetts’ four delegates, <b>John Adams</b>, <b>Samuel Adams</b>, <b>Thomas Cushing</b> and <b>Robert Treat Paine</b>, set off down the post road. The journey of about 300 miles takes them <b>nearly three weeks</b>, with dinners and speeches in towns along the way. Will you ride with them?</p>", btns: [{ t: "🐎 Ride the post road to Philadelphia", f: () => { closeCard(); rideToS8("north"); } }] };
+}
+const ARRIVE8 = {
+  north: "🏛️ Philadelphia, <b>September 1774</b>. Walk up to <b>Carpenters’ Hall</b>, where the First Continental Congress is meeting.",
+  south: "🫖 Back in Boston, 1774: the harbor is closed, and the town waits."
+};
+function rideToS8(side) { const h = L.mods.B.HARBORS[side]; if (!h) return false; teleport("out", h); setTimeout(() => toast(ARRIVE8[side]), 600); return true; }
+function treeCard8() { return { title: "🌳 The Liberty Tree", body: "<p>This great old <b>elm</b> stood near the corner of Essex and Orange Streets in Boston. At dawn on <b>August 14, 1765</b>, people found a stuffed dummy (an <b>effigy</b>) of <b>Andrew Oliver</b> hanging from it. Oliver was the man chosen to sell the hated <b>stamps</b>. That night a crowd wrecked a building of his and broke into his house, and the next day he promised to quit.</p><p>From then on Bostonians called the elm the <b>Liberty Tree</b>. The <b>Sons of Liberty</b> met under it, and other towns named liberty trees and liberty poles of their own. When Parliament <b>repealed</b> the Stamp Act in <b>1766</b>, Boston hung the tree with lanterns to celebrate.</p><p>The whole truth: not every protest was peaceful. Twelve days later another crowd tore apart the home of Lieutenant Governor <b>Thomas Hutchinson</b>, and many patriot leaders said that went too far. In <b>1775</b> British soldiers cut the Liberty Tree down for firewood.</p>" }; }
+function troopsCard8() { return { title: "🥁 Redcoats land at Long Wharf, 1768", body: "<p><b>Long Wharf</b> ran about a third of a mile out into Boston Harbor, lined with warehouses and shops. Ships from London, the West Indies and the other colonies tied up here.</p><p>On <b>October 1, 1768</b>, British warships lined up in the harbor, and about a thousand soldiers of the <b>14th and 29th Regiments</b> came ashore here. With drums beating and fifes playing, they marched up the wharf and into town. Parliament had sent them to keep order and to protect the <b>customs officers</b> who collected the Townshend taxes.</p><p>Bostonians were angry to have an army living among them in peacetime. Soldiers camped on the Common and in rented buildings, and some looked for part-time work, which made working men fear for their jobs. Many of the soldiers were poor men far from home, too. The quarrels between soldiers and townspeople grew worse for a year and a half.</p>" }; }
+function massacreCard8() { return { title: "❄️ King Street, March 5, 1770", body: "<p>Snow lay on <b>King Street</b> on the cold night of <b>March 5, 1770</b>. In front of the <b>Custom House</b>, where the king’s taxes were kept, a lone British sentry, <b>Private Hugh White</b>, argued with a young wigmaker’s apprentice and struck him with his musket.</p><p>A crowd gathered, shouting and throwing snowballs, chunks of ice and sticks. <b>Captain Thomas Preston</b> came with seven more soldiers. In the noise and confusion, the soldiers <b>fired</b> into the crowd. Five men died: <b>Crispus Attucks</b>, a sailor of African and Native American descent; <b>Samuel Gray</b>; <b>James Caldwell</b>; 17-year-old <b>Samuel Maverick</b>; and <b>Patrick Carr</b>, who died days later.</p><p>The <b>Old State House</b>, with its lion and unicorn, looks down King Street. The street is now called State Street, and a circle of stones marks the spot.</p>" }; }
+function engravingCard8() { return { title: "🖼️ Paul Revere’s engraving", body: "<p>Three weeks after the shooting, the Boston silversmith <b>Paul Revere</b> sold a print called <b>“The Bloody Massacre perpetrated in King Street.”</b> He copied it from a drawing by the artist <b>Henry Pelham</b>, who was angry that Revere did not give him credit.</p><p>The print shows the soldiers standing in a neat line and firing <b>on command</b> at a calm, peaceful crowd, with Captain Preston raising his sword. That is <b>not what happened</b>: the crowd was throwing things, and no one proved that Preston gave an order to fire. The print was <b>propaganda</b>, a picture made to persuade people, and it worked. It spread anger at Britain through all the colonies.</p><p>The patriot lawyer <b>John Adams</b> believed every person deserved a fair trial, so he <b>defended the soldiers</b> in court. Captain Preston and six soldiers were found not guilty; two were found guilty of manslaughter. Adams later called it one of the best services he ever gave his country.</p>" }; }
+function oldsouthCard8() { return { title: "⛪ The Old South Meeting House", body: "<p>Built in <b>1729</b> with a tall white steeple, the <b>Old South Meeting House</b> was a church, and the biggest building in colonial Boston. When a town meeting was too large for Faneuil Hall, the people of Boston met here.</p><p>On <b>December 16, 1773</b>, about <b>5,000 people</b> crowded inside and around it. They had asked Governor <b>Thomas Hutchinson</b> to let the three tea ships sail home without unloading. Late in the afternoon the answer came: <b>no</b>. According to people who were there, <b>Samuel Adams</b> said, “This meeting can do nothing more to save the country.” Shouts and war whoops answered from the doors, and a crowd headed down to the harbor.</p><p>The Old South still stands on Washington Street in Boston today.</p>" }; }
+function wheatleyCard8() { return { title: "🪶 Phillis Wheatley", body: "<p>In <b>1761</b> a slave ship called the <i>Phillis</i> brought a girl of about seven from West Africa to Boston. She was bought by the <b>Wheatley</b> family, who named her <b>Phillis</b>. They taught her to read, and she learned English, Latin and the Bible quickly. In <b>1771</b> she joined the church here at the Old South.</p><p>In <b>1773</b> her book, <i>Poems on Various Subjects, Religious and Moral</i>, was printed in London. She was the first African American woman to publish a book of poems. That same year she was <b>freed</b>.</p><p>In <b>1774</b> she wrote to the Mohegan minister <b>Samson Occom</b>: “in every human Breast, God has implanted a Principle, which we call Love of Freedom.” She pointed out a hard truth: colonists who cried out for their own liberty still held other people in slavery.</p>" }; }
+function teashipsCard8() { return { title: "⛵ The tea ships at Griffin’s Wharf", body: "<p>In late 1773 three ships carrying tea of the <b>East India Company</b> tied up here at <b>Griffin’s Wharf</b>: the <b><i>Dartmouth</i></b>, the <b><i>Eleanor</i></b> and the brig <b><i>Beaver</i></b>. (A fourth tea ship, the <i>William</i>, ran aground off Cape Cod.) By law the tea had to be unloaded and its tax paid within twenty days.</p><p>On the night of <b>December 16, 1773</b>, groups of men, some with soot on their faces and blankets around them, loosely disguised as <b>Mohawk</b> Indians, boarded the ships. In about three hours they split open <b>342 chests</b> of tea, worth nearly <b>£10,000</b>, and dumped it into the harbor.</p><p>They were careful: no one was hurt, nothing else on the ships was damaged, and a broken padlock was later replaced. Men who tried to slip tea into their pockets were stopped. Even so, Britain saw the Tea Party as the destruction of property, and it was ready to punish Boston.</p>" }; }
+function giftsCard8() { return { title: "🐑 Faneuil Hall and help for Boston, 1774", body: "<p><b>Faneuil Hall</b>, the market house with its gilded <b>grasshopper</b> weathervane, was given to the town in <b>1742</b> by the rich merchant <b>Peter Faneuil</b>. Shops sold food downstairs, and town meetings filled the hall above. The whole truth: part of Faneuil’s fortune came from trade tied to <b>slavery</b>, and he held enslaved people himself.</p><p>After the Tea Party, Parliament passed the <b>Coercive Acts</b>, which colonists called the <b>Intolerable Acts</b>. From <b>June 1, 1774</b>, the <b>Boston Port Act</b> closed the harbor until the tea was paid for. Ships could not come in or go out, and many Bostonians lost their work.</p><p>The other colonies did not let Boston starve. <b>Connecticut</b> towns drove flocks of <b>sheep</b> up the roads, <b>South Carolina</b> shipped <b>rice</b>, and towns from New Hampshire to Virginia sent grain, flour, fish and money. “Boston’s cause” had become the cause of all the colonies.</p>" }; }
+function edentonCard8() { return { title: "🫖 The Edenton Tea Party, 1774", body: "<p>Patriot women were part of the protests too. On <b>October 25, 1774</b>, in the little town of <b>Edenton, North Carolina</b>, <b>51 women</b> led by <b>Penelope Barker</b> signed a pledge to support the boycott and to stop drinking British tea and buying British cloth.</p><p>It was one of the first organized political actions by women in the colonies. In London, a cartoonist <b>mocked</b> them with an ugly drawing, but their names had been published for all to see.</p><p>Across the colonies, women made <b>homespun</b> cloth and brewed “liberty tea” from local herbs instead of buying British goods.</p>" }; }
+function carpentersCard8() { return { title: "🏛️ Carpenters’ Hall, Philadelphia, 1774", body: "<p>This brick hall with its little cupola belonged to the <b>Carpenters’ Company</b>, Philadelphia’s builders. From <b>September 5 to October 26, 1774</b>, delegates from <b>twelve colonies</b> met here as the <b>First Continental Congress</b>. (Georgia did not send delegates.)</p><p>The delegates included <b>George Washington</b>, <b>Patrick Henry</b>, <b>John and Samuel Adams</b> and <b>John Jay</b>. Patrick Henry told them, as John Adams wrote it down: “The distinctions between Virginians, Pennsylvanians, New Yorkers, and New Englanders, are no more. I am not a Virginian, but an American.”</p><p>The Congress did <b>not</b> yet vote for independence. It asked the king to respect the colonists’ rights, agreed on a boycott of British goods called the <b>Continental Association</b>, and planned to meet again in <b>May 1775</b> if nothing changed. By then, the shooting had started at Lexington and Concord.</p>" }; }
+function helpCardS8() {
+  card({ title: "❔ How to explore the Road to Revolution", body: "<p>You are <b>" + esc(heroName()) + "</b>, a girl living in <b>Boston</b>. The story jumps forward through the years from <b>1765 to 1774</b>, as Parliament passes new taxes and the colonists push back. Walk from the <b>Liberty Tree</b> to <b>Long Wharf</b>, <b>King Street</b>, the <b>Old South Meeting House</b>, <b>Griffin’s Wharf</b> and <b>Faneuil Hall</b>; then a story jump takes you down the post road to <b>Philadelphia in 1774</b>.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys (or the joystick). <b>Space</b> or the ✋ button uses a glowing ring.</li><li><b>Gold</b> rings are new, <b>blue</b> are done, a <b>star</b> means 3 stars. The banner at the top names your next marker.</li><li>Boston is drawn small here, and the places come in <b>story order</b>, not at their exact spots on a map. <b>North is ahead</b> when you start, and <b>Boston Harbor is on your right</b>, to the east, as in real Boston.</li><li>At <b>Faneuil Hall</b> (marker 6) a horse carries you down the post road to <b>Carpenters’ Hall</b>. Read all <b>9 scrolls</b> to open the Trial there.</li></ul>" });
+  W.seen.help8 = true; saveW();
+}
+function nextTargetS8() {
+  const rings = L.lvl.rings, S = L.mods.B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const north = z => z > 52, meN = north(L.pos.z);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const cross = b => { const r = byId(meN ? "ride-north" : "ride-south"); return { def: { ...r.def, text: meN ? "Marker " + (S[b.def.station] ? S[b.def.station].n : 1) + " · Ride the post road back to Boston" : "Marker 6 · Ride the post road to Philadelphia, 1774" } }; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  let best;
+  if (!todo.length) best = byId("trial");
+  else { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+    if (inSt && inSt.length) best = pick(inSt); else { const n0 = Math.min(...todo.map(r => S[r.def.station].n)); best = pick(todo.filter(r => S[r.def.station].n === n0)); } }
+  return best && north(best.def.z) !== meN ? cross(best) : best;
+}
+// Level 7 banner: like Level 5 (the St. Lawrence is crossed by boat): the station she stands in, else the lowest-numbered
+// station with work left; if that is across the river, the boat ring on her side. With nothing left: the Trial.
+function nextTargetS7() {
+  const rings = L.lvl.rings, S = L.mods.B.STATIONS, byId = id => rings.find(r => r.def.id === id);
+  const north = z => z > 55, meN = north(L.pos.z);
+  const pick = pool => { let best = null, bd = 1e9; for (const r of pool) { const d = Math.hypot(r.def.x - L.pos.x, r.def.z - L.pos.z); if (d < bd) { bd = d; best = r; } } return best; };
+  const cross = () => { const r = byId(meN ? "boat-north" : "boat-south"); return { def: { ...r.def, text: meN ? "Marker 7 · Take the boat back to Point Lévis" : "Marker 6 · Take the boat across the St. Lawrence to 1759" } }; };
+  const todo = rings.filter(r => r.def.scored && r.state === "new");
+  let best;
+  if (!todo.length) best = byId("trial");
+  else { const st = Object.keys(S).find(k => Math.hypot(L.pos.x - S[k].x, L.pos.z - S[k].z) < S[k].r + 3), inSt = st && todo.filter(r => r.def.station === st);
+    if (inSt && inSt.length) best = pick(inSt); else { const n0 = Math.min(...todo.map(r => S[r.def.station].n)); best = pick(todo.filter(r => S[r.def.station].n === n0)); } }
+  return best && north(best.def.z) !== meN ? cross() : best;
+}
+
 // v2.4 plaza puzzle: the Culture Clues Sort, played by carrying each clue bundle onto its region mat. It runs through
 // ABRPG.worldSort, which scores with the card version's own finishActivity (same stars, plays, mistakes; no new save fields).
 const SP = { active: false, h: null, queue: [], cur: null, onMat: null, carry: null, hintBin: null, sid: "s2", act: "s2-clues" };   // v2.5: also the Level 3 dock sort (sid / act)
@@ -540,21 +672,40 @@ function sortStop() { if (!SP.active) return; SP.active = false; SP.cur = null; 
 // the card version, so there are no new save fields. Once the timeline has been played, the stones are safe and show
 // the dates; the ring on the bank offers a replay on the stones or the card version.
 const FORD_SHORT = { s1tl1: "Monte Verde (southern Chile)", s1tl2: "Clovis spear points", s1q15: "Maize farming begins", s1q19: "Olmec stone heads", s1tl4: "Maya Classic Age", s1q25: "Cahokia at its peak", s1tl3: "Aztecs found Tenochtitlán", s1tl5: "Inca Empire expands" };
-const F = { lay: null, armed: false, replay: false, row: 0, miss: [], last: null, started: false, vis: null, done: false };
+const F = { lay: null, armed: false, replay: false, row: 0, miss: [], last: null, started: false, vis: null, done: false, good: null };
+// v2.8.3 (John: "The River Ford is a little difficult and confusing ... make it more intuitive"): a goal banner that
+// never fades ("Row 3 of 8: step on the OLDER event"), the compass points at the row, a timeline strip at the top fills
+// in as she crosses, the row to step on glows, wider stones, a wrong stone or a slip sends her back to her last gold
+// stone (not the bank), a gold hint after 2 misses and the answer glowing after 3 (the miss costs that row's star only).
+const fordShortWhen = w => String(w).replace(/^about /, "").replace(" years ago", " yrs ago");
+function fordHud() {
+  let el = document.getElementById("w-ford"); const on = L.sid === "s1" && L.zone === "out" && F.armed && F.lay && L.phase === "active";
+  if (!el) { if (!on) return; el = document.createElement("div"); el.id = "w-ford"; el.setAttribute("aria-live", "polite"); document.getElementById("w-hud").appendChild(el); }
+  if (!on) { if (!el.hidden) el.hidden = true; return; }
+  const rows = F.lay.rows, key = F.row + ":" + F.miss.join(",");
+  if (el.dataset.k !== key) {
+    el.dataset.k = key;
+    el.innerHTML = '<span class="wf-end">older</span>' + rows.map((r, k) => k < F.row ? '<span class="wf-s done" title="' + esc(r.ev.when + ": " + r.ev.label) + '">✓' + (k >= F.row - 3 ? " " + esc(fordShortWhen(r.ev.when)) : "") + "</span>"
+      : k === F.row ? '<span class="wf-s now">' + (k + 1) + " ?</span>" : '<span class="wf-s">' + (k + 1) + "</span>").join("") + '<span class="wf-end">newer</span>';
+  }
+  el.hidden = false;
+  const er = document.getElementById("w-era"), t = er ? Math.round(er.getBoundingClientRect().bottom + 4) : 120; if (el._top !== t) { el._top = t; el.style.top = t + "px"; }
+}
+function fordRespawn() { const B = L.mods.B, g = F.armed && F.lay && F.good && F.good.row < F.row ? F.good : null; return g ? { x: g.x, z: g.z, yaw: 0 } : B.FORD_RESPAWN; }
 const fordSolved = () => { const a = ST().acts && ST().acts["s1-timeline"]; return !!(a && a.plays); };
 const fordName = e => FORD_SHORT[e.q] || e.label;
 function fordNew() {
   const B = L.mods.B, h = window.ABRPG.worldTimeline && window.ABRPG.worldTimeline("s1", "s1-timeline", resume);
   if (!h || h.events.length !== B.FORD_ROWS) return null;
   const ev = h.events, rows = ev.map((e, k) => { const later = ev.slice(k + 1); return { ev: e, right: k < ev.length - 1 ? (Math.random() < 0.5 ? 0 : 1) : -1, wrong: later.length ? later[Math.floor(Math.random() * later.length)] : null }; });
-  F.lay = { h, rows }; F.row = 0; F.miss = rows.map(() => 0); F.started = false; F.done = false; return F.lay;
+  F.lay = { h, rows }; F.good = null; F.row = 0; F.miss = rows.map(() => 0); F.started = false; F.done = false; return F.lay;
 }
 function fordCard() {
   const solved = fordSolved();
   const body = solved
     ? "<p>You have built this timeline before. The stones are safe now and show their dates as you cross.</p><p>Want to practice? Replay it on the stones, or use the card version.</p>"
-    : "<p>Cross the river on the stepping stones <b>in time order</b>. Each row of stones is the next step in time, starting with the oldest event on this bank.</p><p>Read the two labels and step on the one that happened <b>first</b>. Step on a later one and you fall in the cold river and wash back to this bank. Right stones stay lit.</p>";
-  const btns = [{ t: "🪨 " + (solved ? "Replay on the river stones" : "Start on the river stones"), f: () => { closeCard(); F.replay = true; fordNew(); F.armed = true; toast("🪨 Step on the stones from <b>oldest</b> to <b>newest</b>. Start at the row nearest you."); } }, actBtn("s1-timeline", "📓 Card version")];
+    : "<p>Cross on the stones <b>in time order</b>. In each row, read the two labels and step on the event that happened <b>first</b> (the older one). The strip at the top fills in your timeline.</p><p>Wrong stone? Just a splash: you hop back to your last gold stone. After 2 misses a gold <b>hint</b> appears; after 3 the answer glows (no star for that row).</p>";
+  const btns = [{ t: "🪨 " + (solved ? "Replay on the river stones" : "Start on the river stones"), f: () => { closeCard(); F.replay = true; fordNew(); F.armed = true; fordHud(); } }, actBtn("s1-timeline", "📓 Card version")];
   return { title: "📓 Timeline on the river stones", body, btns };
 }
 function fordLabelTex(top, bottom, tone) {
@@ -575,7 +726,7 @@ function fordLabelTex(top, bottom, tone) {
 }
 function fordVisuals() {
   if (F.vis) return F.vis; const B = L.mods.B, sc = L.lvl.scene;
-  const glowG = new THREE.RingGeometry(0.42, 0.6, 24); glowG.rotateX(-Math.PI / 2);
+  const glowG = new THREE.RingGeometry(0.5, 0.74, 24); glowG.rotateX(-Math.PI / 2);
   const items = B.STONES.map(s => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: true }));
     sp.position.set(s.x, s.top + 1.35, s.z); sp.scale.set(2.05, 0.64, 1); sp.visible = false; sp.renderOrder = 6; sp.userData.noMerge = true; sp.name = "ford-label"; sc.add(sp);
@@ -590,24 +741,29 @@ function fordStoneEvent(s) { const r = F.lay && F.lay.rows[s.row]; if (!r) retur
 function fordSplash(s, html) {
   const B = L.mods.B; L.sparks && L.sparks.emit(new THREE.Vector3(s.x, B.WATER_Y + 0.1, s.z), 60, ["#dfefff", "#a9d4f5", "#ffffff"], { speed: 0.55, life: 1.1, up: 0.8 });
   L.pos.y = B.WATER_Y - 0.25; toast(html); L.frozen = true; L.fordFall = true;
-  setTimeout(() => { L.fordFall = false; teleport("out", B.FORD_RESPAWN); }, 420);
+  setTimeout(() => { L.fordFall = false; teleport("out", fordRespawn()); }, 420);
 }
 function fordStep() {
   if (L.sid !== "s1") return;
   const B = L.mods.B; if (L.zone !== "out" || !F.vis && Math.hypot(L.pos.x + 5, L.pos.z - B.riverZ(-5)) > 30) return;
   const v = fordVisuals(), zc = B.riverZ(-5), near = Math.abs(L.pos.x + 5) < 12 && Math.abs(L.pos.z - zc) < 14;
   // arm on the south bank (she meets the oldest event first); coming back from the north the stones are just stones
-  if (!F.armed && !F.done && near && L.pos.z < zc - 5.4 && Math.abs(L.pos.x + 5) < 8 && (!fordSolved() || F.replay)) { if (!F.lay) fordNew(); if (F.lay) { F.armed = true; if (!F.started && !F.hinted) { F.hinted = true; toast("🪨 The river stones are a <b>timeline</b>: step on the event that happened first, row by row. A later one means a splash!"); } } }
+  if (!F.armed && !F.done && near && L.pos.z < zc - 5.4 && Math.abs(L.pos.x + 5) < 8 && (!fordSolved() || F.replay)) { if (!F.lay) fordNew(); if (F.lay) { F.armed = true; if (!F.started && !F.hinted) { F.hinted = true; toast("🪨 The river stones are a <b>timeline</b>. In each row, step on the event that happened <b>first</b>."); } } }
   if (F.armed && L.pos.z < zc - 16) F.armed = false;   // walked away: progress on lit rows stays for this visit
-  const play = F.armed && F.lay;
+  const play = F.armed && F.lay; const pulse = 0.45 + 0.35 * Math.sin(performance.now() / 260);
   // labels: only the row she is about to step on; lit rows get a gold ring. Safe mode shows dates just ahead of her
   for (const it of v.items) {
     const s = it.s; let show = false;
     if (near) {
       if (play) {
         const ev = fordStoneEvent(s), r = F.lay.rows[s.row], right = ev === r.ev;
-        if (s.row < F.row) { it.gl.visible = right; }   // lit rows: a gold ring on the right stone (the date was in the toast)
-        else if (s.row === F.row) { show = true; const hint = right && F.miss[s.row] >= 2; fordSet(it, (hint ? "h" : "q") + ev.key, fordName(ev), hint ? "Hint: this one came first" : "", hint ? "hint" : ""); it.gl.visible = false; }
+        const gm = it.gl.material;
+        if (s.row < F.row) { it.gl.visible = right; if (right) { gm.color.set("#ffd75e"); gm.opacity = 0.7; } }   // lit rows: a gold ring on the right stone
+        else if (s.row === F.row) {   // the row to step on: both stones glow; a hint after 2 misses, the answer after 3
+          show = true; const m = F.miss[s.row] || 0, hint = right && m >= 2, ans = right && m >= 3;
+          fordSet(it, (ans ? "a" : hint ? "h" : "q") + ev.key, fordName(ev), ans ? "✔ This one came first" : hint ? "Hint: this one is older" : "", hint ? "hint" : "");
+          it.gl.visible = true; gm.color.set(ans ? "#ffd75e" : "#bff4ff"); gm.opacity = ans ? 0.95 : pulse;
+        }
         else { it.gl.visible = false; }
       } else {
         const r = F.lay && F.lay.rows[s.row], ev = r ? fordStoneEvent(s) : null;
@@ -620,20 +776,21 @@ function fordStep() {
     it.sp.visible = show;
   }
   if (!play || L.frozen || L.cardOpen) { F.last = null; return; }
-  const s = B.onStone(L.pos.x, L.pos.z, -0.15);
+  const s = B.onStone(L.pos.x, L.pos.z, -0.05);
   if (!s || s === F.last) { if (!s) F.last = null; return; }
   F.last = s; const h = F.lay.h, r = F.lay.rows[s.row];
   if (s.row < F.row) return;                        // lit rows are safe
   if (!F.started) { F.started = true; h.start(); }
-  if (s.row > F.row) { fordSplash(s, "💦 Splash! Step on the stones <b>row by row</b>, oldest first. That row was skipped."); return; }
+  if (s.row > F.row) { fordSplash(s, "💦 Splash! One row at a time: step on a <b>glowing</b> stone first."); return; }
   const ev = fordStoneEvent(s);
   if (ev === r.ev) {
-    const star = h.right(ev.key); F.row++;
+    const star = h.right(ev.key); F.row++; F.good = s;
     toast("✅ " + star + "<b>" + esc(ev.when) + ":</b> " + esc(ev.label) + ".");
     if (F.row >= F.lay.rows.length) { F.armed = false; F.done = true; F.replay = false; const done = F.lay; setTimeout(() => { if (L.phase === "active") openPanel(() => done.h.finish()); F.lay = null; F.done = false; }, 1100); }
   } else {
-    h.miss(ev.key); F.miss[s.row]++;
-    fordSplash(s, "💦 Splash! <b>" + esc(fordName(ev)) + "</b> happened <b>later</b> than the other stone in that row." + (F.miss[s.row] >= 2 ? " Look for the <b>gold</b> hint label." : " Back to the bank. Your lit stones stay lit."));
+    h.miss(r.ev.key); F.miss[s.row]++;   // v2.8.3: the miss counts against THIS row's event (it used to cost a later row its star)
+    const m = F.miss[s.row];
+    fordSplash(s, "💦 Not this one: <b>" + esc(fordName(ev)) + "</b> happened <b>later</b>. " + (m >= 3 ? "The <b>glowing gold</b> stone came first." : m >= 2 ? "Look for the <b>gold hint</b>." : "Try the other stone!"));
   }
 }
 
@@ -642,6 +799,7 @@ function cardBtns(list) { return '<div class="w-card-btns">' + list.map((b, i) =
 let cardActs = [];
 function card(c) {
   const el = document.getElementById("w-card"); cardActs = c.btns || [];
+  if (c.title && c.title.startsWith("❔ How to") && L.sid && (COMPASS_HELP_SID[L.sid] || COMPASS_HELP[COMPASS[L.sid]]) && !c.body.includes("w-ch")) c = { ...c, body: c.body.replace("</ul>", (COMPASS_HELP_SID[L.sid] || COMPASS_HELP[COMPASS[L.sid]]).replace("<li>", '<li class="w-ch">') + "</ul>") };
   el.innerHTML = '<div class="w-card-in" role="dialog" aria-label="' + esc(c.title) + '"><h3>' + c.title + "</h3>" + c.body + cardBtns(cardActs.concat([{ t: c.close || "Keep exploring ▶", cls: "alt", f: closeCard }])) + "</div>";
   cardActs = cardActs.concat([{ f: closeCard }]);
   el.hidden = false; L.cardOpen = true; clearHeld();
@@ -671,7 +829,7 @@ function ui() {
   const mb = document.createElement("button"); mb.id = "w-mode"; mb.className = "chip"; mb.title = "Switch between walking the 3D world and the classic screens"; mb.onclick = () => { mb.blur(); setMode(mode() === "walk" ? "classic" : "walk", true); };
   tb.insertBefore(back, document.getElementById("btn-inv")); tb.appendChild(mb);
   const h = document.createElement("div"); h.id = "w-hud"; h.hidden = true;
-  h.innerHTML = '<div id="w-obj" aria-live="polite"><span id="w-arrow" aria-hidden="true">➤</span><span id="w-obj-t"></span></div><div id="w-era"></div>' +
+  h.innerHTML = '<div id="w-obj" aria-live="polite"><span id="w-comp" aria-hidden="true"></span><span id="w-obj-t"></span><span id="w-dist"></span></div><div id="w-era"></div>' +
     '<button id="w-prompt" hidden></button>' +
     '<div id="w-joy" aria-hidden="true"><div id="w-knob"></div></div><button id="w-use" aria-label="Use">✋ Use</button>' +
     '<div id="w-tools"><button id="gfx-mode" class="chip" title="Graphics: Auto / High / Low">✨ Auto</button><button id="w-help" class="chip" title="How to play">❔ Help</button></div>' +
@@ -686,8 +844,8 @@ function ui() {
   document.getElementById("gfx-mode").onclick = e => { e.currentTarget.blur(); if (L.gfx) L.gfx.cycle(); };
   syncChips();
 }
-const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies" };
-function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
+const BACK = { s1: "🏕️ Back to Beringia", s2: "🔥 Back to the Council Fire", s3: "⛵ Back to the Voyage", s4: "🗺️ Back to the Three Empires", s5: "🏛️ Back to Jamestown and Plymouth", s6: "🔔 Back to the Thirteen Colonies", s7: "⚔️ Back to the French and Indian War", s8: "🫖 Back to Boston" }, WALKNAME = { s1: "🚶 Walk Beringia", s2: "🚶 Walk Native Nations", s3: "🚶 Walk the Voyage of 1492", s4: "🚶 Walk the Three Empires", s5: "🚶 Walk Jamestown and Plymouth", s6: "🚶 Walk the Thirteen Colonies", s7: "🚶 Walk the French and Indian War", s8: "🚶 Walk the Road to Revolution" };
+function helpCard() { if (L.sid === "s2") return helpCardS2(); if (L.sid === "s3") return helpCardS3(); if (L.sid === "s4") return helpCardS4(); if (L.sid === "s5") return helpCardS5(); if (L.sid === "s6") return helpCardS6(); if (L.sid === "s7") return helpCardS7(); if (L.sid === "s8") return helpCardS8(); card({ title: "❔ How to explore Beringia", body: "<p>You are <b>" + esc(heroName()) + "</b>, living in Beringia during the last Ice Age. Follow the worn path north, marker by marker.</p><ul><li><b>Walk:</b> <b>W</b> forward, <b>Z</b> back, <b>A</b> left, <b>S</b> right (the way the camera faces), or the arrow keys, or the joystick (touch).</li><li><b>Look around:</b> drag on the world.</li><li><b>Use a glowing ring:</b> stand in it and press <b>E</b>, <b>Enter</b> or <b>Space</b>, or tap the ✋ button.</li><li>Gold rings are new, blue rings are done, and pale-gold rings have 3 ⭐. Gray rings are still locked.</li><li>The 🗂️ chip at the top switches back to the classic screens any time. Your progress is the same in both.</li></ul>" }); W.seen.help = true; saveW(); }
 function heroName() { const p = ST() && ST().players && ST().players[L.sid]; return (p && p.name) || "Abigail"; }
 // v2.6 phone HUD: the objective and era sit just below the topbar, whatever height it wraps to (one owner per strip)
 function layoutHud() {
@@ -706,7 +864,7 @@ function syncChips() {
   back.hidden = !(mode() === "walk" && L.phase !== "active" && (L.phase === "panel" || isLvlScreen()));
   const ban = document.getElementById("w-banner");
   if (ban) { const show = mode() === "walk" && L.phase === "off" && !W.seenIntro && onMapScreen(); ban.hidden = !show;
-    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v2.8:</b> walk the Thirteen Colonies in 3D: Charles Town, Williamsburg, a Great Awakening field meeting, Ben Franklin’s Philadelphia, a village lane, Boston and Albany in 1754 (plus Jamestown and Plymouth, the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
+    if (show && !ban.innerHTML) { ban.innerHTML = '<b>New in v3.1:</b> walk the Road to Revolution in 3D: the Liberty Tree, Long Wharf, King Street, the Old South Meeting House, the tea ships and Carpenters’ Hall in Philadelphia (plus the French and Indian War, the Thirteen Colonies, Jamestown and Plymouth, the Three Empires, the Voyage of 1492, the Native Nations and Beringia)! <button class="btn small gold" id="w-ban-go">🚶 Walk Beringia</button><button class="btn small alt" id="w-ban-no">🗂️ Keep classic screens</button>'; document.getElementById("w-ban-go").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("walk", true); }; document.getElementById("w-ban-no").onclick = () => { W.seenIntro = true; saveW(); ban.hidden = true; setMode("classic"); }; } }
 }
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
@@ -731,6 +889,18 @@ window.ABWorld = {
       if (!WALK.includes(sid)) { if (L.phase !== "off") exitLevel(false); return false; }
       if (kind === "enter") { const p = ST().players && ST().players[sid]; if (!p) return false; enterLevel(sid); return true; }
       if (kind === "intro") { enterLevel(sid); return true; }
+      if (kind === "trial" && sid === "s8") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s8") { enterLevel("s8"); return true; }
+        resume(); if (gateOpenS8()) setTimeout(() => toast("🏛️ The Trial waits at <b>Carpenters’ Hall</b> in Philadelphia, marker 7, at the end of the post road. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCardS8()), 50);
+        return true;
+      }
+      if (kind === "trial" && sid === "s7") {
+        if (L.bypass || L.phase === "off") return false;
+        if (L.sid !== "s7") { enterLevel("s7"); return true; }
+        resume(); if (gateOpenS7()) setTimeout(() => toast("🎖️ The Trial waits on the <b>Plains of Abraham</b>, marker 7, across the St. Lawrence. Follow the arrow!"), 50); else setTimeout(() => card(gateLockedCardS7()), 50);
+        return true;
+      }
       if (kind === "trial" && sid === "s6") {
         if (L.bypass || L.phase === "off") return false;
         if (L.sid !== "s6") { enterLevel("s6"); return true; }
@@ -799,17 +969,17 @@ function useLevel(sid) {
 async function ensureBuilt(sid = L.sid) {
   if (LV[sid]) { useLevel(sid); return true; }
   if (!LVBUILD[sid]) LVBUILD[sid] = (async () => {
-    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
+    const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s8" ? "./world/boston74.js" : sid === "s7" ? "./world/frontier.js" : sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
-    const rings = sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
+    const rings = sid === "s8" ? ringDefsS8(B) : sid === "s7" ? ringDefsS7(B) : sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
     try { MGM = MGM || await import("./world/minigames/index.js"); MGM.attach({ THREE, L, keys, joy, toast, esc, supportY, clearHeld, snapCam: () => placeCamera(0, true) }); rings.push(...MGM.ringDefs(sid)); } catch (e) { console.warn("mini-games off", e); }   // v2.9 mini-games (world/minigames)
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
-    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") {
+    if (sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6" || sid === "s7" || sid === "s8") {
       const SS = window.ABRPG.sectionById(sid), clues = SS && (SS.activities || []).find(a => a.id === (sid === "s4" ? "s4-goals" : sid === "s3" ? "s3-exchange" : "s2-clues")), matLabels = {};
       if (clues) for (const b of clues.bins) matLabels[b.id] = (b.icon ? b.icon + " " : "") + b.label;
-      lvl = sid === "s6" ? B.buildThirteen({ mergeAO, rings, matLabels }) : sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
+      lvl = sid === "s8" ? B.buildBoston({ mergeAO, rings, matLabels }) : sid === "s7" ? B.buildFrontier({ mergeAO, rings, matLabels }) : sid === "s6" ? B.buildThirteen({ mergeAO, rings, matLabels }) : sid === "s5" ? B.buildColonies({ mergeAO, rings, matLabels }) : sid === "s4" ? B.buildEmpires({ mergeAO, rings, matLabels }) : sid === "s3" ? B.buildVoyage({ mergeAO, rings, matLabels }) : B.buildNations({ mergeAO, rings, matLabels });
       cave = { scene: lvl.scene, rings: [], colliders: [], radius: 1, update() {} };   // no cave in this level
     } else { lvl = B.buildBeringia({ mergeAO, rings }); cave = B.buildCave({ rings }); }
     lvl.scene.add(aoHolder);
@@ -840,12 +1010,12 @@ function gearArt() {
   const S = ST(), it = (window.ABRPG && window.ABRPG.items) || {}, out = [];
   // era gear only: Ice Age gear in Beringia; in the Native Nations the gear of Sections 1–2 (v2.4). In 1492 Spain she wears
   // a wool dress, so only the Section 3 navigator's gear shows there (v2.5): no stone spear or buffalo robe aboard a caravel.
-  const ok = L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
+  const ok = L.sid === "s8" ? ["s8"] : L.sid === "s7" ? ["s7"] : L.sid === "s6" ? ["s6"] : L.sid === "s5" ? ["s5"] : L.sid === "s4" ? ["s4"] : L.sid === "s3" ? ["s3"] : L.sid === "s2" ? ["s1", "s2"] : ["s1"];
   for (const sl of Object.keys(S.equip || {})) { const k = S.equip[sl], i = it[k]; if (i && (ok.includes(i.section) || i.allEras) && i.art) out.push({ art: i.art, color: i.color, top: i.top, skirt: i.skirt }); }   // v2.9: dyes + hair colors in every era
   return out;
 }
 function buildHero() {
-  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" || L.sid === "s6" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
+  const p = ST().players && (ST().players[L.sid] || ST().players.s1), art = gearArt(), outfit = L.sid === "s3" || L.sid === "s4" || L.sid === "s5" || L.sid === "s6" || L.sid === "s7" || L.sid === "s8" ? "wool" : "hide", key = JSON.stringify([p && p.gender, art, outfit]);
   if (L.hero && L.heroKey === key) { const sc = L.zone === "cave" ? L.cave.scene : L.lvl.scene; if (L.hero.root.parent !== sc) sc.add(L.hero.root); return; }
   const parent = L.hero && L.hero.root.parent; if (L.hero) { if (parent) parent.remove(L.hero.root); L.hero.dispose(); }
   L.hero = L.mods.H.createHero({ gender: p && p.gender === "boy" ? "boy" : "girl", gearArt: art, outfit }); L.heroKey = key;
@@ -857,6 +1027,8 @@ function placeStart(zone) {
   const B = L.mods.B;
   if (L.sid === "s2") { L.zone = "out"; L.pos.set(0, B.groundH(0, -8), -8); L.yaw = 0; return; }   // south of the council fire, facing north
   if (L.sid === "s4") { L.zone = "out"; L.pos.set(-56, B.groundH(-56, -56), -56); L.yaw = 0; return; }
+  if (L.sid === "s8") { L.zone = "out"; L.pos.set(-6, B.groundH(-6, -64), -64); L.yaw = 0; return; }   // south of the Liberty Tree, facing north
+  if (L.sid === "s7") { L.zone = "out"; L.pos.set(-14, B.groundH(-14, -62), -62); L.yaw = 0; return; }   // the frontier farm, facing north
   if (L.sid === "s6") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Charles Town, facing north up the road
   if (L.sid === "s5") { L.zone = "out"; L.pos.set(-42, B.groundH(-42, -64), -64); L.yaw = 0; return; }   // Roanoke Island, facing north to the empty fort   // St. Augustine, facing north into town
   if (L.sid === "s3") { L.zone = "out"; L.pos.set(-38, B.groundH(-38, 44), 44); L.yaw = 0; return; }   // Palos square, facing north to the church of San Jorge
@@ -868,10 +1040,12 @@ async function enterLevel(sid = L.sid) {
   if (!(await ensureBuilt(sid))) { window.ABRPG.enterSection(sid, true); return; }
   const B = L.mods.B;
   window.ABRPG.closeModal && document.getElementById("modal") && !document.getElementById("modal").classList.contains("hidden") && window.ABRPG.closeModal();
-  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6") && (L.phase === "off" || from !== sid)) {
+  if ((sid === "s2" || sid === "s3" || sid === "s4" || sid === "s5" || sid === "s6" || sid === "s7" || sid === "s8") && (L.phase === "off" || from !== sid)) {
     // spawn: a Trial in progress → the meeting ground (s3: Hispaniola harbor); else her saved spot (if valid) or the start
     const a = W.at[sid], t = B.RING_AT.trial;
     if (trialActive(sid) && sid === "s3") { const h = B.HARBORS.hisp; L.zone = "out"; L.pos.set(h.x, 0, h.z); L.yaw = h.yaw; setTimeout(() => toast("⛈️ Your Trial is waiting. Step into the ring by the Niña to resume."), 300); }
+    else if (trialActive(sid) && sid === "s8") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the door of Carpenters’ Hall to resume."), 300); }
+    else if (trialActive(sid) && sid === "s7") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🎖️ Your Trial is waiting. Step into the ring on the Plains of Abraham to resume."), 300); }
     else if (trialActive(sid) && sid === "s6") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the Stadt Huys door to resume."), 300); }
     else if (trialActive(sid) && sid === "s5") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🏛️ Your Trial is waiting. Step into the ring at the fort-meetinghouse door to resume."), 300); }
     else if (trialActive(sid) && sid === "s4") { L.zone = "out"; L.pos.set(t[0], 0, t[1] - 4); L.yaw = 0; setTimeout(() => toast("🚪 Your Trial is waiting. Step into the ring in the palisade gate to resume."), 300); }
@@ -886,10 +1060,10 @@ async function enterLevel(sid = L.sid) {
     else placeStart("out");
     L.camYaw = L.yaw; L.dz.snap(L.yaw); L.th.reset(); L.manualT = 0;
   }
-  buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone);
-  document.getElementById("w-era").textContent = sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
+  buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone); compassSetup(sid);
+  document.getElementById("w-era").textContent = sid === "s8" ? "Section 8 · The Road to Revolution, 1763–1775 · Boston: the Liberty Tree 1765, King Street 1770, the Tea Party 1773; Philadelphia 1774" : sid === "s7" ? "Section 7 · The French and Indian War, 1754–1763 · the Ohio frontier, Fort Necessity 1754, Albany 1754, Quebec 1759" : sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (!W.seen[sid === "s8" ? "help8" : sid === "s7" ? "help7" : sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -1044,17 +1218,95 @@ function nextTarget() {
   if (L.sid === "s2") return nextTargetS2();
   if (L.sid === "s3") return nextTargetS3();
   if (L.sid === "s4") return nextTargetS4();
+  if (L.sid === "s8") return nextTargetS8();
+  if (L.sid === "s7") return nextTargetS7();
   if (L.sid === "s6") return nextTargetS6();
   if (L.sid === "s5") return nextTargetS5();
   if (L.zone === "cave") return L.cave.rings.find(r => r.def.id === "trial");
   const rings = L.lvl.rings, hs = routeS(L.pos.x, L.pos.z);
-  if (F.armed && F.lay && F.row > 0) { const tl = rings.find(r => r.def.id === "s1-timeline"); if (tl) return tl; }   // mid-crossing: keep pointing at the river timeline
+  // v2.8.3: while the timeline is on, the banner and compass point at the row to step on (the banner never fades)
+  if (F.armed && F.lay && F.row < F.lay.rows.length) { const st = L.mods.B.STONES.filter(s => s.row === F.row), x = st.reduce((a, s) => a + s.x, 0) / st.length;
+    return { def: { id: "s1-timeline", station: "ford", x, z: st[0].z, text: F.row === F.lay.rows.length - 1 ? "🪨 Last stone! Step on it to finish your timeline" : "🪨 Row " + (F.row + 1) + " of " + F.lay.rows.length + ": step on the event that happened FIRST" } }; }
   const gate = rings.find(r => r.def.id === "gate"), door = rings.find(r => r.def.id === "cave-door");
   const unfinished = r => r.def.id !== "gate" && r.def.id !== "cave-door" && (r.state === "new" || (r.def.id === "tracks" && r.state !== "done"));
   let best = null, bs = 1e9;
   for (const r of rings) { if (!unfinished(r)) continue; const rs = r._s != null ? r._s : (r._s = routeS(r.def.x, r.def.z)); if (rs >= hs - 6 && rs < bs) { bs = rs; best = r; } }
   if (!hasCloak()) { const gs = gate._s != null ? gate._s : (gate._s = routeS(gate.def.x, gate.def.z)); if (!best || bs > gs) return gate; }
   return best || door;
+}
+// ---- v2.8.2 compass (John: "make it clear which way to walk along the paths ... with a compass of some sort") ----
+// A dial at the left end of the objective banner. Its gold pointer turns with the camera toward the next stop
+// (nextTarget(): the next un-done station in the level's path order, then the gate / exit / Trial); the dial's N mark
+// shows real north (+z on every level). Styled per era: Levels 1-2 a carved "guide stone" (no magnetic compass
+// existed; the help card says travelers used the sun, landmarks and rivers), Level 3 a brass mariner's compass
+// (Columbus steered by one) and Level 4, Levels 5-6 a brass-and-wood compass of the 1600s-1700s. The banner adds the distance.
+const COMPASS = { s1: "stone", s2: "stone", s3: "brass", s4: "brass", s5: "wood", s6: "wood", s7: "brass", s8: "brass" };
+// v3.1: Level 8 is a port town of the 1770s, so its help line names Boston's ship captains instead of the sailors of 1492
+const COMPASS_HELP_SID = { s8: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Boston's ship captains really steered by brass magnetic compasses like this one. Glowing footprints on the ground lead the first few steps.</li>" };
+const COMPASS_HELP = {
+  stone: "<li><b>Guide stone</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. It is a game helper: Ice Age and Native travelers had no compass and found their way by the sun, the stars, rivers and landmarks.</li>",
+  brass: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Sailors of 1492 really steered by a magnetic compass.</li>",
+  wood: "<li><b>Compass</b> (top): the gold pointer shows the way to your next stop, and <b>N</b> marks north. Glowing footprints on the ground lead the first few steps.</li>"
+};
+function compassSVG(style) {
+  const ticks = Array.from({ length: 16 }, (_, k) => { const a = k * Math.PI / 8, r0 = k % 4 === 0 ? 33 : k % 2 === 0 ? 36 : 38; return '<line x1="' + (Math.sin(a) * r0).toFixed(1) + '" y1="' + (-Math.cos(a) * r0).toFixed(1) + '" x2="' + (Math.sin(a) * 41).toFixed(1) + '" y2="' + (-Math.cos(a) * 41).toFixed(1) + '"/>'; }).join("");
+  const T = {
+    stone: { rim: ["#a9a196", "#6d665c"], face: ["#c9c1b2", "#8f877a"], tick: "#4a4238", n: "#8a2f1c", pt: ["#f3e6c4", "#5a4630"] },
+    brass: { rim: ["#f2d27a", "#8a6420"], face: ["#fbf3dc", "#e3d3a6"], tick: "#5b4316", n: "#a3271b", pt: ["#ffd75e", "#3a2a08"] },
+    wood:  { rim: ["#b07a45", "#5b3517"], face: ["#f6ecd0", "#dccb9c"], tick: "#4b3214", n: "#a3271b", pt: ["#ffd75e", "#3a2a08"] }
+  }[style] || {};
+  const rose = style === "stone"
+    ? '<path d="M0-30 L5-6 L30 0 L5 6 L0 30 L-5 6 L-30 0 L-5-6Z" fill="none" stroke="' + T.tick + '" stroke-width="2" opacity=".55"/>'
+    : '<path d="M0-31 L6-6 L31 0 L6 6 L0 31 L-6 6 L-31 0 L-6-6Z" fill="' + T.tick + '" opacity=".22"/><path d="M0-31 L6-6 L0 0Z M31 0 L6 6 L0 0Z M0 31 L-6 6 L0 0Z M-31 0 L-6-6 L0 0Z" fill="' + T.tick + '" opacity=".55"/>';
+  return '<svg viewBox="-50 -50 100 100" width="100%" height="100%"><defs>' +
+    '<radialGradient id="wc-r" cx=".4" cy=".35"><stop offset="0" stop-color="' + T.rim[0] + '"/><stop offset="1" stop-color="' + T.rim[1] + '"/></radialGradient>' +
+    '<radialGradient id="wc-f" cx=".42" cy=".38"><stop offset="0" stop-color="' + T.face[0] + '"/><stop offset="1" stop-color="' + T.face[1] + '"/></radialGradient></defs>' +
+    '<circle r="48" fill="url(#wc-r)" stroke="#000" stroke-width="2.5"/><circle r="42" fill="url(#wc-f)"/>' +
+    '<g id="w-rose">' + rose + '<g stroke="' + T.tick + '" stroke-width="2">' + ticks + '</g>' +
+    '<path d="M0-44 L6-33 L-6-33Z" fill="' + T.n + '"/><text x="0" y="-19" text-anchor="middle" font-size="15" font-weight="900" font-family="Georgia,serif" fill="' + T.n + '">N</text></g>' +
+    '<g id="w-arrow"><path d="M0-36 L11-4 L4-6 L4 22 L-4 22 L-4-6 L-11-4Z" fill="' + T.pt[0] + '" stroke="' + T.pt[1] + '" stroke-width="3" stroke-linejoin="round"/></g>' +
+    '<circle r="4.5" fill="' + T.pt[1] + '"/></svg>';
+}
+const CMP = { style: "", needle: 0, north: 0, nd: null, rd: null, dist: "" };
+function compassSetup(sid) { const el = document.getElementById("w-comp"); if (!el) return; const st = COMPASS[sid] || "brass"; if (CMP.style === st && el.firstChild) return; CMP.style = st; el.className = "wc-" + st; el.innerHTML = compassSVG(st); CMP.nd = el.querySelector("#w-arrow"); CMP.rd = el.querySelector("#w-rose"); CMP.needle = CMP.north = 1e9; }
+const unwrapDeg = (prev, a) => prev > 1e8 ? a : prev + ((((a - prev) % 360) + 540) % 360 - 180);
+function compassStep(tg, dt) {
+  if (!CMP.nd) compassSetup(L.sid); if (!CMP.nd) return;
+  // screen angles, clockwise from straight up: the camera looks along (sin camYaw, cos camYaw) and +x is on its left
+  const north = L.camYaw * 180 / Math.PI;
+  const goal = tg ? -(Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw) * 180 / Math.PI : north;
+  const k = Math.min(1, dt * 12), sm = (prev, a) => { const u = unwrapDeg(prev, a); return prev > 1e8 ? u : prev + (u - prev) * k; };
+  const n2 = sm(CMP.north, north), g2 = sm(CMP.needle, goal);
+  if (Math.abs(n2 - CMP.north) > 0.2) { CMP.north = n2; CMP.rd.setAttribute("transform", "rotate(" + n2.toFixed(1) + ")"); }
+  if (Math.abs(g2 - CMP.needle) > 0.2) { CMP.needle = g2; CMP.nd.setAttribute("transform", "rotate(" + g2.toFixed(1) + ")"); }
+  const d = tg ? Math.hypot(tg.def.x - L.pos.x, tg.def.z - L.pos.z) : 0;
+  const txt = !tg ? "" : d < 4 ? "here" : (d < 50 ? Math.round(d) : Math.round(d / 5) * 5) + " m";
+  if (txt !== CMP.dist) { CMP.dist = txt; const e = document.getElementById("w-dist"); if (e) { e.textContent = txt; e.hidden = !txt; } }
+}
+// the in-world guide: six glowing footprints from 1.6 m to about 7 m ahead of her, toward the next stop, stopping at
+// water or walls and 2.5 m short of the stop. One InstancedMesh (1 draw call), additive, a wave rolling away from her.
+function trailStep(tg, dt) {
+  const sc = L.zone === "out" && L.lvl && L.lvl.scene; if (!sc) return;
+  let tr = L.lvl._trail;
+  if (!tr) {
+    const g = new THREE.CircleGeometry(0.5, 12); g.rotateX(-Math.PI / 2); g.scale(0.22, 1, 0.5);
+    const m = new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    tr = new THREE.InstancedMesh(g, m, 6); tr.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(18), 3);
+    tr.frustumCulled = false; tr.renderOrder = 3; tr.userData.noMerge = true; tr.name = "guide-trail"; sc.add(tr); L.lvl._trail = tr; tr._t = 0; tr._m = new THREE.Matrix4(); tr._q = new THREE.Quaternion(); tr._v = new THREE.Vector3(); tr._s = new THREE.Vector3(1, 1, 1);
+  }
+  const d = tg ? Math.hypot(tg.def.x - L.pos.x, tg.def.z - L.pos.z) : 0;
+  const show = !!tg && d > 5 && !L.cardOpen && !(F.armed && F.lay) && L.phase === "active";
+  tr.visible = show; if (!show) return;
+  tr._t += dt; const ux = (tg.def.x - L.pos.x) / d, uz = (tg.def.z - L.pos.z) / d, yaw = Math.atan2(ux, uz);
+  tr._q.setFromAxisAngle(UP, yaw); let n = 0;
+  for (let i = 0; i < 6; i++) {
+    const s = 1.6 + i * 1.1; if (s > d - 2.5) break;
+    const side = i % 2 ? 0.14 : -0.14, x = L.pos.x + ux * s + uz * side, z = L.pos.z + uz * s - ux * side;
+    if (!walkable(x, z) || inWater(x, z)) break;
+    tr._v.set(x, supportY(x, z) + 0.04, z); tr._m.compose(tr._v, tr._q, tr._s); tr.setMatrixAt(i, tr._m);
+    const b = (0.18 + 0.5 * Math.max(0, Math.sin(tr._t * 3.2 - i * 0.8))) * (1 - i / 7); tr.instanceColor.setXYZ(i, b, b * 0.86, b * 0.45); n++;
+  }
+  tr.count = n; tr.instanceMatrix.needsUpdate = true; tr.instanceColor.needsUpdate = true;
 }
 // ---- per-frame ----
 const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
@@ -1064,7 +1316,7 @@ const UP = new THREE.Vector3(0, 1, 0), tgt = new THREE.Vector3();
 // v2.8.1 (John: "the camera gets glitchy near a tree or building"): pad > 0 inflates every hard shape (a sphere cast
 // along the ray). Tree canopies (raised round occluders, o.soft) no longer pull the camera: brushing past leaves used to
 // snap it in and out every few frames. The camera may pass through foliage (back faces are culled, so it just slips by).
-function camBlocked(x, y, z, pad = 0) {
+function camBlocked(x, y, z, pad = 0, occ = null) {
   const B = L.mods.B;
   if (L.zone === "cave") return Math.hypot(x - B.CAVE_X, z) > 8.6 - pad || y > 4.2 - pad;
   if (y < B.groundH(x, z) + 0.35) return true;
@@ -1072,7 +1324,7 @@ function camBlocked(x, y, z, pad = 0) {
     if (z > B.BOUNDS.iceZ - 0.35 - pad && (x < B.BOUNDS.cx0 + 0.5 + pad || x > B.BOUNDS.cx1 - 0.5 - pad)) return true;
     if (z > 189.8 - pad) return true;
   }
-  for (const o of L.lvl.camOcc || []) {
+  for (const o of occ || L.lvl.camOcc || []) {
     if (o.soft === undefined) o.soft = !!(o.r && !o.arc && o.y0 > -4.5 && o.r >= 1.0);   // tree canopies (and the decorated tree ring)
     if (o.soft || y <= o.y0 - pad || y >= o.y1 + pad) continue;
     if (o.arc) { const d = Math.hypot(x - o.x, z - o.z); if (Math.abs(d - o.r) < o.w + pad && Math.abs(wrapA(Math.atan2(z - o.z, x - o.x) - o.gapA)) > o.gapHalf) return true; continue; }
@@ -1081,7 +1333,7 @@ function camBlocked(x, y, z, pad = 0) {
   return false;
 }
 const LOOK_UP = 2.0;
-const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10;   // m/s: fastest pull-in
+const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10, CAM_OCC = [];   // m/s: fastest pull-in
 function placeCamera(dt, snap) {
   const B = L.mods.B, pitch = 0.5, dist = 7, yaw = L.camYaw;
   tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
@@ -1095,8 +1347,12 @@ function placeCamera(dt, snap) {
   const dx = L.camIdeal.x - tgt.x, dy = L.camIdeal.y - tgt.y, dz = L.camIdeal.z - tgt.z, len = Math.hypot(dx, dy, dz) || 1, ux = dx / len, uy = dy / len, uz = dz / len;
   // sphere cast: march with padded shapes, then refine the first hit by bisection (a smooth, not stepped, distance)
   let allow = len;
+  // v2.8.2: only the occluders near this segment are tested (the full list on every march step cost ~8% fps on Levels 3-4)
+  const occ = CAM_OCC; occ.length = 0;
+  { const x0 = Math.min(tgt.x, tgt.x + dx) - CAM_PAD, x1 = Math.max(tgt.x, tgt.x + dx) + CAM_PAD, z0 = Math.min(tgt.z, tgt.z + dz) - CAM_PAD, z1 = Math.max(tgt.z, tgt.z + dz) + CAM_PAD;
+    for (const o of (L.zone !== "cave" && L.lvl.camOcc) || []) { const e = o.arc ? o.r + o.w : o.r ? o.r : Math.max(o.hx, o.hz) * 1.415; if (o.x + e >= x0 && o.x - e <= x1 && o.z + e >= z0 && o.z - e <= z1) occ.push(o); } }
   for (let t = 0.4; t <= len + 0.001; t += 0.25) {
-    if (camBlocked(tgt.x + ux * t, tgt.y + uy * t, tgt.z + uz * t, CAM_PAD)) { let lo = Math.max(0, t - 0.25), hi = t; for (let i = 0; i < 5; i++) { const m = (lo + hi) / 2; if (camBlocked(tgt.x + ux * m, tgt.y + uy * m, tgt.z + uz * m, CAM_PAD)) hi = m; else lo = m; } allow = lo; break; }
+    if (camBlocked(tgt.x + ux * t, tgt.y + uy * t, tgt.z + uz * t, CAM_PAD, occ)) { let lo = Math.max(0, t - 0.25), hi = t; for (let i = 0; i < 5; i++) { const m = (lo + hi) / 2; if (camBlocked(tgt.x + ux * m, tgt.y + uy * m, tgt.z + uz * m, CAM_PAD, occ)) hi = m; else lo = m; } allow = lo; break; }
   }
   allow = Math.max(CAM_MIN, Math.min(len, allow)); L.camAllow = allow;
   // damped distance: fast pull-in, slow ease-out after a short hold (hysteresis: no in/out flutter)
@@ -1107,6 +1363,12 @@ function placeCamera(dt, snap) {
   L.camPulled = L.camD < len - 0.05;
   if (!L.camPos) L.camPos = new THREE.Vector3();
   L.camPos.set(tgt.x + ux * L.camD, tgt.y + uy * L.camD, tgt.z + uz * L.camD);
+  // v2.9.1: pinned at the 1.2 m minimum but still inside a wall (she stands right against a house), lift the camera over it
+  // (eased up quickly, down slowly), so the view looks down past the roof edge instead of through the back faces
+  let lift = 0;
+  if (L.zone !== "cave" && L.camD <= CAM_MIN + 0.05 && camBlocked(L.camPos.x, L.camPos.y, L.camPos.z, 0, occ)) { for (let h = 0.25; h <= 2.5; h += 0.25) if (!camBlocked(L.camPos.x, L.camPos.y + h, L.camPos.z, 0.15, occ)) { lift = h; break; } }   // no clear height (ice walls): no lift
+  if (snap || L.camLift == null) L.camLift = lift; else if (lift > L.camLift) L.camLift = Math.min(lift, L.camLift + 6 * dt); else L.camLift += (lift - L.camLift) * Math.min(1, dt * 2.2);
+  L.camPos.y += L.camLift;
   L.cam.position.copy(L.camPos); L.cam.lookAt(tgt.x, tgt.y + LOOK_UP * Math.min(1, L.camD / 7), tgt.z);   // aim a little above her head (eases with the smoothed distance, so no tilt jumps)
 }
 function step(dt, raw) {
@@ -1142,8 +1404,8 @@ function step(dt, raw) {
   if (L.manualT <= 0 && L.vel > 0.8 && sf > 0.25 && Math.abs(sx) < sf * 0.75 && Math.abs(wrapA(th - L.camYaw)) < 2.2) L.camYaw = L.dz.step(th, dt, true);
   // ford: wading in the icy river → safe respawn on the south bank after 2 s
   if (L.fordFall) L.pos.y = L.mods.B.WATER_Y - 0.35;
-  if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold and fast. Hop across on the <b>stepping stones</b>."); teleport("out", B.FORD_RESPAWN); } } else L.wade = 0;
-  fordStep(); sortStep(dt);
+  if (inWater(L.pos.x, L.pos.z)) { L.wade += dt; if (L.wade > 2 && !L.frozen) { L.wade = 0; toast("🥶 Brr! The river is too cold. Back onto the <b>stepping stones</b>."); teleport("out", fordRespawn()); } } else L.wade = 0;
+  fordStep(); fordHud(); sortStep(dt);
   // the glacier pass: bumping the closed gate shows a hint
   L.hintT = Math.max(0, L.hintT - dt);
   if (p.blocked && p.blocked.tag === "gate" && L.hintT <= 0) { L.hintT = 8; card(gateCard()); }
@@ -1159,9 +1421,8 @@ function step(dt, raw) {
   const pr = document.getElementById("w-prompt");
   if (near && !L.cardOpen) { const lab = near.def.icon + " " + near.def.label(); if (pr.dataset.k !== lab) { pr.dataset.k = lab; pr.innerHTML = esc(lab) + ' <span class="w-key">' + (L.touch ? "tap ✋" : "press E") + "</span>"; } pr.hidden = false; } else if (!pr.hidden) { pr.hidden = true; pr.dataset.k = ""; }
   const tg = nextTarget(); L.target = tg;
+  compassStep(tg, dt); trailStep(tg, dt);
   if (tg) {
-    const a = Math.atan2(tg.def.x - L.pos.x, tg.def.z - L.pos.z) - L.camYaw;
-    document.getElementById("w-arrow").style.transform = `rotate(${(-a * 180 / Math.PI) - 90}deg)`;
     const st = L.mods.B.STATIONS[tg.def.station]; const txt = tg.def.text ? tg.def.text : (tg.def.id === "gate" && !hasCloak()) ? "Get your Fur Cloak, then cross the glacier pass" : (() => { const lb = tg.def.label(); return "Marker " + st.n + " · " + (lb.startsWith(st.label) ? lb : st.label + ": " + lb); })();   // v2.6: no "St. Augustine, 1565: St. Augustine, 1565…" doubling
     const el = document.getElementById("w-obj-t"); if (el.textContent !== txt) { el.textContent = txt; const ob = el.parentNode, era = document.getElementById("w-era"); if (era) era.style.top = (ob.offsetTop + ob.offsetHeight + 4) + "px"; }
   }
@@ -1201,16 +1462,16 @@ window.__world = {
   get pos() { return { x: L.pos.x, y: L.pos.y, z: L.pos.z, yaw: L.yaw }; },
   get cam() { const c = L.camPos || { x: 0, y: 0, z: 0 }; return { yaw: L.camYaw, x: c.x, y: c.y, z: c.z, pulled: !!L.camPulled, blocked: !!(L.built && L.camPos && camBlocked(c.x, c.y, c.z)) }; },
   camBlocked: (x, y, z) => camBlocked(x, y, z),
-  get banner() { const e = document.getElementById("w-obj-t"); return e ? e.textContent : ""; }, get target() { return L.target && L.target.def.id; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
+  get banner() { const e = document.getElementById("w-obj-t"); return e ? e.textContent : ""; }, get target() { return L.target && L.target.def.id; }, get compass() { const t = L.target; return { style: CMP.style, needle: CMP.needle, north: CMP.north, dist: CMP.dist, camYaw: L.camYaw, tx: t ? t.def.x : null, tz: t ? t.def.z : null, x: L.pos.x, z: L.pos.z, trail: L.lvl && L.lvl._trail ? (L.lvl._trail.visible ? L.lvl._trail.count : 0) : 0 }; }, get fps() { return L.fps.last; }, get near() { return near && near.def.id; },
   rings: () => (L.built ? L.lvl.rings.concat(L.cave.rings).map(r => ({ id: r.def.id, zone: r.def.zone || "out", x: r.def.x, z: r.def.z, state: r.state })) : []),
   teleport(x, z, zone) { if (!L.built) return false; L.zone = zone || (x > 2000 ? "cave" : "out"); L.pos.set(x, 0, z); L.wade = 0; moveHeroTo(x, z, L.zone); return true; },
-  faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); return true; },
-  ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0 }),
+  faceCam(a) { L.camYaw = a; L.yaw = a; L.dz.snap(a); L.th.reset(); if (L.built && L.hero) placeCamera(0, true); return true; },   // v2.8.2: a scripted view jump snaps the camera (no rate-limited pull-in from the old view)
+  ford: () => ({ armed: F.armed, row: F.row, done: F.done, solved: L.built ? fordSolved() : false, rows: F.lay ? F.lay.rows.map(r => ({ right: r.right, key: r.ev.key, when: r.ev.when, name: fordName(r.ev), wrong: r.wrong && r.wrong.key })) : null, stones: L.built ? L.mods.B.STONES.map(s => ({ x: s.x, z: s.z, row: s.row, side: s.side })) : [], labels: F.vis ? F.vis.items.filter(i => i.sp.visible).length : 0, miss: F.miss.slice(), good: F.good && { row: F.good.row, x: F.good.x, z: F.good.z }, marks: F.vis ? F.vis.items.map(i => ({ row: i.s.row, side: i.s.side, key: i.key, label: i.sp.visible, glow: i.gl.visible })) : [], strip: (() => { const e = document.getElementById("w-ford"); return e && !e.hidden ? e.textContent : ""; })(), respawn: L.mods && L.mods.B && L.mods.B.FORD_RESPAWN, riverZ: L.mods && L.mods.B && L.mods.B.riverZ ? L.mods.B.riverZ(-5) : null }),
   use: () => useRing(), card: () => (L.cardOpen ? document.getElementById("w-card").textContent : null), closeCard: () => closeCard(),
   get level() { return L.sid; }, readS2: () => W.read.s2.slice(), at: () => JSON.parse(JSON.stringify(W.at)), seen: () => ({ ...W.seen }),
   sort: () => ({ active: SP.active, cur: SP.cur && SP.cur.t, key: SP.cur && SP.cur.key, left: SP.h ? SP.h.left() : null, mistakes: SP.h ? SP.h.mistakes() : null, hint: SP.hintBin, mats: L.lvl && L.lvl.mats ? L.lvl.mats.map(m => ({ bin: m.bin, x: m.x, z: m.z, bundles: m.bundles, glow: !!m.glowOn })) : [] }),
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
-  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), ship5: (side) => shipToS5(side),
+  readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), gateOpenS7: () => gateOpenS7(), boat7: (side) => boatToS7(side), gateOpenS8: () => gateOpenS8(), ride8: (side) => rideToS8(side), ship5: (side) => shipToS5(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
   setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),

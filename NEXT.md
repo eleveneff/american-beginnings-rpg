@@ -1,5 +1,26 @@
 # NEXT: resume notes for American Beginnings RPG
 
+- **v3.1.5 (Nov 15):** Level 8 scrolls 5–7 are real files (`s8-tea-party`, `s8-intolerable-acts`, `s8-first-congress`). Captions and cueTimes follow the cleared narration. No new save fields. Merged on origin/main as PR #5 (`bd1b303`).
+- **v3.2 mini-games batch 1 (in progress, Nov 15):** Branch `minigames` merged origin/main (v3.1.5) with `--no-rebase`. 12 games already on the branch; batch 1 LIVE list is Levels 1–3 (atlatl, stalk, salmon, pueblo, quadrant, tradewinds). Shipping after retest. Batch 2 (Levels 4–6) follows as v3.2.1. No new save fields (records in S.acts under `mg-<sid>-<id>`).
+- **v3.1.4 (Nov 13):** Level 8 scrolls 1–4 are real files (`s8-new-taxes`, `s8-stamp-act`, `s8-daughters-liberty`, `s8-boston-massacre`). Captions and cueTimes follow the cleared narration. Scrolls 5–7 stay placeholders. No new save fields.
+- **v3.1.3 (Nov 9):** Level 6 scrolls 4–6 are real files (`s6-government`, `s6-dailylife`, `s6-ideas`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields.
+- **v3.1.2 (Nov 9):** Level 6 scrolls 1–3 are real files (`s6-newengland`, `s6-middle`, `s6-southern`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. Scrolls 4–6 stay placeholders. No new save fields.
+- **v3.1.1 (Nov 9):** Level 4's five scroll videos and Level 5 Roanoke are real files (`s4-conquest`, `s4-spanish-na`, `s4-spanish-life`, `s4-france`, `s4-dutch`, `s5-roanoke`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields. Other video slots are unchanged.
+- **v3.0, Level 7 "The French and Indian War" (Nov 1 night, John: "start with chapters 7 and 8 only"):** Unit 2 begins (unit: 2;
+  the Grand Trial still covers Levels 1-6). content/s7.js (7 narrative scrolls + 2 source scrolls: Washington's journal 1754 and
+  "Join, or Die" 1754; 36 exam-style questions; s7-geomap map + s7-timeline + s7-sides sort + s7-washington dialogue + s7-mission;
+  Join-or-Die Badge, butternut dye), content/s7-geo.js, content/s7-videos.js (7 fact-tour placeholders, videoKey s7-<topic>; the
+  tour runs until assets/video/<key>.mp4 lands; briefs for the video job: /workspace/abrpg-videos/l7/briefs.md), content/market-s7.js
+  (m6 Trading Post at Wills Creek, v2.9 tabs, every item 20+ stars with a teaching card), world/frontier.js (frontier farm, Wills
+  Creek, Fort Necessity at Great Meadows, the Forks of the Ohio, Albany 1754, Plains of Abraham/Levis at Quebec; story jumps, no time
+  travel), tools/gen_map_s7.py. No new save fields (W.seen keys + read/at for s7 whitelisted only).
+  QC Nov 1, 9:45-11:00 PM ET on :8807: tests/s7-test.js ALL S7 TESTS PASSED, smoke ALL PASSED, market ALL PASSED (cards at 440 px
+  and 375 px), keys PASSED (s1-s7), camera PASSED (108 runs, 0 page errors), world-test: every check passes except the camera-inside
+  checks that already fail on main (Beringia gate cross-pole + s2/s4/s5/s6 ring views; owned by the camera job, not touched).
+  fps s7 over 3 runs: median 26.6 (24.4-28.4); worst spot s7/farm 10.3 (the first view = warm-up, like s1/camp). Shots:
+  /workspace/abrpg-report/v30-*.png. Mini-games are NOT in Level 7: the framework is only on the unmerged minigames branch.
+  Simplifications: the L7 map shrinks distances (Virginia to Quebec in one walk) and joins places by story order.
+  smoke-test now counts activities and video slots from the content (was a fixed 31 / 12) and reads a short tour's caption early.
 - **Live:** v2.8, Level 6 "The Thirteen Colonies to 1754" (Charles Town rice and indigo, Williamsburg's Capitol, a 1740 field
   meeting, Penn's Philadelphia and Franklin, a village lane, Boston's town meeting and Long Wharf, the Albany Congress 1754 Trial).
   QC Nov 1, 5:25–6:10 AM ET on :8785: world test ALL WORLD TESTS PASSED (twice, the 2nd after the Philadelphia shot fix), smoke ALL PASSED,
@@ -38,6 +59,14 @@
   Tests: tests/market-test.js (new, ALL PASSED: locks, tabs, cards ≤440px desktop + phone, can't afford, back out, idempotent, hair,
   unlock Buy-now, migration), smoke ALL PASSED, keys-test PASSED. world-test: all non-camera checks pass; the camera-inside-object
   checks fail on 5a0c04c too (owned by the camera job, not touched here). Shots: /workspace/abrpg-report/v29-wardrobe-*.png.
+- **v2.9.1 → shipped as v3.0.1 with Level 7 (brass compass on L7 too) (Nov 1 evening, John: "a compass of some sort" on each level; "the River Ford is a little difficult and confusing"):**
+  Compass HUD in the banner on all 6 levels (L1-2 carved guide stone, L3-4 brass, L5-6 wood): camera-relative needle to the next
+  objective, objective name + distance, faint footprint trail toward it; help line added to the "How to" cards. River ford (L1): goal
+  banner that never fades, timeline strip (older -> newer, done rows show dates), the row to step on glows, wider stones (r 0.68,
+  offset 1.05), a wrong step returns her to the last right stone (not the bank), hint label after 2 misses, answer after 3 (fewer
+  stars; the miss is charged to that row's event). faceCam snaps the camera (fixes the s4 "camera inside a building" world-test views);
+  placeCamera tests only occluders near the camera segment (s3/s4 fps). No new save fields. Tests: tests/compass-test.js,
+  tests/ford-test.js. Shots: /workspace/abrpg-report/v291-compass-*.png, v291-ford-{before,after}-*.png.
 
 - **v2.9 mini-games (Nov 1 evening, John [pt81u]):** 12 short hands-on 3D games, 2 per level, optional rings with signs, in
   world/minigames/ (index.js registry/engine, lib.js toon kit, one file each; runner.js shared by tradewinds/canoe/postrider).
@@ -46,21 +75,17 @@
   after 2 misses a hint + easy mode (same stars). Hooks: 3 lines in world.js, miniGame/miniGameRec in app.js. tests/minigames-test.js
   (every game: Esc/Quit/real bot win + real bot loss with keys/easy/stars/440 px cards/scene restored). Lessons:
   /workspace/shared/abrpg-lessons/minigames-lessons.md. Shots: /workspace/abrpg-report/v29-mg-*.png.
-  **Status (paused Nov 1, 9:40 PM ET by John): NOT pushed.** Branch `minigames` (worktree /workspace/abrpg-mg) has origin/main 10d5412 merged in.
-  Batch 1 = LIVE ['s1','s2','s3'] (index.js). minigames-test ALL PASSED for s1–s3 at 9:24 PM ET (before the ring moves + 10d5412 merge).
-  To resume: re-run minigames-test (s1–s3), smoke, world (mg rings are now filtered out of its ring lists), market-test, then FPS A/B
-  interleaved s1–s3 RUNS=3 (one before/after pass under load ~8–11 was noisy: s1 21.5→16.6, s2 15.9→14.2, s3 17.8→14.4; re-check on a
-  quiet box before shipping). Then pull --no-rebase, merge to main, push, live md5. Batch 2 = add s4–s6 to LIVE (all tested individually;
-  probe their ring spots with pathDist first).
+  **Status (Nov 15):** origin/main v3.1.5 is merged into `minigames` (worktree /workspace/abrpg-mg). Batch 1 LIVE ['s1','s2','s3'].
+  Retesting, then ship as v3.2 (PR + normal merge). Batch 2 = add s4–s6 to LIVE, ship as v3.2.1.
 
 ## Open items, in order
-1. Mini-game ideas not built: a 3rd game for some levels (e.g. s2 three-sisters planting, s6 printing press).
-2. Level 7 (next era) — not started. Copy the Level 6 flow: sketch → layout checker (/tmp/abperf/l6chk) → world test → smoke → fps → merge.
+1. Mini-games: finish v3.2 (Levels 1–3) and v3.2.1 (Levels 4–6). Optional later: a 3rd game for some levels (e.g. s2 three-sisters planting, s6 printing press). No Level 7–8 mini-games yet.
+2. Level 7 shipped in v3.0; Level 8 (Road to Revolution) is v3.1 (videos complete in v3.1.5). Levels 9-12 follow /workspace/abrpg-design/chapters-7-12-plan.md.
 3. Williamsburg's Capitol reads as two plain red blocks with no windows; give it windows and the cupola a clearer shape.
 4. Princess Prep review items not done yet: a `?debug=nogate,nocost` URL flag, plant sway, animal gait.
    Already met: labels the player acts on never fade; fpsall reports the median and spread of 3 runs, a worst-spot row and the load average.
 5. Still deferred: the interior clear-line camera yaw.
-6. The /workspace/abrpg-l6 worktree (branch level6) is merged; it can be reused or removed for Level 7.
+6. The /workspace/abrpg-l6 worktree (branch level6) is merged; it can be reused or removed.
 
 ## How to run heavy QC (only 1–3 AM or 3:15–7 AM ET unless John says otherwise; Princess Prep tests from 7 AM)
 - `bash /tmp/abperf/myrun.sh <label> bash -c 'cd <repo> && node tests/world-test.js' > log 2>&1 &`
@@ -82,9 +107,10 @@ Live-action (Grok Imagine), fact cards, Piper en_GB-aru-medium speaker 3 narrati
 (scripts.json, hints.json, takes3.py with /home/box/piper-venv/bin/python, cards.py, build.py <key>); work files /workspace/abrpg-videos/l<N>/
 (stills, takes, review, frames, research-brief.md, script.md, manifest.md, accuracy-log.md). Wire each scroll with videoKey + videoTitle (s5 style).
 - [x] L1 s1 (4): paleo → s1-paleo-indians, meso → s1-olmec-maya-aztec, inca → s1-inca-empire, mounds → s1-mound-builders
-- [ ] L2 s2 (6): regions, northwest, plains, southwest, iroquois, southeast
-- [ ] L3 s3 (5): motives, navigation, columbus, afterColumbus, exchange
-- [ ] L4 s4 (5): conquest, spanishNA, spanishLife, france, dutch
-- [ ] L5 s5 (1): roanoke
-- [ ] L6 s6 (6): newengland, middle, southern, government, dailylife, ideas
+- [x] L2 s2 (6): regions → s2-culture-regions, northwest → s2-pacific-northwest, plains → s2-great-plains, southwest → s2-southwest, iroquois → s2-iroquois, southeast → s2-southeast (s1-mound-builders Cahokia shot redone: no smoke from the post)
+- Tonight's order (John): L2 videos, then L7/L8 build (other job), then L3 videos, then L7 videos.
+- [x] L3 s3 (5): motives → s3-motives, navigation → s3-navigation, columbus → s3-columbus, afterColumbus → s3-after-columbus, exchange → s3-columbian-exchange (accuracy log: /workspace/abrpg-videos/l3/accuracy-log.md)
+- [x] L4 s4 (5): conquest → s4-conquest, spanishNA → s4-spanish-na, spanishLife → s4-spanish-life, france → s4-france, dutch → s4-dutch
+- [x] L5 s5 (1): roanoke → s5-roanoke
+- [x] L6 s6 (6): newengland → s6-newengland, middle → s6-middle, southern → s6-southern, government → s6-government, dailylife → s6-dailylife, ideas → s6-ideas
 - After the last level: run world-test.js once; add a lessons-learned note for Princess Prep.

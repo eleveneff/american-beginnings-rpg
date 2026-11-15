@@ -10,6 +10,7 @@ GAME_CONTENT.sections.push({
   ],
   lessons: [
     { topic: "motives", title: "Scroll 1: Why Explore?", video: null,
+      videoKey: "s3-motives", videoTitle: "Why Explore? Spices, Silk, and a Sea Route",
       videoIdea: "Low-poly N64-style European market with spices and silks, then a map showing long overland routes to Asia.",
       text: [
         "Europeans wanted Asian goods like **spices** (pepper, cinnamon, cloves) and **silk**. The **Crusades** and the travels of **Marco Polo**, an Italian merchant who wrote about China, made these goods famous.",
@@ -18,6 +19,7 @@ GAME_CONTENT.sections.push({
         "The **Renaissance**, a time of new learning in Europe, also encouraged curiosity about the world."
       ] },
     { topic: "navigation", title: "Scroll 2: The Science of Sailing", video: null,
+      videoKey: "s3-navigation", videoTitle: "The Science of Sailing",
       videoIdea: "Low-poly N64-style ship deck at night: a navigator holds up an astrolabe to the North Star while a compass glows.",
       text: [
         "The magnetic **compass**, first developed in **China**, points north so sailors could keep their direction.",
@@ -26,6 +28,7 @@ GAME_CONTENT.sections.push({
         "**Prince Henry the Navigator** of Portugal supported sailors, mapmakers, and shipbuilders. Portuguese explorer **Bartolomeu Dias** sailed around the southern tip of Africa (the Cape of Good Hope) in 1488, and **Vasco da Gama** reached India by sea in 1498."
       ] },
     { topic: "columbus", title: "Scroll 3: Columbus Sails the Ocean Blue", video: null,
+      videoKey: "s3-columbus", videoTitle: "Columbus Crosses the Atlantic",
       videoIdea: "Low-poly N64-style: three ships (Niña, Pinta, Santa María) cross a sparkling ocean and spot a green Caribbean island at dawn.",
       text: [
         "**Christopher Columbus**, a sailor from Genoa, Italy, believed he could reach Asia by sailing **west**. Spain's **King Ferdinand and Queen Isabella** agreed to pay for his voyage.",
@@ -34,6 +37,7 @@ GAME_CONTENT.sections.push({
         "Columbus believed he had reached islands near Asia, the \"Indies,\" which is why he called the people \"Indians.\" He made four voyages and never accepted that he had reached lands unknown to Europeans."
       ] },
     { topic: "afterColumbus", title: "Scroll 4: A New World on the Map", video: null,
+      videoKey: "s3-after-columbus", videoTitle: "A New World on the Map",
       videoIdea: "Low-poly N64-style globe spinning as a ship sails all the way around it.",
       text: [
         "To avoid conflict over new lands, Spain and Portugal signed the **Treaty of Tordesillas (1494)**, drawing a line that divided the newly found lands between them.",
@@ -42,6 +46,7 @@ GAME_CONTENT.sections.push({
         "An expedition led by **Ferdinand Magellan** (1519–1522) became the **first to sail all the way around the world**. Magellan died on the way, but one ship made it home."
       ] },
     { topic: "exchange", title: "Scroll 5: The Columbian Exchange", video: null,
+      videoKey: "s3-columbian-exchange", videoTitle: "The Columbian Exchange",
       videoIdea: "Low-poly N64-style split scene: ships carry horses and wheat west, and potatoes, corn, and tomatoes east.",
       text: [
         "Columbus's voyages connected the **Eastern and Western Hemispheres**. The transfer of plants, animals, people, and diseases between them is called the **Columbian Exchange**.",

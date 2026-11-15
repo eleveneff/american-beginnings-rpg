@@ -1,7 +1,8 @@
 # NEXT: resume notes for American Beginnings RPG
 
 - **v3.1.5 (Nov 15):** Level 8 scrolls 5–7 are real files (`s8-tea-party`, `s8-intolerable-acts`, `s8-first-congress`). Captions and cueTimes follow the cleared narration. No new save fields. Merged on origin/main as PR #5 (`bd1b303`).
-- **v3.2 mini-games batch 1 (in progress, Nov 15):** Branch `minigames` merged origin/main (v3.1.5) with `--no-rebase`. 12 games already on the branch; batch 1 LIVE list is Levels 1–3 (atlatl, stalk, salmon, pueblo, quadrant, tradewinds). Shipping after retest. Batch 2 (Levels 4–6) follows as v3.2.1. No new save fields (records in S.acts under `mg-<sid>-<id>`).
+- **v3.2 mini-games batch 1 (Nov 15):** Levels 1–3 optional rings go live: s1 atlatl + stalk, s2 salmon + pueblo, s3 quadrant + tradewinds. 10★ first win, then 2★ practice (3/day). Records in S.acts under `mg-<sid>-<id>`; no new save fields. Parent report still filters `mg-` keys out of the activity list. Merged origin/main v3.1.5 into `minigames` (`430d9c7`, `--no-rebase`).
+  QC Nov 15, ~5:13–5:47 PM ET on :8876: minigames-test s1–s3 ALL PASSED (439 s); smoke ALL PASSED (incl. all 7 s8 clips); market ALL PASSED; world-test: every non-camera check passes, including mg-ring filtering. Two pre-existing camera-inside checks still fail (Beringia gate cross-pole; s6-l7@0.0) — owned by the camera job, not introduced here. fps over 3 runs (median avg, spread): s1 22.0 (21.9–22.4) worst-spot 20.0; s2 22.9 (21.0–23.0) worst-spot 20.8; s3 26.4 (26.4–26.9) worst-spot 23.8 (SwiftShader; load rose during the run). Shots: /workspace/abrpg-report/v32-mg/. Batch 2 (s4 canoe + adobe, s5 palisade + hornworm, s6 bucket + postrider) follows as v3.2.1.
 - **v3.1.4 (Nov 13):** Level 8 scrolls 1–4 are real files (`s8-new-taxes`, `s8-stamp-act`, `s8-daughters-liberty`, `s8-boston-massacre`). Captions and cueTimes follow the cleared narration. Scrolls 5–7 stay placeholders. No new save fields.
 - **v3.1.3 (Nov 9):** Level 6 scrolls 4–6 are real files (`s6-government`, `s6-dailylife`, `s6-ideas`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. No new save fields.
 - **v3.1.2 (Nov 9):** Level 6 scrolls 1–3 are real files (`s6-newengland`, `s6-middle`, `s6-southern`). Captions, cueTimes, Key Facts, and checks come from the cleared metadata. Scrolls 4–6 stay placeholders. No new save fields.
@@ -75,8 +76,7 @@
   after 2 misses a hint + easy mode (same stars). Hooks: 3 lines in world.js, miniGame/miniGameRec in app.js. tests/minigames-test.js
   (every game: Esc/Quit/real bot win + real bot loss with keys/easy/stars/440 px cards/scene restored). Lessons:
   /workspace/shared/abrpg-lessons/minigames-lessons.md. Shots: /workspace/abrpg-report/v29-mg-*.png.
-  **Status (Nov 15):** origin/main v3.1.5 is merged into `minigames` (worktree /workspace/abrpg-mg). Batch 1 LIVE ['s1','s2','s3'].
-  Retesting, then ship as v3.2 (PR + normal merge). Batch 2 = add s4–s6 to LIVE, ship as v3.2.1.
+  **Status (Nov 15):** Batch 1 shipping as v3.2. Batch 2 = add s4–s6 to LIVE, ship as v3.2.1.
 
 ## Open items, in order
 1. Mini-games: finish v3.2 (Levels 1–3) and v3.2.1 (Levels 4–6). Optional later: a 3rd game for some levels (e.g. s2 three-sisters planting, s6 printing press). No Level 7–8 mini-games yet.

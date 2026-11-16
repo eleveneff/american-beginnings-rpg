@@ -4,7 +4,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp } from './lib.js';
 
 export default {
-  title: 'Atlatl Dart Throw', icon: '🎯', era: 'Beringia & the first Americans · Ice Age', act: 'Throw',
+  title: 'Atlatl Dart Throw', icon: '🎯', era: 'Beringia & the first Americans · Ice Age', act: 'Throw the dart',
   intro: 'Hunters in the Ice Age Americas threw darts with an <b>atlatl</b> (AT-lat-ul), a <b>spear-thrower</b>. Its hook holds the end of the dart and works like a longer arm, so the dart flies faster and farther than a throw by hand.',
   how: 'Press <kbd>E</kbd> to stop the swinging aim line on the glowing target, then <kbd>E</kbd> again when the needle is in the <b>green</b>. Hit all 3 targets.',
   tryit: 'Press <kbd>E</kbd> when the aim line points at the glowing hide, then <kbd>E</kbd> again in the green.',
@@ -66,7 +66,7 @@ export default {
     ctx.cam(HX + 1.5, ctx.gy(HX, HZ) + 2.7, HZ - 5.2, HX - 0.4, 0.9, HZ + 9, true);
     tgts.forEach((T, i) => T.glow.visible = i === 0);
     return {
-      start() { st(); ctx.msg('Aim at target 1', 'info', 1.4); },
+      start() { st(); ctx.actLabel('Stop the aim'); ctx.prompt('Press E to stop the aim line on the glowing target.', 3.0); ctx.msg('Aim at target 1', 'info', 1.4); },
       bot(lose) {   // test autoplayer: when would a careful kid press? (lose: throws way off target)
         if (pend || fly) return {};
         const T = tg(); if (!T) return {};
@@ -77,7 +77,7 @@ export default {
       },
       idle(dt) { t += dt; aimG.rotation.y = Math.sin(t * 1.3) * 0.3; },
       action() {
-        if (phase === 'aim') { phase = 'power'; t = 0; return; }
+        if (phase === 'aim') { phase = 'power'; t = 0; ctx.actLabel('Throw the dart'); ctx.prompt('Press E to throw when the needle is in the green.', 3.0); return; }
         if (phase === 'power') {
           phase = 'throw'; t = 0; darts--; st(); ctx.meter(null); ctx.sfx('whoosh');
           const d = 5 + pwr * 13, a = ang, from = arm.localToWorld(new THREE.Vector3(0, 0.06, 0.6)); root.worldToLocal(from);
@@ -92,8 +92,8 @@ export default {
       update(dt) {
         t += dt;
         if (pend) { pend.t -= dt; if (pend.t <= 0) { const f = pend.f; pend = null; f(); } }
-        if (phase === 'aim') { ang = Math.sin(t * Math.PI * 2 / SWEEP) * 0.42; aimG.rotation.y = ang; const len = clamp(tg().d, 6, 15); aim.scale.y = len; tip.position.set(0, 0, len); }
-        if (phase === 'power') { pwr = 0.5 - 0.5 * Math.cos(t * Math.PI * 2 / PWR); const z = zoneFor(tg()); ctx.meter(pwr, { zone: z, label: 'Power' }); arm.rotation.x = -0.4 * pwr; }
+        if (phase === 'aim') { const sw = SWEEP + (cur === 0 ? 0.6 : 0); ang = Math.sin(t * Math.PI * 2 / sw) * 0.42; aimG.rotation.y = ang; const len = clamp(tg().d, 6, 15); aim.scale.y = len; tip.position.set(0, 0, len); }
+        if (phase === 'power') { const pw = PWR + (cur === 0 ? 0.4 : 0); pwr = 0.5 - 0.5 * Math.cos(t * Math.PI * 2 / pw); const z = zoneFor(tg()); ctx.meter(pwr, { zone: z, label: 'Power' }); arm.rotation.x = -0.4 * pwr; }
         if (phase === 'throw' && fly) {
           fly.k = Math.min(1, fly.k + dt / fly.dur); const k = fly.k;
           const p = new THREE.Vector3().lerpVectors(fly.from, fly.end, k); p.y += Math.sin(k * Math.PI) * fly.arc;
@@ -103,11 +103,11 @@ export default {
           if (k >= 1) {
             const f = fly; fly = null;
             if (f.hit) { f.T.hit = true; kit.puff(f.end, '#e8d9a8', 10, { spread: 0.7, up: 1.2 }); ctx.msg(['Hit!', 'Great shot!', 'True!'][cur], 'good'); ctx.flash('good'); ctx.sfx('hit'); f.T.glow.visible = false; cur++; }
-            else { kit.puff(f.end, '#b7a07a', 6, { spread: 0.4, up: 0.9 }); ctx.msg(Math.abs(5 + pwr * 13 - f.T.d) > TOL ? (5 + pwr * 13 < f.T.d ? 'Too short!' : 'Too far!') : 'Missed: aim closer!', 'bad'); ctx.flash('bad'); ctx.sfx('miss'); }
+            else { kit.puff(f.end, '#b7a07a', 6, { spread: 0.4, up: 0.9 }); ctx.msg(Math.abs(5 + pwr * 13 - f.T.d) > TOL ? (5 + pwr * 13 < f.T.d ? 'Too short!' : 'Too far!') : 'Missed: aim closer!', 'bad'); ctx.flash('bad'); ctx.sfx('miss'); if (ctx.grace('The dart missed. Watch the glowing target — this first miss does not count.')) darts++; }
             pend = { t: 0.75, f: () => {
               if (cur >= 3) return ctx.win('You hit all 3 targets with ' + (DARTS - darts) + ' darts.');
               if (darts <= 0) return ctx.lose('Out of darts! You hit ' + cur + ' of 3 targets.');
-              tgts.forEach((T, i) => T.glow.visible = i === cur); held.visible = true; arm.rotation.x = 0; phase = 'aim'; t = 0; st();
+              tgts.forEach((T, i) => T.glow.visible = i === cur); held.visible = true; arm.rotation.x = 0; phase = 'aim'; t = 0; st(); ctx.actLabel('Stop the aim'); ctx.prompt('Press E to stop the aim line on the glowing target.', 2.6);
             } };
           }
         }

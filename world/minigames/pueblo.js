@@ -5,7 +5,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp } from './lib.js';
 
 export default {
-  title: 'Build a Pueblo Wall', icon: '🧱', era: 'Ancestral Puebloans · Chaco Canyon, about 850–1150', act: 'Set',
+  title: 'Build a Pueblo Wall', icon: '🧱', era: 'Ancestral Puebloans · Chaco Canyon, about 850–1150', act: 'Set the stone',
   intro: 'At <b>Chaco Canyon</b> in today\'s New Mexico, Ancestral Puebloan builders raised <b>great houses</b> of shaped <b>sandstone</b> set in <b>mud mortar</b>. Each new course of stone had to sit squarely on the one below, or the wall would not stand.',
   how: 'A wall stone slides back and forth. Press <kbd>E</kbd> to set it down right on top of the course below. Build <b>7 courses</b>. If a stone is too far off, it tumbles.',
   tryit: 'Press <kbd>E</kbd> when the moving sandstone lines up with the course below.',
@@ -51,7 +51,7 @@ export default {
     let camY = 0; const camSet = (snap) => ctx.cam(-1.4, camY + 3.0, -1.6, 0, camY + 0.7, WZ + 2, snap);
     camSet(true); newStone();
     return {
-      start() { st(); ctx.msg('Set each stone on the course below', 'info', 1.6); },
+      start() { st(); ctx.actLabel('Set the stone'); ctx.prompt('Press E to set the stone when it lines up with the course below.', 3.0); ctx.msg('Set each stone on the course below', 'info', 1.6); },
       bot(lose) { if (!mv || pend || ended) return {}; const off = mx - cx; return { press: lose ? Math.abs(off) > TOL * 1.4 && Math.abs(off) < TOL * 1.8 : Math.abs(off) < W * 0.08 }; },
       action() { if (ended || pend || !mv) return; drops++;
         const off = mx - cx;

@@ -3,7 +3,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp, person } from './lib.js';
 
 export default {
-  title: 'Raise the Palisade', icon: '🪵', era: 'Jamestown, Virginia · June 1607', act: 'Drop',
+  title: 'Raise the Palisade', icon: '🪵', era: 'Jamestown, Virginia · June 1607', act: 'Drop the log',
   intro: 'In May 1607 English colonists landed at <b>Jamestown</b>. After an attack in late May, they hurried to build <b>James Fort</b>: a three-sided wall, or <b>palisade</b>, of tall logs stood upright in a trench.',
   how: 'Walk along the trench with <kbd>A</kbd> and <kbd>S</kbd> (or the arrows). Stop over the <b>glowing gap</b>, wait until the log stands <b>straight</b>, then press <kbd>E</kbd> to drop it in. Fill <b>6 gaps</b>.',
   tryit: 'Move with <kbd>A</kbd> / <kbd>S</kbd> to the glowing gap, then press <kbd>E</kbd> when the log is straight.',
@@ -46,7 +46,7 @@ export default {
     const mkLog = () => { const m = kit.mesh([P(CYL(0.16, 0.18, LH, 7), '#9a6e40', 0, LH / 2, 0), P(CONE(0.17, 0.3, 7), '#7a5634', 0, LH + 0.15, 0), P(CYL(0.14, 0.14, 0.02, 7), '#d8b880', 0, 0.005, 0)]); kit.ink(m); const grp = new THREE.Group(); grp.add(m); root.add(grp); return grp; };
     let log = mkLog();
     const order = slots.map((s, i) => i); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(ctx.rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-    let done = 0, miss = 0, t = 0, hx = 0, v = 0, th = 0, w = 0, ended = false, pend = null, drop = null; const falls = [];
+    let done = 0, miss = 0, t = 0, hx = 0, v = 0, th = 0, w = 0, ended = false, pend = null, drop = null, wave = 0; const falls = [];
     const tx = () => slots[order[done]];
     const st = () => ctx.status('🪵 ' + done + '/' + N + ' logs · ❌ ' + miss + '/' + MISS + ' · ⏱ ' + Math.max(0, Math.ceil(TIME - t)));
     const camSet = snap => ctx.cam(hx + 1.0, 3.4, HZ - 4.4, hx - 0.1, 0.9, WZ + 0.3, snap);
@@ -59,7 +59,7 @@ export default {
       if (miss >= MISS) { ended = true; pend = { t: 1.1, f: () => ctx.lose('Too many logs toppled. You set ' + done + ' of ' + N + '.') }; return; }
       pend = { t: 0.9, f: () => { log = mkLog(); th = 0; w = 0; holdLog(); } }; };
     return {
-      start() { st(); ctx.msg('Carry the log to the glowing gap', 'info', 1.6); },
+      start() { st(); ctx.actLabel('Drop the log'); ctx.prompt('Steer to the glowing gap, then press E to drop the log when the needle is in the green.', 3.2); ctx.msg('Carry the log to the glowing gap', 'info', 1.6); },
       bot(lose) { if (pend || ended || drop || !log) return {}; const d = hx - tx();
         if (lose) return { x: Math.abs(d) < 1.2 ? (d >= 0 ? 1 : -1) : 0, press: Math.abs(d) > 1.0 };
         const x = Math.abs(d) > 0.05 ? clamp(d * 1.6, -1, 1) : 0; return { x: Math.abs(x) < 0.35 && Math.abs(d) > 0.05 ? Math.sign(x) : x, press: Math.abs(d) < TOL * 0.5 && Math.abs(th) < TILT * 0.5 && Math.abs(v) < 0.2 }; },
@@ -67,7 +67,8 @@ export default {
         drop = { t: 0, x: hx, th, ok: Math.abs(hx - tx()) <= TOL && Math.abs(th) <= TILT, why: Math.abs(hx - tx()) > TOL ? 'Missed the gap! The log toppled.' : 'It was leaning! The log toppled.' }; },
       update(dt, inp) {
         t += dt;
-        for (const p of crew) { const k = Math.sin(t * 3 + p.position.x); p.userData.armL.rotation.x = -0.6 + k * 0.5; p.userData.armR.rotation.x = -0.6 + k * 0.5; }
+        wave = Math.max(0, wave - dt);
+        for (const p of crew) { const cheer = wave > 0; const k = Math.sin(t * 3 + p.position.x); p.userData.armL.rotation.x = lerp(p.userData.armL.rotation.x, cheer ? -2.0 : -0.6 + k * 0.5, dt * 8); p.userData.armR.rotation.x = lerp(p.userData.armR.rotation.x, cheer ? -2.0 : -0.6 + k * 0.5, dt * 8); }
         for (let i = falls.length - 1; i >= 0; i--) { const f = falls[i]; f.r += f.s * dt * 2.2; f.s *= 1.08; f.m.rotation.x = -Math.abs(f.r) * 0.4; f.m.rotation.z = f.r;
           if (Math.abs(f.r) > 1.45) { kit.puff(new THREE.Vector3(f.m.position.x - Math.sin(f.r) * 1.6, 0.2, f.m.position.z), '#8a6a44', 10, { spread: 0.8, up: 0.8 }); root.remove(f.m); falls.splice(i, 1); } }
         const pulse = 0.5 + 0.5 * Math.sin(t * 6);
@@ -75,7 +76,7 @@ export default {
         if (drop) { drop.t += dt; const k = Math.min(1, drop.t / 0.3);
           log.position.set(lerp(drop.x, drop.ok ? tx() : drop.x, k), 0.1 - 0.35 * k, lerp(HZ + 0.3, WZ, k)); log.rotation.z = lerp(drop.th, drop.ok ? 0 : drop.th, k);
           if (k >= 1) { const ok = drop.ok, why = drop.why; drop = null;
-            if (ok) { done++; kit.puff(new THREE.Vector3(log.position.x, 0.15, WZ), '#7a5a34', 10, { spread: 0.5, up: 0.7 }); log = null; ctx.msg(['Thunk! It\'s in.', 'Solid!', 'Straight and true!', 'Nice!'][done % 4], 'good', 0.9); ctx.flash('good'); ctx.sfx('thunk'); st();
+            if (ok) { done++; wave = 1.0; kit.puff(new THREE.Vector3(log.position.x, 0.15, WZ), '#7a5a34', 10, { spread: 0.5, up: 0.7 }); log = null; ctx.msg(['Thunk! It\'s in.', 'Solid!', 'Straight and true!', 'Nice!'][done % 4], 'good', 0.9); ctx.flash('good'); ctx.sfx('thunk'); st();
               if (done >= N) { ended = true; pend = { t: 1.0, f: () => ctx.win('You set all ' + N + ' logs. The wall is closed, and the fort is safer tonight.') }; }
               else pend = { t: 0.6, f: () => { log = mkLog(); th = (ctx.rnd() - 0.5) * 0.2; w = 0; holdLog(); } }; }
             else { falls.push({ m: log, r: log.rotation.z || 0.05 * (ctx.rnd() < 0.5 ? -1 : 1), s: Math.sign(log.rotation.z || 1) * 0.6 }); log = null; missed(why); } } }

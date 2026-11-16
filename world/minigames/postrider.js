@@ -4,7 +4,7 @@ import { THREE, P, BOX, CYL, SPH, CONE, clamp, person } from './lib.js';
 import { makeRunner, scrollStrip } from './runner.js';
 
 export default {
-  title: 'Ride the Post Road', icon: '✉️', era: 'The Thirteen Colonies · 1753', act: 'Jump',
+  title: 'Ride the Post Road', icon: '✉️', era: 'The Thirteen Colonies · 1753', act: 'Jump the stump',
   intro: 'In <b>1753</b> <b>Benjamin Franklin</b> became one of the two deputy postmasters general for the colonies. Post riders carried letters and newspapers between towns on horseback.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) to grab <b>✉️ letters</b>. Dodge mud ruts and stumps, or press <kbd>E</kbd> to jump them. Collect enough letters before you reach town!',
   tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> toward the letters. Press <kbd>E</kbd> to jump a stump or rut.',
@@ -49,7 +49,7 @@ export default {
           R.add(ctx.rnd() < 0.3 ? geoFence() : geoTree(0.8 + ctx.rnd() * 0.5), { x, z: 34, y: 0, kind: 'deco' }); }
       },
       onGood(it) { got++; kit.puff(new THREE.Vector3(it.x, it.obj.position.y, 0.3), '#fff6d8', 8, { up: 1.4 }); ctx.msg('✉️ ' + got + '/' + NEED, 'good', 0.7); ctx.sfx('hit'); },
-      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, 0.3, 0.4), it.what === 'rut' ? '#5a4028' : '#9a7a4a', 10, { spread: 0.8, up: 1.2 }); ctx.msg(it.what === 'rut' ? 'Splash! A muddy rut.' : 'Bump! A stump.', 'bad', 0.9); ctx.flash('bad'); ctx.sfx('miss'); },
+      onBad(it) { kit.puff(new THREE.Vector3(it.x, 0.3, 0.4), it.what === 'rut' ? '#5a4028' : '#9a7a4a', 10, { spread: 0.8, up: 1.2 }); if (ctx.grace((it.what === 'rut' ? 'Splash! A muddy rut.' : 'Bump! A stump.') + ' Steer around it or press E to jump — this first bump does not count.')) return; bumps++; ctx.msg(it.what === 'rut' ? 'Splash! A muddy rut.' : 'Bump! A stump.', 'bad', 0.9); ctx.flash('bad'); ctx.sfx('miss'); },
     });
     // fill the roadside at the start so it is not empty
     for (let z = -6; z < 34; z += 2.2) { const side = (z * 7 | 0) % 2 ? 1 : -1, x = side * (5.2 + ((z * 13) % 3 + 3) % 3); R.add(geoTree(0.9), { x, z, y: 0, kind: 'deco' }); }
@@ -60,7 +60,7 @@ export default {
     ctx.cam(0, 3.6, -6.6, 0, 1.2, 9, true);
     let gal = 0;
     return {
-      start() { st(); ctx.msg('Ride for Philadelphia!', 'info', 1.4); },
+      start() { st(); ctx.actLabel('Jump the stump'); ctx.prompt('Steer with A/S toward the letters. Press E to jump a stump or rut.', 3.0); ctx.msg('Ride for Philadelphia!', 'info', 1.4); },
       bot: lose => R.bot(lose),
       action() { if (!ended && R.jump()) { kit.puff(new THREE.Vector3(R.px, 0.1, -0.6), '#b89a70', 6, { up: 0.8 }); ctx.sfx('jump'); } },
       update(dt, inp) {

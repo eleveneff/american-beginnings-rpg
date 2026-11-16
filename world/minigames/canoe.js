@@ -5,7 +5,7 @@ import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp, person } from './lib.js';
 import { makeRunner, scrollStrip } from './runner.js';
 
 export default {
-  title: 'Paddle the St. Lawrence', icon: '🛶', era: 'New France · 1608–1615', act: 'Portage',
+  title: 'Paddle the St. Lawrence', icon: '🛶', era: 'New France · 1608–1615', act: 'Portage the canoe',
   intro: '<b>Wendat</b>, <b>Algonquin</b> and <b>Innu</b> people built canoes of <b>birchbark</b> sewn over a light cedar frame. A canoe was strong enough for heavy loads and light enough for two people to carry.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) around rocks and logs. When the <b>⚠️ Rapids</b> sign appears, press <kbd>E</kbd> to <b>portage</b>: carry the canoe around them on land.',
   tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd>. When you see the yellow rapids sign, press <kbd>E</kbd> to portage.',
@@ -37,19 +37,19 @@ export default {
     const R = makeRunner(ctx, { W: 3.0, speed: easy ? 6.5 : 7.5, lat: 4.2, player: canoe, py: () => 0, pr: 0.5, lean: 0.6,
       spawn(dt, sp, R) {
         sT -= dt; dT -= dt;
-        if (rapIdx < 2 && R.t > RAP[rapIdx] - 5 && !signIt) { signIt = R.add(geoSign(), { x: 3.9, z: 33, kind: 'deco' }); rapIt = R.add(geoRapids(), { x: 0, z: 33 + 5 * R.speed * 0.42, kind: 'deco' }); ctx.msg('⚠️ Rapids ahead! Press E to portage', 'info', 2.4); portW = true; }
+        if (rapIdx < 2 && R.t > RAP[rapIdx] - 5 && !signIt) { signIt = R.add(geoSign(), { x: 3.9, z: 33, kind: 'deco' }); rapIt = R.add(geoRapids(), { x: 0, z: 33 + 5 * R.speed * 0.42, kind: 'deco' }); ctx.msg('⚠️ Rapids ahead! Press E to portage', 'info', 2.4); ctx.actLabel('Portage the canoe'); ctx.prompt('Press E to portage — carry the canoe around the rapids.', 3.0); portW = true; }
         if (sT <= 0 && !portW && portT <= 0 && R.t < LEN - 3) { sT = (easy ? 1.6 : 1.25) + ctx.rnd() * 0.6; const x = (ctx.rnd() - 0.5) * 6; const log = ctx.rnd() < 0.35;
           R.add(log ? geoLog() : geoRock(), { x, z: 33, y: log ? 0 : 0, r: log ? 1.1 : 0.7, kind: 'bad', what: log ? 'log' : 'rock', bob: log ? 0.04 : 0 }); }
         if (dT <= 0) { dT = 0.55 + ctx.rnd() * 0.5; const side = ctx.rnd() < 0.5 ? 1 : -1; R.add(geoBank(), { x: side * 6.6, z: 35, y: 0.2, kind: 'deco' }); R.add(geoSpruce(0.8 + ctx.rnd() * 0.6), { x: side * (6.8 + ctx.rnd() * 1.5), z: 35, y: 0.3, kind: 'deco' }); }
       },
-      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, 0.3, 0.6), '#ffffff', 12, { spread: 0.9, up: 1.6 }); ctx.msg(it.what === 'log' ? 'Thunk! A log.' : 'Scrape! A rock. Careful of the bark!', 'bad', 1); ctx.flash('bad'); ctx.sfx('splash'); },
+      onBad(it) { kit.puff(new THREE.Vector3(it.x, 0.3, 0.6), '#ffffff', 12, { spread: 0.9, up: 1.6 }); if (ctx.grace((it.what === 'log' ? 'Thunk! A log.' : 'Scrape! A rock.') + ' Steer between them — this first scrape does not count.')) { st(); return; } bumps++; ctx.msg(it.what === 'log' ? 'Thunk! A log.' : 'Scrape! A rock. Careful of the bark!', 'bad', 1); ctx.flash('bad'); ctx.sfx('splash'); },
     });
     for (let z = -8; z < 34; z += 1.4) { const side = (Math.round(z / 1.4) % 2) ? 1 : -1; R.add(geoBank(), { x: side * 6.6, z, y: 0.2, kind: 'deco' }); R.add(geoSpruce(1), { x: side * 7.2, z: z + 0.5, y: 0.3, kind: 'deco' }); }
     const st = () => ctx.status('❤️ ' + Math.max(0, LIVES - bumps) + ' · 🛶 ' + Math.min(100, Math.round(R.t / LEN * 100)) + '%' + (portW ? ' · ⚠️ Rapids!' : ''));
     ctx.cam(0, 3.6, -6.8, 0, 0.8, 9, true);
     let pt = 0;
     return {
-      start() { st(); ctx.msg('Paddle upriver!', 'info', 1.4); },
+      start() { st(); ctx.actLabel('Steer upriver', 'A/S'); ctx.prompt('Steer with A/S around the rocks and logs. When you see the yellow rapids sign, press E to portage.', 3.2); ctx.msg('Paddle upriver!', 'info', 1.4); },
       bot(lose) { if (!lose && portW && rapIt && rapIt.z < 16) return { press: true }; return R.bot(lose); },
       action() { if (!portW || ended) return; portW = false; portT = 3.2; rapIdx++; ctx.msg('🎒 Portage! Carry the canoe around the rapids.', 'good', 2); ctx.sfx('hit'); },
       update(dt, inp) {
@@ -60,7 +60,7 @@ export default {
           if (rapIt && !rapIt.dead) rapIt.obj.visible = true; if (portT <= 0) { hull.position.y = 0; hull.rotation.z = 0; pads.forEach(p => { p.position.y = -0.15; p.rotation.z = 0; p.userData.pd.visible = true; }); signIt = null; } }
         else pads.forEach((p, i) => { const a = pt * 4 + i * 1.3, sd = (Math.floor(pt * 4 / Math.PI / 2) % 2) ? 1 : -1; p.userData.pd.position.x = 0.35 * sd; p.userData.pd.rotation.x = Math.sin(a) * 0.7; p.userData.armR.rotation.x = p.userData.armL.rotation.x = -0.6 + Math.sin(a) * 0.5; });
         wake.forEach(w => w.material.opacity = portT > 0 ? 0 : 0.25 + 0.1 * Math.sin(pt * 6));
-        if (portW && rapIt && rapIt.z < 1.2) { portW = false; rapIdx++; bumps++; signIt = null; kit.puff(new THREE.Vector3(R.px, 0.3, 0.6), '#fff', 14, { spread: 1, up: 2 }); ctx.msg('Whoa! The rapids are too rough. Portage next time!', 'bad', 2); }
+        if (portW && rapIt && rapIt.z < 1.2) { portW = false; rapIdx++; signIt = null; kit.puff(new THREE.Vector3(R.px, 0.3, 0.6), '#fff', 14, { spread: 1, up: 2 }); if (ctx.grace('Whoa! The rapids are too rough. Press E at the yellow sign — this first miss does not count.')) { st(); } else { bumps++; ctx.msg('Whoa! The rapids are too rough. Portage next time!', 'bad', 2); } }
         if (bumps >= LIVES) { ended = true; return ctx.lose('The canoe got too many scrapes. Birchbark is light, but it can tear on rocks!'); }
         if (R.t >= LEN) { ended = true; return ctx.win('You paddled upriver and carried your canoe around the rapids!'); }
       },

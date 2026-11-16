@@ -5,7 +5,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp, person } from './lib.js';
 
 export default {
-  title: "Franklin's Bucket Brigade", icon: '🪣', era: 'Philadelphia · 1736', act: 'Pass',
+  title: "Franklin's Bucket Brigade", icon: '🪣', era: 'Philadelphia · 1736', act: 'Pass the bucket',
   intro: 'Fire! In <b>Philadelphia</b> most houses stood close together, and a fire could spread down a whole street. In <b>1736</b> Benjamin Franklin started the <b>Union Fire Company</b>: neighbours who promised to come running with their <b>leather buckets</b>.',
   how: 'Buckets come down the line from the pump. Press <kbd>E</kbd> just as a bucket reaches <b>your hands</b> (the needle in the green) to pass it on. <b>12 good passes</b> put the fire out. If a bucket goes by, it spills.',
   tryit: 'Press <kbd>E</kbd> when the needle is in the green — as the bucket reaches your hands.',
@@ -48,7 +48,7 @@ export default {
     const handY = x => 0.68 + Math.abs(Math.sin(x * Math.PI)) * 0.25;
     const end = (win) => { ended = true; for (const b of bk) b.m.visible = false; pend = { t: 1.1, f: () => win ? ctx.win('Twelve buckets, passed hand to hand, and the fire is out. The houses next door are safe!') : ctx.lose('Too many buckets spilled. The neighbours will keep the fire from spreading; try again!') }; };
     return {
-      start() { st(); ctx.msg('Here come the buckets!', 'info', 1.4); },
+      start() { st(); ctx.actLabel('Pass the bucket'); ctx.prompt('Press E to pass the bucket when it reaches your hands (the needle in the green).', 3.0); ctx.msg('Here come the buckets!', 'info', 1.4); },
       bot(lose) { if (pend || ended || lose || cool > 0) return {}; return { press: bk.some(b => b.s === 'in' && Math.abs(b.x - HX) < W * 0.7) }; },
       action() { if (ended || pend || cool > 0 || done >= N) return;
         const b = bk.filter(b => b.s === 'in').sort((a, c) => Math.abs(a.x - HX) - Math.abs(c.x - HX))[0];

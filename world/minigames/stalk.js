@@ -26,7 +26,7 @@ function caribou(kit, big) {
 }
 
 export default {
-  title: 'Stalk the Caribou', icon: '🦌', era: 'Beringia & the first Americans · Ice Age', act: 'Ready',
+  title: 'Stalk the Caribou', icon: '🦌', era: 'Beringia & the first Americans · Ice Age', act: 'Creep closer',
   intro: 'Ice Age hunters followed <b>caribou</b> herds across the cold grasslands of <b>Beringia</b>. A caribou spooks easily, so a hunter crept close <b>slowly and quietly</b>, freezing whenever the animals looked up.',
   how: 'Hold <kbd>W</kbd> (or ▲) to creep forward while the lead caribou <b>grazes</b>. When she twitches her ears <b>❗</b> and lifts her head, <b>let go and freeze</b>! Get inside the green circle and press <kbd>E</kbd>.',
   tryit: 'Hold <kbd>W</kbd> only while her head is down. Freeze when you see ❗.',
@@ -54,7 +54,7 @@ export default {
     const setHeads = k => { for (const c of deer) c.userData.head.rotation.x = lerp(c.userData.head.rotation.x, k, 0.2); };
     ctx.placeHero(0, ctx.gy(0, 0), 0, 0);
     return {
-      start() { st(); ctx.msg('Creep up on the herd', 'info', 1.5); },
+      start() { st(); ctx.actLabel('Creep closer', 'W'); ctx.prompt('Hold W to creep while her head is down. Freeze when you see ❗.', 3.2); ctx.msg('Creep up on the herd', 'info', 1.5); },
       bot(lose) { if (lose) return { y: 1 }; if (dist() <= RANGE) return { press: true }; return { y: state === 'graze' && sT > 0.25 ? 1 : 0 }; },
       action() { if (ended) return; if (dist() <= RANGE) { ended = true; ctx.msg('🎯 In range!', 'good'); ctx.flash('good'); ctx.sfx('hit'); return ctx.win('You crept within ' + Math.round(dist()) + ' m of the herd without spooking them. Now the hunters can throw their darts!'); } ctx.msg('Too far! Get inside the green circle first.', 'bad', 1.2); },
       update(dt, inp) {
@@ -73,13 +73,15 @@ export default {
         if (state === 'look' && moving) {
           strikes++; spook = 1.1; state = 'graze'; sT = 2.5;
           kit.puff(new THREE.Vector3(0, ctx.gy(0, herdZ) + 0.4, herdZ), '#d8c8a0', 14, { spread: 1.5, up: 1 });
-          ctx.msg(strikes >= STR ? 'She saw you!' : '😮 She saw you move! The herd trots away.', 'bad', 1.6); ctx.flash('bad'); ctx.sfx('miss');
+          if (ctx.grace('She saw you move! Freeze when you see ❗ — this first slip does not count.')) { strikes--; }
+          else { ctx.msg(strikes >= STR ? 'She saw you!' : '😮 She saw you move! The herd trots away.', 'bad', 1.6); ctx.flash('bad'); ctx.sfx('miss'); }
         }
         for (const c of deer) c.position.y = spook > 0 ? Math.abs(Math.sin(t * 14 + c.position.x)) * 0.25 : 0;
         ctx.placeHero(0, ctx.gy(0, hz), hz, 0, moving ? 0.9 : 0);
         ctx.cam(1.2, ctx.gy(0, hz) + 2.6, hz - 4.6, 0, ctx.gy(0, hz) + 1.1, hz + 9);
         ring.material.opacity = dist() <= RANGE ? 0.75 + 0.2 * Math.sin(t * 8) : 0.4;
-        st(); ctx.actLabel(dist() <= RANGE ? 'In range!' : (state === 'look' || state === 'warn' ? 'Hold still' : 'Creep'), dist() <= RANGE ? undefined : 'W');
+        st(); ctx.actLabel(dist() <= RANGE ? 'Throw — in range' : (state === 'look' || state === 'warn' ? 'Hold still' : 'Creep closer'), dist() <= RANGE ? undefined : 'W');
+        if (dist() <= RANGE && !ended) ctx.prompt('Press E to throw — you are in range of the herd.', 2.2);
         if (strikes >= STR) { ended = true; return ctx.lose('The herd got nervous and ran off. Move only while the lead caribou has her head down.'); }
         if (t >= TIME) { ended = true; return ctx.lose('The herd wandered away before you got close enough.'); }
       },

@@ -4,7 +4,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp } from './lib.js';
 
 export default {
-  title: 'Make Adobe Bricks', icon: '🧱', era: 'Spanish New Mexico · Santa Fe, about 1610', act: 'Mix',
+  title: 'Make Adobe Bricks', icon: '🧱', era: 'Spanish New Mexico · Santa Fe, about 1610', act: 'Mix the mud',
   intro: '<b>Adobe</b> is mud made of <b>clay, sand, water and straw</b>, dried hard in the sun. Pueblo peoples had built with mud for centuries. Spanish settlers brought <b>wooden molds</b> that shaped it into bricks, and they built <b>Santa Fe</b> from them.',
   how: 'For each brick: press <kbd>E</kbd> when the needle is in the <b>green</b> to get the mix right, tap <kbd>E</kbd> fast to <b>pack</b> the mold, then press <kbd>E</kbd> in the green to <b>lift</b> the mold. Make <b>3 bricks</b>.',
   tryit: 'Watch the needle. Press <kbd>E</kbd> when it is in the green — not too dry, not too wet.',
@@ -44,7 +44,8 @@ export default {
     const zW = () => (brick === 0 && step !== 'lift' ? ZW0 : ZW);
     const newZone = () => { const c = 0.3 + ctx.rnd() * 0.4, w = zW(); zone = [c - w / 2, c + w / 2]; };
     const setStep = s => { step = s; nd = 0; nv = 1; packs = 0; packT = 0; lift = 0;
-      if (s === 'mix') { newZone(); fill = 0; } ctx.actLabel({ mix: 'Mix', pack: 'Pack', lift: 'Lift' }[s]); };
+      if (s === 'mix') { newZone(); fill = 0; } ctx.actLabel({ mix: 'Mix the mud', pack: 'Pack the mold', lift: 'Lift the brick' }[s]);
+      ctx.prompt({ mix: 'Press E to mix the mud when the needle is in the green.', pack: 'Tap E quickly to pack the mold tight.', lift: 'Press E to lift the brick when the needle is in the green.' }[s], 2.8); };
     const st = () => ctx.status('🧱 ' + brick + '/' + N + ' bricks · ' + { mix: '🥣 Mix', pack: '👐 Pack', lift: '⬆️ Lift' }[step] + ' · ❌ ' + bad + '/' + BAD + ' · ⏱ ' + Math.max(0, Math.ceil(TIME - t)));
     const mx = () => SPOTS[spot];
     const place = () => { mold.position.set(mx(), 0, MZ); mud.position.set(mx(), 0.01, MZ); mud.scale.y = Math.max(0.001, fill * 0.18); mud.visible = fill > 0.01; tamp.position.set(mx(), 0.6, MZ - 0.05); tamp.visible = step === 'pack'; };
@@ -56,7 +57,7 @@ export default {
       bad++; ctx.msg(why, 'bad', 1.2); ctx.flash('bad'); ctx.sfx('miss'); kit.puff(new THREE.Vector3(-4.2, 0.4, 3.6), '#8a6038', 8, { spread: 0.6, up: 0.8 }); st();
       if (bad >= BAD) { ended = true; pend = { t: 0.9, f: () => ctx.lose('Too many batches went wrong. You made ' + brick + ' of ' + N + ' bricks.') }; } };
     return {
-      start() { st(); ctx.msg('Brick 1: mix the mud', 'info', 1.4); },
+      start() { st(); setStep('mix'); ctx.prompt('Press E to mix the mud when the needle is in the green.', 3.0); ctx.msg('Brick 1: mix the mud', 'info', 1.4); },
       bot(lose) { if (pend || ended) return {};
         if (step === 'pack') return { press: !lose && packT > 0.12 };
         const c = (zone[0] + zone[1]) / 2; if (lose) return { press: Math.abs(nd - c) > 0.35 && nd > 0.05 && nd < 0.95 };

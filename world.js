@@ -1437,10 +1437,11 @@ const LOOK_UP = 2.0;
 const CAM_PAD = 0.3, CAM_MIN = 1.2, CAM_IN_MAX = 10, CAM_OCC = [];   // m/s: fastest pull-in
 function placeCamera(dt, snap) {
   const B = L.mods.B, yaw = L.camYaw;
-  // In the State House yard, pull the camera back and flatten the pitch so the 1776 steeple clears the top HUD.
+  // In the State House yard, facing the hall: longer boom, flatter pitch, look a little higher so the 1776 steeple clears the top HUD.
   const hallYard = L.sid === "s9" && L.zone === "out" && L.pos.z > 56;
-  const pitch = hallYard ? 0.28 : 0.5, dist = hallYard ? 14 : 7;
-  tgt.set(L.pos.x, L.pos.y + 1.25, L.pos.z);
+  const facingHall = hallYard && Math.cos(yaw) > 0.35;
+  const pitch = facingHall ? 0.16 : (hallYard ? 0.32 : 0.5), dist = facingHall ? 18 : (hallYard ? 12 : 7);
+  tgt.set(L.pos.x, L.pos.y + 1.25 + (facingHall ? 5.2 : 0), L.pos.z);
   const cp = new THREE.Vector3(tgt.x - Math.sin(yaw) * Math.cos(pitch) * dist, tgt.y + Math.sin(pitch) * dist, tgt.z - Math.cos(yaw) * Math.cos(pitch) * dist);
   if (L.zone === "out") { const gh = B.groundH(cp.x, cp.z) + 0.7; if (cp.y < gh) cp.y = gh; if (L.sid === "s1" && cp.z > B.BOUNDS.iceZ - 0.5 && L.pos.z > B.BOUNDS.iceZ - 2) { cp.x = Math.max(B.BOUNDS.cx0 + 0.6, Math.min(B.BOUNDS.cx1 - 0.6, cp.x)); cp.z = Math.min(189.4, cp.z); } }
   else cp.y = Math.min(cp.y, 4.0);

@@ -227,7 +227,7 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
   }
   function terrNormals(geo) { geo.computeVertexNormals(); }
   const terrain = new THREE.Group(); terrain.name = 'terrain'; scene.add(terrain);
-  for (let tx = 0; tx < 4; tx++) for (let tz = 0; tz < 4; tz++) {
+  for (let tx = 0; tx < 4; tx++) for (let tz = 0; tz < 5; tz++) {   // 5 tiles in z so the State House yard (BOUNDS.z1 = 112) is on land, not water
     const W = 46, D = 46, geo = new THREE.PlaneGeometry(W, D, 40, 40); geo.rotateX(-Math.PI / 2); geo.translate(-92 + W * (tx + 0.5), 0, -92 + D * (tz + 0.5));
     const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 3), c = new THREE.Color();
     for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundH(x, z)); terrColor(x, z, c); col.set([c.r, c.g, c.b], i * 3); }
@@ -322,7 +322,7 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
   const near = (x, z, pad) => { for (const k in STATIONS) { const s = STATIONS[k]; if (Math.hypot(x - s.x, z - s.z) < s.r + pad) return true; } return false; };
   const blocked = (x, z, pad) => { for (const c of colliders.out) { if (c.type === 'c' && Math.hypot(x - c.x, z - c.z) < c.r + pad) return true; if (c.type === 'b' && Math.abs(x - c.x) < c.hx + pad && Math.abs(z - c.z) < c.hz + pad) return true; } return false; };
   const spots = (count, ok, minPath = 3, pad = 1.5) => { const out = []; let guard = 0; while (out.length < count && guard++ < count * 80) {
-      const x = -92 + rnd() * 184, z = -92 + rnd() * 184, h = groundH(x, z);
+      const x = -92 + rnd() * 184, z = -92 + rnd() * 220, h = groundH(x, z);   // scatter covers the extended State House yard
       if (h < 0.15 || pathDist(x, z) < minPath || near(x, z, 2) || blocked(x, z, pad) || !ok(x, z, h)) continue; out.push([x, z]); } return out; };
   const inst = (geo, list, cast, name) => { const m = new THREE.InstancedMesh(geo, lam, list.length || 1), o = new THREE.Object3D(); list.forEach(([x, z, s], i) => { o.position.set(x, groundH(x, z) - 0.05, z); o.rotation.set(0, rnd() * 6.28, 0); o.scale.setScalar(s); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); m.castShadow = cast; m.receiveShadow = true; m.userData.noMerge = true; m.name = name; scene.add(m); return m; };
   const housesS = spots(18, (x, z) => z < RIVER_S - 3 && z > -70, 5.0, 2.8);

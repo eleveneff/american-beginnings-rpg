@@ -17,14 +17,14 @@ export const WATER_Y = -0.4, CAVE_X = 4000;
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 export const STATIONS = {
   lexington: { x: -6, z: -58, r: 9, label: 'Lexington Green, April 19, 1775', n: 1, dir: 'start' },
-  concord: { x: -26, z: -26, r: 9, label: 'Concord, the North Bridge', n: 2, dir: 'north-west, up the Bay Road' },
+  concord: { x: -26, z: -26, r: 20, label: 'Concord, the North Bridge', n: 2, dir: 'north-west, up the Bay Road' },
   bunkerhill: { x: 16, z: 6, r: 10, label: "Breed's Hill, June 17, 1775", n: 3, dir: 'north-east, to Charlestown' },
   cambridge: { x: -12, z: 34, r: 9, label: 'Cambridge Common, July 3, 1775', n: 4, dir: 'north-west, to Cambridge' },
   gate: { x: 8, z: 74, r: 10, label: 'Independence Hall, Philadelphia, 1776', n: 5, dir: 'the post road to Philadelphia (Trial)' }
 };
 export const ROADS = [
   // Lexington Green → east bank of the Concord River → over the North Bridge to the west (far) bank → Breed's Hill
-  [[-6, -66], [-6, -58], [-14, -44], [-38, -36], [-38, -24], [-26, -24], [-26, -26]],
+  [[-6, -66], [-6, -58], [-14, -44], [-44, -36], [-44, -24], [-26, -24], [-26, -26]],
   [[-26, -26], [-26, -16], [-8, -10], [16, 6]],
   [[16, 6], [2, 20], [-12, 34], [6, 41]],
   [[8, 60], [8, 74], [8, 90]]
@@ -36,14 +36,28 @@ export const BOUNDS = { x0: -70, x1: 70, z0: -72, z1: 112 };
 export const RIVER_S = 47, RIVER_N = 56;
 export const riverZ = () => -9999;
 export const SHORE_X = () => -999;   // no harbor in this countryside / Philadelphia level
-// Concord River: a slow north–south stream. West is +x (militia, the far bank); east is −x (regulars).
-export const CONCORD_RX = -32, CONCORD_HW = 4.2, CONCORD_Z0 = -42, CONCORD_Z1 = -12, CONCORD_BZ = -24;
+// Concord River: a slow, gently curving north–south stream. West is +x (militia, the far bank); east is −x (regulars).
+export const CONCORD_RX = -32, CONCORD_HW = 4.2, CONCORD_Z0 = -46, CONCORD_Z1 = -6, CONCORD_BZ = -24;
+export function concordCenterX(z) {
+  const dz = z - CONCORD_BZ;
+  return CONCORD_RX
+    + 3.4 * Math.sin(dz * 0.11)
+    + 1.0 * (Math.sin(z * 0.05 + 0.8) - Math.sin(CONCORD_BZ * 0.05 + 0.8))
+    + 0.7 * (Math.sin(z * 0.37 + 1.7) - Math.sin(CONCORD_BZ * 0.37 + 1.7));
+}
+export function concordHW(z) { return CONCORD_HW + 1.05 * Math.sin(z * 0.19 + 0.4) + 0.5 * Math.sin(z * 0.73 + 1.1); }
 export function concordRiverW(x, z) {
-  const along = smooth(CONCORD_Z0 - 2.5, CONCORD_Z0 + 2, z) * smooth(CONCORD_Z1 + 2.5, CONCORD_Z1 - 2, z);
-  const across = smooth(CONCORD_HW + 1.8, CONCORD_HW - 0.5, Math.abs(x - CONCORD_RX));
+  const along = smooth(CONCORD_Z0 - 4, CONCORD_Z0 + 6, z) * smooth(CONCORD_Z1 + 4, CONCORD_Z1 - 6, z);
+  const hw = concordHW(z) + 0.55 * Math.sin(z * 0.91 + x * 0.15);
+  const across = smooth(hw + 2.5, hw - 0.15, Math.abs(x - concordCenterX(z)));
   return along * across;
 }
-export const BRIDGE = { x0: CONCORD_RX - 6.2, x1: CONCORD_RX + 6.2, z0: CONCORD_BZ - 1.25, z1: CONCORD_BZ + 1.25, top: 1.18 };
+export function concordWestRise(x, z) {
+  const cx = concordCenterX(CONCORD_BZ) + 12, cz = CONCORD_BZ + 7;
+  const d = Math.hypot(x - cx, z - cz);
+  return 3.4 * smooth(12, 3.5, d) * (1 - concordRiverW(x, z));
+}
+export const BRIDGE = { x0: CONCORD_RX - 10, x1: CONCORD_RX + 10, z0: CONCORD_BZ - 1.35, z1: CONCORD_BZ + 1.35, top: 1.18 };
 function rawH(x, z) {
   let h = 0.55 + 0.28 * Math.sin(x * 0.07) * Math.cos(z * 0.06);
   // Breed's Hill: a real rise around station bunkerhill, flattened on top for the redoubt
@@ -56,16 +70,22 @@ function rawH(x, z) {
   h = h * (1 - w) + -3.0 * w;
   // the Concord River under the North Bridge (and beyond it, both ways)
   const cr = concordRiverW(x, z);
-  h = h * (1 - cr) + -3.0 * cr;
+  h = h * (1 - cr) + -1.8 * cr;
   return h;
 }
 const FLAT = {}; for (const k in STATIONS) { const s = STATIONS[k]; FLAT[k] = rawH(s.x, s.z); }
 // flatten Lexington, Concord, Cambridge, and the State House yard; keep Breed's Hill high but level on top
 FLAT.bunkerhill = rawH(STATIONS.bunkerhill.x, STATIONS.bunkerhill.z);
+FLAT.concord = Math.max(0.55, rawH(-18, -20));   // dry west-bank field, not a river-shoulder sample
 export function groundH(x, z) {
   let h = rawH(x, z);
-  for (const k in STATIONS) { const s = STATIONS[k], d = Math.hypot(x - s.x, z - s.z); if (d < s.r + 4) h += (FLAT[k] - h) * smooth(s.r + 4, s.r - 1, d) * (h > -0.5 ? 1 : 0); }
+  for (const k in STATIONS) {
+    const s = STATIONS[k], d = Math.hypot(x - s.x, z - s.z);
+    const flattenR = k === 'concord' ? 8 : s.r + 4;
+    if (d < flattenR && concordRiverW(x, z) < 0.06) h += (FLAT[k] - h) * smooth(flattenR, Math.max(2, flattenR - 4), d) * (h > -0.5 ? 1 : 0);
+  }
   const pd = pathDist(x, z); if (pd < 3 && h > 0) h -= 0.05 * smooth(3, 1, pd);
+  h += concordWestRise(x, z);
   return h;
 }
 export const shoreZ = () => 9999;
@@ -176,10 +196,60 @@ function elmGeo(rnd) {
   return M(g);
 }
 function bridgeGeo() {   // wooden trestle on piers spanning the Concord River, east–west (along +x = west)
-  const span = 12.4, width = 2.4, deckY = 1.08, thick = 0.22;
-  const g = [P(BOX(span, thick, width), '#7a6448', 0, deckY, 0), P(BOX(span, 0.55, 0.12), '#6a5438', 0, deckY + 0.42, width / 2 - 0.08), P(BOX(span, 0.55, 0.12), '#6a5438', 0, deckY + 0.42, -width / 2 + 0.08)];
-  for (const x of [-3.6, 0, 3.6]) for (const z of [-0.8, 0.8]) g.push(P(CYL(0.16, 0.16, 4.4, 6), '#5a4632', x, deckY - 2.15, z));
+  const span = 20, width = 2.6, deckY = 1.08, thick = 0.18;
+  const g = [];
+  for (let i = 0; i < 16; i++) {
+    const x = -span / 2 + 0.55 + i * ((span - 0.2) / 16);
+    g.push(P(BOX(0.95, thick, width - 0.08), i % 2 ? '#7a6448' : '#6e5a40', x, deckY, 0));
+  }
+  g.push(P(BOX(span, 0.2, 0.16), '#5a4632', 0, deckY - 0.14, width / 2 - 0.08));
+  g.push(P(BOX(span, 0.2, 0.16), '#5a4632', 0, deckY - 0.14, -width / 2 + 0.08));
+  for (const z of [width / 2 - 0.08, -width / 2 + 0.08]) {
+    g.push(P(BOX(span - 0.4, 0.08, 0.08), '#6a5438', 0, deckY + 0.72, z));
+    g.push(P(BOX(span - 0.4, 0.06, 0.06), '#6a5438', 0, deckY + 0.38, z));
+    for (let i = 0; i <= 10; i++) g.push(P(CYL(0.045, 0.05, 0.78, 5), '#5a4632', -span / 2 + 0.8 + i * (span - 1.6) / 10, deckY + 0.4, z));
+  }
+  for (const x of [-6.2, -2.1, 2.1, 6.2]) {
+    for (const z of [-0.9, 0.9]) g.push(P(CYL(0.22, 0.26, 3.8, 6), '#6a5440', x, deckY - 1.85, z));
+    g.push(P(BOX(0.1, 0.1, 1.9), '#5a4632', x, deckY - 0.85, 0, 0.4, 0, 0));
+  }
   return M(g);
+}
+function reedClump(rnd) {
+  const g = [];
+  const n = 5 + (rnd() * 5 | 0);
+  for (let i = 0; i < n; i++) {
+    const a = rnd() * 6.28, r = 0.08 + rnd() * 0.42, h = 0.65 + rnd() * 1.0;
+    const col = rnd() < 0.45 ? '#3a5a2c' : (rnd() < 0.5 ? '#4a6a34' : '#5a6e38');
+    g.push(P(new THREE.ConeGeometry(0.035 + rnd() * 0.03, h, 4), col, Math.cos(a) * r, h / 2, Math.sin(a) * r));
+  }
+  return M(g);
+}
+function makeConcordWater() {
+  const z0 = CONCORD_Z0 - 2, z1 = CONCORD_Z1 + 2, segs = 56, across = 10;
+  const pos = [], uvs = [], idx = [];
+  for (let i = 0; i <= segs; i++) {
+    const z = z0 + (z1 - z0) * (i / segs), cx = concordCenterX(z), hw = concordHW(z) + 2.6;
+    for (let j = 0; j <= across; j++) {
+      const tt = j / across * 2 - 1;
+      pos.push(cx + tt * hw, WATER_Y + 0.06, z);
+      uvs.push((tt + 1) / 2, i / segs);
+    }
+  }
+  const cols = across + 1;
+  for (let i = 0; i < segs; i++) for (let j = 0; j < across; j++) {
+    const a = i * cols + j, b = a + 1, c = a + cols, d = c + 1;
+    idx.push(a, c, b, b, c, d);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: '#152e30', transparent: true, opacity: 0.98, depthWrite: false }));
+  mesh.userData.noMerge = true; mesh.name = 'concord-water'; mesh.renderOrder = 3;
+  mesh.userData.baseY = Float32Array.from(pos.filter((_, i) => i % 3 === 1));
+  return mesh;
 }
 function redoubtGeo() {   // a low earth wall on Breed's Hill
   const g = [];
@@ -213,13 +283,15 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
   sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = sun.shadow.camera.bottom = -90; sun.shadow.camera.right = sun.shadow.camera.top = 90; sun.shadow.camera.near = 1; sun.shadow.camera.far = 200; scene.add(sun);
 
   const lam = new THREE.MeshLambertMaterial({ vertexColors: true });
-  const GRASS = new THREE.Color('#6a8a46'), PATH = new THREE.Color('#9b7a52'), DIRT = new THREE.Color('#7a6a4a'), HILL = new THREE.Color('#7a8a50'), WATERISH = new THREE.Color('#4a6a58');
+  const GRASS = new THREE.Color('#6a8a46'), PATH = new THREE.Color('#9b7a52'), DIRT = new THREE.Color('#7a6a4a'), HILL = new THREE.Color('#7a8a50'), WATERISH = new THREE.Color('#4a6a58'), MUD = new THREE.Color('#6b5a3c'), WETGRASS = new THREE.Color('#5a6a40');
   function terrColor(x, z, c) {
     const h = groundH(x, z), pd = pathDist(x, z);
     c.copy(GRASS);
     if (pd < 2.4) c.lerp(PATH, smooth(2.4, 0.6, pd));
     const dh = Math.hypot(x - STATIONS.bunkerhill.x, z - STATIONS.bunkerhill.z);
     if (dh < 16) c.lerp(HILL, smooth(16, 6, dh) * 0.6);
+    const cr = concordRiverW(x, z);
+    if (cr > 0.04 && h > -0.35) c.lerp(MUD, Math.min(0.85, cr * 1.2)).lerp(WETGRASS, 0.3);
     if (h < 0.2) c.lerp(WATERISH, smooth(0.2, -0.5, h));
     const f = (Math.sin(x * 1.7) * Math.cos(z * 1.3) + 1) * 0.5;
     c.offsetHSL(0, 0, (f - 0.5) * 0.06);
@@ -265,22 +337,31 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     labels.push([STATIONS.lexington, '1 · Lexington Green, April 19, 1775', 'Parker’s men · the first shot']);
   }
 
-  // 2 · Concord North Bridge — river, piers, militia on the west/far bank, regulars on the east
+  // 2 · Concord North Bridge — a natural river flowing across the view; a trestle crosses it toward the militia
   { const { x: cx, z: cz } = STATIONS.concord;
-    const zc = (CONCORD_Z0 + CONCORD_Z1) / 2, len = CONCORD_Z1 - CONCORD_Z0;
-    // thin dark bank lips; bright water slightly above them (Princess Prep water lesson)
-    add(M([P(BOX(0.5, 0.4, len), '#5a4a3a', 0, 0.2, 0)]), CONCORD_RX + CONCORD_HW, zc, 0, 1, false, 0);
-    add(M([P(BOX(0.5, 0.4, len), '#5a4a3a', 0, 0.2, 0)]), CONCORD_RX - CONCORD_HW, zc, 0, 1, false, 0);
-    const cWater = new THREE.Mesh(new THREE.BoxGeometry(CONCORD_HW * 2 - 0.15, 0.08, len - 0.8), new THREE.MeshLambertMaterial({ color: '#3aa0c8', transparent: true, opacity: 0.88, depthWrite: false }));
-    cWater.position.set(CONCORD_RX, WATER_Y + 0.12, zc); cWater.userData.noMerge = true; cWater.name = 'concord-water'; cWater.renderOrder = 3; scene.add(cWater);
+    const cWater = makeConcordWater();
+    scene.add(cWater);
     scene.userData.concordWater = cWater;
     add(bridgeGeo(), CONCORD_RX, CONCORD_BZ, 0, 1, true, 0);
-    // town houses on the east bank (Concord itself); west bank is the militia's far field
-    building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), CONCORD_RX - 11, cz + 2, 0.3, 4.0, 3.2, 5.0);
-    building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), CONCORD_RX - 10, cz - 8, -0.5, 3.6, 3.0, 4.6);
-    add(stoneWallGeo(6), cx + 4, cz + 8, 1.1); box(cx + 1, cx + 7, cz + 7.7, cz + 8.3);
-    line(i => militiaGeo('#8a6a44'), cx + 2, cz + 4, cx + 6, cz + 1, 4, [CONCORD_RX, CONCORD_BZ]);   // west / far bank
-    line(i => soldierGeo('#b22222', '#e8d27a'), CONCORD_RX - 9, CONCORD_BZ + 1, CONCORD_RX - 9, CONCORD_BZ - 3, 4, [CONCORD_RX, CONCORD_BZ]);   // east bank
+    // Concord village houses sit on the east bank, off the sightline down the path to the bridge
+    building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), CONCORD_RX - 18, CONCORD_BZ + 14, 0.4, 4.0, 3.2, 5.0);
+    building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), CONCORD_RX - 17, CONCORD_BZ - 16, -0.3, 3.6, 3.0, 4.6);
+    add(stoneWallGeo(6), cx + 10, cz + 14, 0.4); box(cx + 7, cx + 13, cz + 13.7, cz + 14.3);
+    const hx = concordCenterX(CONCORD_BZ) + 11, hz = CONCORD_BZ + 6;
+    line(i => militiaGeo('#8a6a44'), hx - 2.5, hz + 2, hx + 2, hz - 1.5, 5, [CONCORD_RX, CONCORD_BZ]);   // west-bank rise, visible past the far end of the trestle
+    line(i => soldierGeo('#b22222', '#e8d27a'), CONCORD_RX - 12, CONCORD_BZ + 2.6, CONCORD_RX - 14.5, CONCORD_BZ + 2.6, 4, [CONCORD_RX, CONCORD_BZ]);   // east bank, north of the path
+    line(i => soldierGeo('#b22222', '#e8d27a'), CONCORD_RX - 12.5, CONCORD_BZ - 2.8, CONCORD_RX - 14.5, CONCORD_BZ - 2.8, 3, [CONCORD_RX, CONCORD_BZ]);   // east bank, south of the path
+    for (let i = 0; i < 40; i++) {
+      const z = CONCORD_Z0 + 4 + (CONCORD_Z1 - CONCORD_Z0 - 8) * (i / 39);
+      for (const side of [-1, 1]) {
+        if (rnd() < 0.2) continue;
+        const x = concordCenterX(z) + side * (concordHW(z) + 0.5 + rnd() * 1.6);
+        if (pathDist(x, z) < 2.2 || onStone(x, z, 1.4)) continue;
+        const h = groundH(x, z);
+        if (h < WATER_Y - 0.05 || h > 0.95) continue;
+        add(reedClump(rnd), x, z, rnd() * 6.28, 0.9 + rnd() * 0.35);
+      }
+    }
     labels.push([STATIONS.concord, '2 · Concord, the North Bridge', 'the shot heard round the world']);
   }
 
@@ -345,7 +426,7 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
       const cone = vc(new THREE.ConeGeometry(h * 3, h, 7, 2), '#7a8a7a', 0.1, rnd); cone.translate(x, h / 2 - 3, z); g.push(cone); }
     const far = new THREE.Mesh(M(g), new THREE.MeshLambertMaterial({ vertexColors: true, fog: true })); far.userData.noMerge = true; far.name = 'far'; scene.add(far); }
   for (const [t, x, z] of [['The post road south (story jump)', 24, 51.5], ['Philadelphia, 1776', 24, 68]]) { const sp = labelSprite(t, 6); sp.position.set(x, 3.2, z); sp.name = 'river-label'; scene.add(sp); }
-  const regionLabels = labels.map(([s, t, sub]) => { const sp = labelSprite(t, 9, sub); sp.position.set(s.x, Math.max(0, groundH(s.x, s.z)) + 9.5, s.z); sp.name = 'region-label'; scene.add(sp); return { s, sp }; });
+  const regionLabels = labels.map(([s, t, sub]) => { const sp = labelSprite(t, 9, sub); sp.position.set(s.x, Math.max(0, groundH(s.x, s.z)) + 5.8, s.z); sp.name = 'region-label'; scene.add(sp); return { s, sp }; });
 
   const rings = ringDefs.map(d => makeRing(scene, d, walkY(d.x, d.z)));
   mergeAO.buildAO();
@@ -356,8 +437,16 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     t += dt;
     for (const r of rings) { r.beam.material.opacity = (r.state === 'locked' ? 0.22 : r.state === 'new' ? 0.5 : 0.35) + 0.12 * Math.sin(t * 2.4 + r.def.x); r.icon.position.y = 2.9 + 0.12 * Math.sin(t * 1.8 + r.def.z); }
     water.position.y = WATER_Y + Math.sin(t * 1.1) * 0.03;
-    const cw = scene.userData.concordWater; if (cw) cw.position.y = WATER_Y + 0.12 + Math.sin(t * 1.1) * 0.03;
-    if (hero) for (const L of regionLabels) { const d = Math.hypot(hero.x - L.s.x, hero.z - L.s.z); L.sp.visible = d > L.s.r + 6; }
+    const cw = scene.userData.concordWater;
+    if (cw) {
+      const p = cw.geometry.attributes.position, base = cw.userData.baseY;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), z = p.getZ(i);
+        p.setY(i, base[i] + 0.025 * Math.sin(t * 1.15 + x * 0.55 + z * 0.7) + 0.014 * Math.sin(t * 0.75 + z * 0.9));
+      }
+      p.needsUpdate = true;
+    }
+    if (hero) for (const L of regionLabels) { const d = Math.hypot(hero.x - L.s.x, hero.z - L.s.z); L.sp.visible = d > L.s.r + 14 && d < 38; }
   }
   return { scene, sun, hemi, rings, colliders, camOcc, update, setGateOpen() {}, tracks: [], herds: {}, flames: [], water, fogColor: SKY_H, sky: scene.userData.sky, mats: [], dropBundle() {}, clearBundles() {}, regionLabels };
 }

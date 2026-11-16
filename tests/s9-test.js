@@ -57,8 +57,17 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const river = await p.evaluate(() => [__world.walkable(8, 51), __world.solid(8, 51)]); assert(!river[0] && river[1], 'the story-jump river between Cambridge and Philadelphia is water'); }
   { const deck = await p.evaluate(() => [__world.walkable(-32, -24), __world.solid(-32, -24), __world.pathDist(-32, -24)]);
     assert(deck[0] && !deck[1] && deck[2] <= 1.6, 'the North Bridge deck is walkable and the path runs over it (walkable ' + deck[0] + ', solid ' + deck[1] + ', pathDist ' + deck[2] + ')'); }
-  { const water = await p.evaluate(() => [__world.walkable(-32, -18), __world.solid(-32, -18), __world.walkable(-32, -30), __world.solid(-32, -30)]);
+  { const water = await p.evaluate(() => {
+      const B = __world._dbg().L.mods.B, zn = B.CONCORD_BZ + 6, zs = B.CONCORD_BZ - 6;
+      const xn = B.concordCenterX(zn), xs = B.concordCenterX(zs);
+      return [__world.walkable(xn, zn), __world.solid(xn, zn), __world.walkable(xs, zs), __world.solid(xs, zs)];
+    });
     assert(!water[0] && water[1] && !water[2] && water[3], 'the Concord River is water under and beyond the North Bridge (north and south of the deck)'); }
+  { await tp(-46, -24); await p.evaluate(() => __world.faceCam(Math.PI / 2)); await sleep(400);
+    const land = await p.evaluate(() => [__world.walkable(-46, -24), __world.solid(-46, -24)]);
+    assert(land[0] && !land[1], 'the east-bank viewpoint is dry land (walkable ' + land[0] + ', solid ' + land[1] + ')');
+    const bn = await p.evaluate(() => __world.banner);
+    assert(/Concord|North Bridge/i.test(bn) && !/Lexington/i.test(bn), 'at the North Bridge the compass names Concord, not Lexington ("' + bn + '")'); }
   { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
     const off = rs.filter(r => !r.w || r.s); assert(rs.length === 25 && !off.length, 'all 25 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
   { const rs = await p.evaluate(() => __world.rings()), close = [];

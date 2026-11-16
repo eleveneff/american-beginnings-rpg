@@ -1,4 +1,4 @@
-/* American Beginnings RPG v3.4-l9 Level 9 test (Section 9: Independence Declared).
+/* American Beginnings RPG v3.4 Level 9 test (Section 9: Independence Declared).
    Usage: NODE_PATH=<dir with puppeteer-core> BASE=http://localhost:8878/ SHOTS=/tmp/wshots/ node tests/s9-test.js
    Run it on its own (SwiftShader is slow). */
 const puppeteer = require('puppeteer-core');
@@ -36,7 +36,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     if (await p.$('#modal:not(.hidden) #b-ok')) await click('#b-ok');
   }
 
-  console.log('v3.4-l9 Section 9: Independence Declared:');
+  console.log('v3.4 Section 9: Independence Declared:');
   const G = { gender: 'girl', name: 'Abigail' }, DONE = () => ({ attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} });
   const s9base = (extra = {}) => base({ players: { s1: G, s2: G, s3: G, s4: G, s5: G, s6: G, s7: G, s8: G, s9: G }, sections: { s1: DONE(), s2: DONE(), s3: DONE(), s4: DONE(), s5: DONE(), s6: DONE(), s7: DONE(), s8: DONE() }, ...extra });
   const enterS9 = async () => { await p.evaluate(() => document.querySelector('.node[data-sid="s9"]').click()); await waitPhase('active', 60000); await sleep(800); await closeCards(); };
@@ -44,7 +44,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   const tpRing = async id => { const r = await ringAt(id); await tp(r.x, r.z); await sleep(200); return r; };
   const useCard = async id => { await tpRing(id); await p.evaluate(() => __world.use()); await sleep(300); return (await W()).card || ''; };
   await seed(s9base(), null);
-  assert(/^v3\.4-l9/.test(await p.$eval('#game-version', e => e.textContent)), 'version marker v3.4-l9');
+  assert(/^v3\.4$/.test(await p.$eval('#game-version', e => e.textContent)), 'version marker v3.4');
   const before9 = await p.evaluate(k => localStorage.getItem(k), KEY);
   await enterS9(); let w = await W();
   assert((await p.evaluate(() => __world.level)) === 's9' && w.phase === 'active' && Math.abs(w.pos.x + 6) < 0.01 && Math.abs(w.pos.z + 64) < 0.01, 'tapping Section 9 opens Lexington, south of the Green (-6, -64)');

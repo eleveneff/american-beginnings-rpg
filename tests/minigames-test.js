@@ -15,9 +15,9 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
   const p = await b.newPage(); await p.setViewport({ width: 1100, height: 720 });
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon|assets\/video\//.test(m.text() + ((m.location() || {}).url || ''))) errs.push(m.text()); });
   const go = async () => { await p.goto(BASE + (BASE.includes('?') ? '&' : '?') + 'cb=' + Date.now(), { waitUntil: 'domcontentloaded' }); await sleep(1200); await p.evaluate(() => { if (window.__world) __world.quiet = true; }); };
-  const players = {}; for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']) players[s] = { gender: 'girl', name: 'Abigail' };
-  const sections = {}; for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7']) sections[s] = { attempts: 1, history: [], bestPct: 96, completed: true, correctCount: 30, gearEarned: 5, topics: {}, missed: {} };
-  await go(); await p.evaluate((k, wk, s) => { localStorage.clear(); localStorage.setItem(k, JSON.stringify(s)); localStorage.setItem(wk, JSON.stringify({ ver: 1, mode: 'walk', seenIntro: true, seen: { help: 1, help2: 1, help3: 1, help4: 1, help5: 1, help6: 1, help7: 1, help8: 1 } })); }, KEY, WKEY, { version: 3, players, sections, owned: [], equip: {} }); await go();
+  const players = {}; for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9']) players[s] = { gender: 'girl', name: 'Abigail' };
+  const sections = {}; for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']) sections[s] = { attempts: 1, history: [], bestPct: 96, completed: true, correctCount: 30, gearEarned: 5, topics: {}, missed: {} };
+  await go(); await p.evaluate((k, wk, s) => { localStorage.clear(); localStorage.setItem(k, JSON.stringify(s)); localStorage.setItem(wk, JSON.stringify({ ver: 1, mode: 'walk', seenIntro: true, seen: { help: 1, help2: 1, help3: 1, help4: 1, help5: 1, help6: 1, help7: 1, help8: 1, help9: 1 } })); }, KEY, WKEY, { version: 3, players, sections, owned: [], equip: {} }); await go();
   const saveKeys0 = await p.evaluate(k => Object.keys(JSON.parse(localStorage.getItem(k))).sort().join(','), KEY);
   const enter = async sid => { await p.evaluate(() => { const b = document.getElementById('w-map') || document.querySelector('[data-act="map"]'); if (window.__world && __world.phase === 'active' && __world.exitLevel) __world.exitLevel(); });
     await sleep(500); await p.evaluate(s => document.querySelector('.node[data-sid="' + s + '"]').click(), sid);

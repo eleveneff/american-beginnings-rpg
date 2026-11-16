@@ -7,11 +7,11 @@
 const puppeteer = require('puppeteer-core'); const sleep = ms => new Promise(r => setTimeout(r, ms));
 const BASE = process.env.BASE || 'http://localhost:8765/', SH = process.env.SHOTS || '', TAG = process.env.TAG || 'v282-compass';
 let fails = 0; const check = (ok, msg) => { console.log((ok ? 'ok   ' : 'FAIL ') + msg); if (!ok) fails++; };
-const LEVELS = (process.env.LEVELS || 's1,s2,s3,s4,s5,s6,s7,s8').split(',');
+const LEVELS = (process.env.LEVELS || 's1,s2,s3,s4,s5,s6,s7,s8,s9').split(',');
 (async () => {
   const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const G = { gender: 'girl', name: 'Abigail' }, D = { attempts: 1, history: [{ pct: 96 }], bestPct: 96, completed: true, correctCount: 24, gearEarned: 4, topics: {}, missed: {} },
-    save = { version: 3, players: { s1: G, s2: G, s3: G, s4: G, s5: G, s6: G, s7: G, s8: G }, sections: { s1: D, s2: D, s3: D, s4: D, s5: D, s6: D, s7: D }, owned: [], equip: {} };   // earlier levels passed so every level opens
+    save = { version: 3, players: { s1: G, s2: G, s3: G, s4: G, s5: G, s6: G, s7: G, s8: G, s9: G }, sections: { s1: D, s2: D, s3: D, s4: D, s5: D, s6: D, s7: D, s8: D }, owned: [], equip: {} };   // earlier levels passed so every level opens
   const errs = [];
   for (const sid of LEVELS) {
     const p = await b.newPage(); p.on('pageerror', e => errs.push(sid + ': ' + e.message));
@@ -24,7 +24,7 @@ const LEVELS = (process.env.LEVELS || 's1,s2,s3,s4,s5,s6,s7,s8').split(',');
     while (Date.now() - t0 < 90000 && (await p.evaluate(() => window.__world && __world.phase)) !== 'active') await sleep(500);
     await sleep(2500); await p.evaluate(() => __world.closeCard());
     const c0 = await p.evaluate(() => __world.compass);
-    check(c0.style === ({ s1: 'stone', s2: 'stone', s3: 'brass', s4: 'brass', s5: 'wood', s6: 'wood', s7: 'brass', s8: 'brass' }[sid]), sid + ' style ' + c0.style);
+    check(c0.style === ({ s1: 'stone', s2: 'stone', s3: 'brass', s4: 'brass', s5: 'wood', s6: 'wood', s7: 'brass', s8: 'brass', s9: 'brass' }[sid]), sid + ' style ' + c0.style);
     for (const yaw of [0, 1.3, 2.6, -1.9]) {
       await p.evaluate(y => { __world.faceCam(y); __world.closeCard(); }, yaw); await sleep(1200);
       const r = await p.evaluate(() => { const c = __world.compass, { L, THREE } = __world._dbg(); let ndc = null;

@@ -81,7 +81,7 @@ export const MATS = [];
 export const MAT_HALF = 1.2;
 export const RING_AT = {
   l0: [-1.5, -55], buckman: [-10.5, -54], riders: [-1.5, -61], l7: [-10.5, -61],
-  l1: [-22, -20], bridge: [-25, -24], sequence: [-22, -31], adams: [-20, -34],
+  l1: [-21, -22], bridge: [-25, -24], sequence: [-22, -31], adams: [-20, -34],
   l3: [10, 14], hill: [22, 10],
   l2: [-12, 37], washington: [-5, 34], 'ride-south': [6, 41],
   'ride-north': [8, 62], l4: [3, 77], hall: [13, 77], l5: [3, 70], l6: [13, 70],
@@ -278,7 +278,7 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     // town houses on the east bank (Concord itself); west bank is the militia's far field
     building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), CONCORD_RX - 11, cz + 2, 0.3, 4.0, 3.2, 5.0);
     building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), CONCORD_RX - 10, cz - 8, -0.5, 3.6, 3.0, 4.6);
-    add(stoneWallGeo(6), cx + 2, cz + 6, 1.1); box(cx - 1, cx + 5, cz + 5.7, cz + 6.3);
+    add(stoneWallGeo(6), cx + 4, cz + 8, 1.1); box(cx + 1, cx + 7, cz + 7.7, cz + 8.3);
     line(i => militiaGeo('#8a6a44'), cx + 2, cz + 4, cx + 6, cz + 1, 4, [CONCORD_RX, CONCORD_BZ]);   // west / far bank
     line(i => soldierGeo('#b22222', '#e8d27a'), CONCORD_RX - 9, CONCORD_BZ + 1, CONCORD_RX - 9, CONCORD_BZ - 3, 4, [CONCORD_RX, CONCORD_BZ]);   // east bank
     labels.push([STATIONS.concord, '2 · Concord, the North Bridge', 'the shot heard round the world']);

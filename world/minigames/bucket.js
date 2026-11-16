@@ -8,6 +8,7 @@ export default {
   title: "Franklin's Bucket Brigade", icon: '🪣', era: 'Philadelphia · 1736', act: 'Pass',
   intro: 'Fire! In <b>Philadelphia</b> most houses stood close together, and a fire could spread down a whole street. In <b>1736</b> Benjamin Franklin started the <b>Union Fire Company</b>: neighbours who promised to come running with their <b>leather buckets</b>.',
   how: 'Buckets come down the line from the pump. Press <kbd>E</kbd> just as a bucket reaches <b>your hands</b> (the needle in the green) to pass it on. <b>12 good passes</b> put the fire out. If a bucket goes by, it spills.',
+  tryit: 'Press <kbd>E</kbd> when the needle is in the green — as the bucket reaches your hands.',
   hint: 'Watch the bucket in your neighbour\'s hands, not the fire. Press E when the needle reaches the green, not before. There is always time: the next bucket waits its turn.',
   fact: 'In 1735 Franklin wrote to his newspaper about fire safety: <b>"An ounce of prevention is worth a pound of cure."</b> Each Union Fire Company member kept leather buckets at home with his name painted on them. Volunteer fire companies spread across America, and many towns still have them today.',
   build(ctx) {
@@ -37,7 +38,8 @@ export default {
     const folk = LINE.map((x, i) => { const p = person(kit, { coat: ['#2f4a7a', '#6a3a2a', '#4a5a3a', '#7a6a4a', '#3a3a4a', '#8a4a3a', '#5a4a6a', '#3a5a5a'][i], pants: '#3a3028', hat: i % 3 === 0 ? 'tricorn' : i % 3 === 1 ? 'cap' : null, dress: i % 3 === 1, skin: '#e2b48c' });
       p.position.set(x, 0, LZ + (i % 2) * 0.15); p.rotation.y = Math.PI; root.add(p); return p; });
     ctx.placeHero(HX, 0, LZ, Math.PI);
-    ctx.cam(0.2, 2.9, LZ - 6.8, -0.7, 0.9, LZ + 1.5, true);
+    const camSet = snap => { const port = ctx.portrait(); ctx.cam(port ? 0.5 : 0.2, port ? 5.6 : 2.9, LZ - (port ? 11.2 : 6.8), port ? -2.0 : -0.7, port ? 1.15 : 0.9, LZ + 1.1, snap); };
+    camSet(true);
     // leather buckets: black, with a painted name band
     const mkB = () => { const m = kit.mesh([P(CYL(0.17, 0.13, 0.32, 10), '#2a1a12', 0, 0, 0), P(CYL(0.175, 0.175, 0.07, 10), '#c8a040', 0, 0.06, 0), P(BOX(0.36, 0.02, 0.02), '#1a120a', 0, 0.24, 0), P(CYL(0.15, 0.15, 0.01, 10), '#4a7aa8', 0, 0.15, 0)]); kit.ink(m); root.add(m); return m; };
     const bk = []; let done = 0, miss = 0, t = 0, spawnT = 0.6, ended = false, pend = null, cool = 0, str = 1;
@@ -50,7 +52,7 @@ export default {
       bot(lose) { if (pend || ended || lose || cool > 0) return {}; return { press: bk.some(b => b.s === 'in' && Math.abs(b.x - HX) < W * 0.7) }; },
       action() { if (ended || pend || cool > 0 || done >= N) return;
         const b = bk.filter(b => b.s === 'in').sort((a, c) => Math.abs(a.x - HX) - Math.abs(c.x - HX))[0];
-        if (b && Math.abs(b.x - HX) <= W) { b.s = 'out'; done++; ctx.msg(Math.abs(b.x - HX) < W * 0.35 ? '✨ Perfect pass!' : ['Passed!', 'Good!', 'Got it!'][done % 3], 'good', 0.7); st(); }
+        if (b && Math.abs(b.x - HX) <= W) { b.s = 'out'; done++; ctx.msg(Math.abs(b.x - HX) < W * 0.35 ? '✨ Perfect pass!' : ['Passed!', 'Good!', 'Got it!'][done % 3], 'good', 0.7); ctx.flash('good'); ctx.sfx('hit'); st(); }
         else { cool = 0.45; ctx.msg(b && b.x > HX ? 'Too early! Wait for it.' : 'No bucket here yet', 'info', 0.7); } },
       update(dt, inp) {
         t += dt; cool -= dt;
@@ -59,11 +61,12 @@ export default {
         flames.forEach((m, i) => { const k = str * (0.8 + 0.25 * Math.sin(t * 9 + m.userData.ph)); m.scale.set(k, k * (1 + 0.15 * Math.sin(t * 13 + i)), k); m.visible = k > 0.05; });
         glowL.intensity = 2.2 * str * (0.85 + 0.15 * Math.sin(t * 11));
         if (str > 0.1 && ctx.rnd() < dt * 6) kit.puff(new THREE.Vector3(-6.1 + (ctx.rnd() - 0.5) * 2, 2.4 + str, LZ + 1.4), '#6a6a6a', 1, { spread: 0.3, up: 1.4, life: 1.6, size: 0.8, grav: -0.3 });
+        if (str > 0.15 && ctx.rnd() < dt * 0.7) ctx.sfx('fire');
         if (pend) { pend.t -= dt; if (pend.t <= 0) { const f = pend.f; pend = null; f(); } }
         if (!ended) { spawnT -= dt; const inFlight = bk.filter(b => b.s === 'in').length;
           const outF = bk.filter(b => b.s === 'out').length; if (spawnT <= 0 && inFlight < 2 && done + inFlight < N) { bk.push({ m: mkB(), x: 4.6, s: 'in' }); spawnT = (easy ? 1.6 : 1.25) + ctx.rnd() * 0.9 - Math.min(0.35, done * 0.03); } }
         for (let i = bk.length - 1; i >= 0; i--) { const b = bk[i];
-          if (b.s === 'in') { b.x -= SPD() * dt; if (b.x < HX - W) { b.s = 'spill'; b.vy = 0; miss++; kit.puff(new THREE.Vector3(b.x, 0.2, LZ - 0.3), '#8ab8e0', 10, { spread: 0.5, up: 0.8 }); ctx.msg('Spilled! 💦', 'bad', 0.9); st(); if (miss >= MISS && !ended) end(false); } }
+          if (b.s === 'in') { b.x -= SPD() * dt; if (b.x < HX - W) { b.s = 'spill'; b.vy = 0; kit.puff(new THREE.Vector3(b.x, 0.2, LZ - 0.3), '#8ab8e0', 10, { spread: 0.5, up: 0.8 }); if (ctx.grace('Spilled! Watch the green — this first spill does not count.')) { st(); } else { miss++; ctx.msg('Spilled! 💦', 'bad', 0.9); ctx.flash('bad'); ctx.sfx('splash'); st(); if (miss >= MISS && !ended) end(false); } } }
           else if (b.s === 'out') { b.x -= SPD() * 1.4 * dt; if (b.x < -4.4) { b.s = 'throw'; b.tt = 0; } }
           if (b.s === 'throw') { b.tt += dt; b.x -= dt * 2; b.m.position.set(b.x, 1.3 + b.tt * 1.5, LZ - 0.2 + b.tt); b.m.rotation.z = b.tt * 4;
             if (b.tt > 0.4) { kit.puff(new THREE.Vector3(-5.7, 1.6, LZ + 1.0), '#c8e0f0', 14, { spread: 0.8, up: 1.0 }); root.remove(b.m); bk.splice(i, 1); if (done >= N && !ended && !bk.some(q => q.s !== 'spill')) end(true); } continue; }

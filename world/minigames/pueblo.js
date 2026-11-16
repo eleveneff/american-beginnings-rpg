@@ -8,6 +8,7 @@ export default {
   title: 'Build a Pueblo Wall', icon: '🧱', era: 'Ancestral Puebloans · Chaco Canyon, about 850–1150', act: 'Set',
   intro: 'At <b>Chaco Canyon</b> in today\'s New Mexico, Ancestral Puebloan builders raised <b>great houses</b> of shaped <b>sandstone</b> set in <b>mud mortar</b>. Each new course of stone had to sit squarely on the one below, or the wall would not stand.',
   how: 'A wall stone slides back and forth. Press <kbd>E</kbd> to set it down right on top of the course below. Build <b>7 courses</b>. If a stone is too far off, it tumbles.',
+  tryit: 'Press <kbd>E</kbd> when the moving sandstone lines up with the course below.',
   hint: 'Don\'t watch the moving stone alone: watch the gap between it and the wall below. Press E just as their edges line up. It slides back and forth at the same speed, so you can count the rhythm.',
   fact: 'Pueblo Bonito, the biggest great house at Chaco, had hundreds of rooms and rose four to five stories. Builders had no metal tools, wheels or horses: they shaped stone with harder stones and carried pine logs for roof beams by hand from mountains about 50 miles away. Pueblo peoples today still live in New Mexico and Arizona.',
   build(ctx) {
@@ -27,11 +28,13 @@ export default {
     // her work site: a stack of shaped stones, a mortar pot, a stone hammer
     g.push(P(CYL(0.4, 0.3, 0.45, 10), '#a0603a', 3.2, 0.22, 2.2), P(CYL(0.36, 0.36, 0.05, 10), '#7a5a3a', 3.2, 0.44, 2.2));
     for (let i = 0; i < 6; i++) g.push(P(BOX(0.7, 0.16, 0.4), ['#cf9a5e', '#b98250', '#dcae72'][i % 3], -3.4 + (i % 2) * 0.1, 0.08 + i * 0.16, 2.6, 0, i * 0.2));
+    // a sunken circular kiva in the plaza (not a shrub)
+    g.push(P(CYL(1.6, 1.6, 0.25, 16), '#7a5a3a', -5.2, -0.05, 4.8), P(CYL(1.35, 1.35, 0.08, 16), '#6a4a2a', -5.2, 0.06, 4.8), P(CYL(0.12, 0.12, 0.7, 6), '#8a6238', -5.2, 0.2, 4.8));
     root.add(kit.mesh(g, { cast: false, recv: true }));
     // the wall's foundation course
     const wall = new THREE.Group(); wall.position.set(0, 0, WZ); root.add(wall);
-    const tones = ['#d9a66a', '#c8925a', '#e0b47c', '#bf8650', '#d39c60'];
-    const stone = (w) => { const parts = [P(BOX(w, H, D), '#8a6a4a', 0, H / 2, 0, 0, 0, 0, 1, 1, 1, 0.02)];   // mortar core
+    const tones = ['#c4844a', '#8a5a32', '#d2a06a', '#6e3e22', '#e0b882', '#a56a3a'];
+    const stone = (w) => { const parts = [P(BOX(w, H, D), '#5a3a24', 0, H / 2, 0, 0, 0, 0, 1, 1, 1, 0.02)];   // dark mud-mortar core
       let x = -w / 2; let r = (ctx.rnd() * 5) | 0; while (x < w / 2 - 0.05) { const sw = Math.min(w / 2 - x, 0.3 + ctx.rnd() * 0.45); const two = ctx.rnd() < 0.35;
           if (two) { parts.push(P(BOX(sw - 0.04, H / 2 - 0.04, D + 0.04), tones[r % 5], x + sw / 2, H * 0.27, 0), P(BOX(sw - 0.04, H / 2 - 0.04, D + 0.04), tones[(r + 2) % 5], x + sw / 2, H * 0.73, 0)); }
           else parts.push(P(BOX(sw - 0.04, H - 0.06, D + 0.04), tones[r % 5], x + sw / 2, H / 2, 0)); x += sw; r++; }
@@ -40,7 +43,7 @@ export default {
     const baseFoot = kit.mesh([P(BOX(W + 1.2, 0.3, D + 0.6), '#9a7a58', 0, -0.15, 0)]); wall.add(baseFoot);
     let course = 0, lives = LIVES, cx = 0, t = 0, ended = false, pend = null, perfect = 0, drops = 0;
     let mv = null, mx = 0, dir = 1; const fall = [];
-    const SPEED = () => (easy ? 1.9 : 2.3) + course * (easy ? 0.12 : 0.2), SPAN = 2.4;
+    const SPEED = () => (easy ? 1.55 : 1.85) + course * (easy ? 0.12 : 0.18), SPAN = 2.4;
     const topY = () => course * H;
     const newStone = () => { mv = stone(W); wall.add(mv); dir = ctx.rnd() < 0.5 ? 1 : -1; mx = -dir * SPAN; mv.position.set(mx, topY() + 0.9, 0); };
     const st = () => ctx.status('🧱 ' + course + '/' + N + ' courses · ❤️ ' + lives);
@@ -55,11 +58,13 @@ export default {
         if (Math.abs(off) <= TOL) {
           let x = mx; if (Math.abs(off) < W * 0.1) { x = cx; perfect++; ctx.msg('✨ Perfect fit!', 'good'); } else ctx.msg(['Set!', 'Nice!', 'Solid!', 'Good!'][course % 4], 'good', 0.8);
           mv.position.set(x, topY(), 0); cx = x; course++; mv = null;
-          kit.puff(new THREE.Vector3(x, topY() + 0.05, WZ - D / 2), '#e8cfa0', 8, { spread: 0.8, up: 0.6 });
+          kit.puff(new THREE.Vector3(x, topY() + 0.05, WZ - D / 2), '#e8cfa0', 8, { spread: 0.8, up: 0.6 }); ctx.flash('good'); ctx.sfx('thunk');
           st(); if (course >= N) { ended = true; pend = { t: 0.9, f: () => ctx.win('Your wall stands ' + N + ' courses high' + (perfect ? ', with ' + perfect + ' perfect fits' : '') + '. A great house rose this way, one course at a time.') }; return; }
           pend = { t: 0.35, f: newStone };
         } else {
-          lives--; fall.push({ m: mv, vy: 1.5, vx: Math.sign(off) * 1.5, r: Math.sign(off) }); mv = null; ctx.msg('It tumbled off!', 'bad', 1.0); st();
+          fall.push({ m: mv, vy: 1.5, vx: Math.sign(off) * 1.5, r: Math.sign(off) }); mv = null;
+          if (ctx.grace('It tumbled off! Watch the edges line up — this first miss does not count.')) { st(); pend = { t: 0.8, f: newStone }; return; }
+          lives--; ctx.msg('It tumbled off!', 'bad', 1.0); ctx.flash('bad'); ctx.sfx('miss'); st();
           if (lives <= 0) { ended = true; pend = { t: 1.0, f: () => ctx.lose('Too many stones tumbled off. You built ' + course + ' of ' + N + ' courses.') }; return; }
           pend = { t: 0.8, f: newStone };
         }

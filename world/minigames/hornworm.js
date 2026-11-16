@@ -7,6 +7,7 @@ export default {
   title: 'Hornworm Patrol', icon: '🐛', era: 'Virginia tobacco fields · about 1620', act: 'Pick',
   intro: 'In <b>1612</b> John Rolfe grew a sweeter kind of <b>tobacco</b> in Virginia, from seeds brought from the Caribbean. People in England paid well for it, and tobacco became the crop that kept the colony alive. But fat green <b>hornworms</b> love tobacco leaves.',
   how: 'Walk from plant to plant with <kbd>W</kbd> <kbd>Z</kbd> <kbd>A</kbd> <kbd>S</kbd> (or the arrows). When you reach a plant with a worm, press <kbd>E</kbd> to pick it off. Pick <b>12 worms</b> before the worms ruin too many leaves.',
+  tryit: 'Walk with <kbd>W</kbd> <kbd>Z</kbd> <kbd>A</kbd> <kbd>S</kbd> to a worm, then press <kbd>E</kbd> to pick it off.',
   hint: 'Go for the worm that has been there longest first: its plant starts to turn brown. Don\'t wait at one plant; keep moving toward the next worm.',
   fact: 'Tobacco made Virginia rich, but it took endless hand work: planting, picking worms, cutting and drying. Much of it was done by <b>indentured servants</b> from England, and starting in <b>1619</b> by Africans who had been captured and <b>enslaved</b>. That same year Virginia also held the first <b>elected assembly</b> in English America.',
   build(ctx) {
@@ -60,7 +61,7 @@ export default {
         if (Math.hypot(hx - p.x, hz - (p.z - 0.6)) > 0.7) return;
         if (p.t < 0) { ctx.msg('No worm on this plant', 'info', 0.7); return; }
         p.t = -1; p.worm.visible = false; p.flag.visible = false; picked++; tint(p);
-        kit.puff(new THREE.Vector3(p.x, 0.9, p.z), '#9ad860', 6, { spread: 0.3, up: 0.8 }); ctx.msg(['Got it!', 'Plucked!', 'Off you go!', 'Nice catch!'][picked % 4], 'good', 0.7); st();
+        kit.puff(new THREE.Vector3(p.x, 0.9, p.z), '#9ad860', 6, { spread: 0.3, up: 0.8 }); ctx.msg(['Got it!', 'Plucked!', 'Off you go!', 'Nice catch!'][picked % 4], 'good', 0.7); ctx.flash('good'); ctx.sfx('hit'); st();
         if (picked >= N) { ended = true; pend = { t: 1.0, f: () => ctx.win('You picked ' + N + ' hornworms' + (ruined ? ' and lost only ' + ruined + ' leaves' : ' and saved every leaf') + '. The crop is safe for now.') }; } },
       update(dt, inp) {
         t += dt;
@@ -78,7 +79,7 @@ export default {
         // worms grow and chew
         if (!ended) { spawnT -= dt; if (spawnT <= 0) { spawn(); spawnT = (easy ? 2.0 : 1.6) - Math.min(0.5, picked * 0.04); }
           for (const q of plants) { if (q.t < 0) continue; q.t += dt; wormAt(q); tint(q);
-            if (q.t >= LIFE) { q.t = -1; q.worm.visible = false; q.flag.visible = false; q.dmg++; ruined++; tint(q); kit.puff(new THREE.Vector3(q.x, 0.8, q.z), '#8a7a3a', 8, { spread: 0.4, up: 0.5 }); ctx.msg('A leaf got chewed up!', 'bad', 1.0); st();
+            if (q.t >= LIFE) { q.t = -1; q.worm.visible = false; q.flag.visible = false; q.dmg++; ruined++; tint(q); kit.puff(new THREE.Vector3(q.x, 0.8, q.z), '#8a7a3a', 8, { spread: 0.4, up: 0.5 }); ctx.msg('A leaf got chewed up!', 'bad', 1.0); ctx.flash('bad'); ctx.sfx('miss'); st();
               if (ruined >= RUIN) { ended = true; for (const w of plants) w.worm.visible = w.flag.visible = false; pend = { t: 1.1, f: () => ctx.lose('The worms chewed ' + ruined + ' leaves. You picked ' + picked + ' of ' + N + '.') }; break; } } } }
         const near = plants.filter(q => q.t >= 0).sort((a, b) => b.t - a.t)[0];
         if (near && !ended) ctx.meter(1 - near.t / LIFE, { fill: true, label: '🐛 Hungriest worm' }); else ctx.meter(null);

@@ -58,7 +58,13 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
       await same(S0, id + ': scene put back after Esc');
       // Quit button mid-game
       await p.evaluate((s, i) => __mg.open(s, i), sid, id); await sleep(900); await p.keyboard.press('KeyE'); await sleep(500);
-      check(await p.evaluate(() => __mg.phase === 'play'), id + ': E starts the game'); await p.click('#mg-quit'); await sleep(400);
+      check(await p.evaluate(() => __mg.phase === 'play'), id + ': E starts the game');
+      { const hid = await p.evaluate(() => { const t = document.getElementById('topbar'), m = document.getElementById('w-mode'); return { tb: t && getComputedStyle(t).display === 'none', md: !m || m.hidden || getComputedStyle(m).display === 'none', on: document.body.classList.contains('mg-on') }; }); check(hid.tb && hid.md && hid.on, id + ': Map / Classic / topbar are hidden during play'); }
+      await p.keyboard.press('Escape'); await sleep(400);
+      check(await p.evaluate(() => __mg.phase === 'pause' && /Paused/i.test(__mg.card() || '')), id + ': Esc mid-game pauses');
+      await p.keyboard.press('KeyE'); await sleep(400);
+      check(await p.evaluate(() => __mg.phase === 'play'), id + ': E resumes from pause');
+      await p.click('#mg-quit'); await sleep(400);
       check(!(await p.evaluate(() => __mg.active)), id + ': Quit button leaves the game'); await same(S0, id + ': scene (visibility, layers, fog, lights) put back after Quit');
       // a real loss with keys, then the gentle retry, then a second loss offers easy mode
       await p.evaluate((s, i) => __mg.open(s, i), sid, id); await sleep(900); await p.keyboard.press('KeyE'); await sleep(400);
@@ -93,6 +99,7 @@ function check(c, m) { if (!c) { fails++; console.log('  FAIL -', m); } else con
   { const sid = Object.keys(REG).find(s => !process.env.ONLY || process.env.ONLY.split(',').includes(s)), id = REG[sid][0];
     let paid = []; for (let i = 0; i < 3; i++) { const s0 = await stars(); await p.evaluate((s, i) => __mg.open(s, i), sid, id); await sleep(800); await p.keyboard.press('KeyE'); await sleep(400); await p.evaluate(() => __mg.cheatWin()); await sleep(1400); paid.push((await stars()) - s0); await p.keyboard.press('Escape'); await sleep(400); }
     check(paid.join(',') === '2,2,0', 'practice stars stop after 3 a day (' + paid.join(',') + ' after the first practice)'); }
+  check(await p.evaluate(() => !!(window.ABWorld && typeof ABWorld.miniGames === 'function' && ABWorld.miniGames('s1').length === 2 && typeof ABWorld.playMiniGame === 'function')), 'Classic-mode entry: ABWorld.miniGames / playMiniGame are available');
   check((await p.evaluate(k => Object.keys(JSON.parse(localStorage.getItem(k))).sort().join(','), KEY)) === saveKeys0, 'no new top-level save fields');
   check(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASSED') + ' in ' + ((Date.now() - t0) / 1000).toFixed(0) + ' s');

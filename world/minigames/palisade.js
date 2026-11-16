@@ -6,6 +6,7 @@ export default {
   title: 'Raise the Palisade', icon: '🪵', era: 'Jamestown, Virginia · June 1607', act: 'Drop',
   intro: 'In May 1607 English colonists landed at <b>Jamestown</b>. After an attack in late May, they hurried to build <b>James Fort</b>: a three-sided wall, or <b>palisade</b>, of tall logs stood upright in a trench.',
   how: 'Walk along the trench with <kbd>A</kbd> and <kbd>S</kbd> (or the arrows). Stop over the <b>glowing gap</b>, wait until the log stands <b>straight</b>, then press <kbd>E</kbd> to drop it in. Fill <b>6 gaps</b>.',
+  tryit: 'Move with <kbd>A</kbd> / <kbd>S</kbd> to the glowing gap, then press <kbd>E</kbd> when the log is straight.',
   hint: 'Slow down before you reach the gap: a sudden stop makes the log swing. Watch the tilt bar and drop the log when the needle is in the green.',
   fact: 'James Fort was a <b>triangle</b> with a round lookout bastion for cannon at each corner. The colonists finished the wall in about <b>19 days</b>. In the 1990s archaeologists found the dark stains left in the soil by its rotted posts, so we know where the fort really stood.',
   build(ctx) {
@@ -15,6 +16,8 @@ export default {
     const g = [];
     // ground, the James River behind, the woods beyond, sand bank
     g.push(P(BOX(90, 0.4, 70), '#6f8a46', 0, -0.2, 6, 0, 0, 0, 1, 1, 1, 0.05));
+    // faint triangular footprint of James Fort so the 'triangle' fact is shown, not only told
+    g.push(P(BOX(0.35, 0.04, 22), '#5a4a30', -11, 0.03, WZ + 7, 0, 0.55, 0), P(BOX(0.35, 0.04, 22), '#5a4a30', 11, 0.03, WZ + 7, 0, -0.55, 0), P(BOX(24, 0.04, 0.35), '#5a4a30', 0, 0.03, WZ));
     g.push(P(BOX(120, 0.1, 50), '#4a7a9a', 0, -0.05, 44), P(BOX(120, 0.3, 3), '#c8b47a', 0, -0.1, 18.5));
     for (let i = 0; i < 34; i++) { const x = -40 + i * 2.4 + (ctx.rnd() - 0.5), z = -10 - ctx.rnd() * 6, h = 4 + ctx.rnd() * 3;
       g.push(P(CYL(0.15, 0.2, h, 5), '#5a3e26', x, h / 2, z), P(CONE(1.3 + ctx.rnd() * 0.5, 3.2, 7), ['#2f5a2a', '#3a6a30', '#2a4e26'][i % 3], x, h + 0.6, z)); }
@@ -50,7 +53,9 @@ export default {
     const holdLog = () => { if (!log || drop) return; log.position.set(hx, 0.1, HZ + 0.3); log.rotation.set(0, 0, th); };
     const hero = () => ctx.placeHero(hx + 0.5, 0, HZ - 0.05, -0.35, Math.min(1, Math.abs(v) / SP) * 2.5);
     camSet(true); hero(); holdLog();
-    const missed = why => { miss++; ctx.msg(why, 'bad', 1.2); st();
+    const missed = why => {
+      if (ctx.grace(why + ' This first miss does not count — wait for the needle to sit in the green.')) { pend = { t: 0.9, f: () => { log = mkLog(); th = 0; w = 0; holdLog(); } }; return; }
+      miss++; ctx.msg(why, 'bad', 1.2); ctx.flash('bad'); ctx.sfx('miss'); st();
       if (miss >= MISS) { ended = true; pend = { t: 1.1, f: () => ctx.lose('Too many logs toppled. You set ' + done + ' of ' + N + '.') }; return; }
       pend = { t: 0.9, f: () => { log = mkLog(); th = 0; w = 0; holdLog(); } }; };
     return {
@@ -70,7 +75,7 @@ export default {
         if (drop) { drop.t += dt; const k = Math.min(1, drop.t / 0.3);
           log.position.set(lerp(drop.x, drop.ok ? tx() : drop.x, k), 0.1 - 0.35 * k, lerp(HZ + 0.3, WZ, k)); log.rotation.z = lerp(drop.th, drop.ok ? 0 : drop.th, k);
           if (k >= 1) { const ok = drop.ok, why = drop.why; drop = null;
-            if (ok) { done++; kit.puff(new THREE.Vector3(log.position.x, 0.15, WZ), '#7a5a34', 10, { spread: 0.5, up: 0.7 }); log = null; ctx.msg(['Thunk! It\'s in.', 'Solid!', 'Straight and true!', 'Nice!'][done % 4], 'good', 0.9); st();
+            if (ok) { done++; kit.puff(new THREE.Vector3(log.position.x, 0.15, WZ), '#7a5a34', 10, { spread: 0.5, up: 0.7 }); log = null; ctx.msg(['Thunk! It\'s in.', 'Solid!', 'Straight and true!', 'Nice!'][done % 4], 'good', 0.9); ctx.flash('good'); ctx.sfx('thunk'); st();
               if (done >= N) { ended = true; pend = { t: 1.0, f: () => ctx.win('You set all ' + N + ' logs. The wall is closed, and the fort is safer tonight.') }; }
               else pend = { t: 0.6, f: () => { log = mkLog(); th = (ctx.rnd() - 0.5) * 0.2; w = 0; holdLog(); } }; }
             else { falls.push({ m: log, r: log.rotation.z || 0.05 * (ctx.rnd() < 0.5 ? -1 : 1), s: Math.sign(log.rotation.z || 1) * 0.6 }); log = null; missed(why); } } }

@@ -6,6 +6,7 @@
 // into the arena and put back on exit, and the camera is driven here and snapped back with placeCamera on exit.
 import * as THREE from 'three';
 import { makeKit, rng } from './lib.js';
+import { makeSfx } from './sfx.js';
 
 // ---- registry: where each game's ring and arena are. arena = [x, z, yaw]: local +z (yaw 0 = world +z) points into the
 // play area, so the camera looks along it from the road side. water: arena sits on the water surface.
@@ -20,7 +21,7 @@ export const REG = {
   ],
   s3: [
     { id: 'quadrant', file: 'quadrant', title: 'Sight the North Star', icon: '⭐', station: 'tower', ring: [-67.5, 49.5], arena: [-65, 46, 2.5], water: true },
-    { id: 'tradewinds', file: 'tradewinds', title: 'Ride the Trade Winds', icon: '⛵', station: 'pier', ring: [-31.5, 26.5], arena: [-38, 2, 1.31], water: true },
+    { id: 'tradewinds', file: 'tradewinds', title: 'Sail the Trade Winds', icon: '⛵', station: 'pier', ring: [-31.5, 26.5], arena: [-38, 2, 1.31], water: true },
   ],
   s4: [
     { id: 'canoe', file: 'canoe', title: 'Paddle the St. Lawrence', icon: '🛶', station: 'landing', ring: [-17, 39.5], arena: [-26, 48, -Math.PI / 2], water: true },
@@ -39,13 +40,13 @@ export const REG = {
 export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6'];
 const PAY = { first: 10, practice: 2, perDay: 3 };   // mirrored from app.js (for the intro card text only)
 
-let A = null, S = null, cssOn = false, lastLvl = null;
+let A = null, S = null, cssOn = false, lastLvl = null, sfx = null, returnClassic = null, chromeOn = false;
 const games = {};   // loaded modules, by file
 const $ = id => document.getElementById(id);
 
 export function attach(api) {
   A = api;
-  if (!cssOn) { cssOn = true; const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./mg.css', import.meta.url).href; document.head.appendChild(l); ensureUi(); window.addEventListener('keydown', onKey, true); }
+  if (!cssOn) { cssOn = true; const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./mg.css', import.meta.url).href; document.head.appendChild(l); ensureUi(); sfx = makeSfx(); window.addEventListener('keydown', onKey, true); guardChrome(true); }
   window.__mg = hook;
 }
 export const active = () => !!S;
@@ -122,12 +123,14 @@ function mergeList(list) { let n = 0; for (const g of list) n += g.attributes.po
 function ensureUi() {
   if ($('mg-ui')) return;
   const d = document.createElement('div'); d.id = 'mg-ui'; d.hidden = true;
-  d.innerHTML = '<div id="mg-top"><span class="mg-t" id="mg-title"></span><span class="mg-s" id="mg-status"></span><button id="mg-hint" type="button" title="Hint (H)">💡 Hint</button><button id="mg-quit" class="q" type="button" title="Quit (Esc)">✖ Quit</button></div>' +
-    '<div id="mg-meter" hidden></div><div id="mg-msg" hidden></div><button id="mg-act" type="button" hidden></button><div id="mg-card" hidden></div>';
+  d.innerHTML = '<div id="mg-top"><span class="mg-t" id="mg-title"></span><span class="mg-s" id="mg-status"></span><button id="mg-hint" type="button" title="Hint (H)">💡 Hint</button><button id="mg-mute" class="mut" type="button" title="Sound on/off">🔊</button><button id="mg-quit" class="q" type="button" title="Quit">✖ Quit</button></div>' +
+    '<div id="mg-meter" hidden></div><div id="mg-prompt" hidden></div><div id="mg-flash" hidden></div><div id="mg-msg" hidden></div><button id="mg-act" type="button" hidden></button><div id="mg-card" hidden></div>';
   document.body.appendChild(d);
   $('mg-act').addEventListener('pointerdown', e => { e.preventDefault(); press(); });
   $('mg-act').addEventListener('click', e => { if (e.detail === 0) press(); });   // keyboard-activated click only (pointer already handled)
   $('mg-hint').onclick = () => hint(); $('mg-quit').onclick = () => quit();
+  $('mg-mute').onclick = () => toggleMute();
+  syncMute();
 }
 function hint() { if (!S) return; S.hints = (S.hints || 0) + 1; msg('💡 ' + (S.mod.hint || 'Take your time!'), 'info', 5); }
 let msgT = null;
@@ -140,7 +143,38 @@ function meter(v, o) {
   const c = el.firstChild && el.querySelector(o.fill ? '.f' : '.n'); if (o.fill) c.style.width = Math.max(0, Math.min(1, v)) * 100 + '%'; else c.style.left = Math.max(0, Math.min(1, v)) * 100 + '%';
 }
 function status(h) { const el = $('mg-status'); if (el._h !== h) { el._h = h; el.innerHTML = h; } }
-function actLabel(t) { const el = $('mg-act'); const h = '<span class="k">' + (A.L.touch ? 'tap' : 'E') + '</span>' + t; if (el._h !== h) { el._h = h; el.innerHTML = h; } }
+function actLabel(t, key) {
+  const el = $('mg-act');
+  const k = key !== undefined ? key : (A.L.touch ? 'tap' : 'E');
+  const h = (k ? '<span class="k">' + k + '</span>' : '') + (t || '');
+  if (el._h !== h) { el._h = h; el.innerHTML = h; }
+  el.hidden = !t && !k;
+}
+function prompt(t, secs) {
+  const el = $('mg-prompt'); if (!t) { el.hidden = true; clearTimeout(el._t); return; }
+  el.hidden = false; el.innerHTML = t; clearTimeout(el._t);
+  if (secs) el._t = setTimeout(() => { el.hidden = true; }, secs * 1000);
+}
+function flash(cls) { const el = $('mg-flash'); el.hidden = false; el.className = cls || ''; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; el.className = ''; }, 400); }
+function syncMute() { const b = $('mg-mute'); if (!b || !sfx) return; b.textContent = sfx.mute ? '🔇' : '🔊'; b.title = sfx.mute ? 'Sound is off — tap to turn on' : 'Sound is on — tap to mute'; }
+function toggleMute() { if (!sfx) return; sfx.setMute(!sfx.mute); syncMute(); }
+function quiet() { return !!(window.__world && window.__world.quiet); }
+function firstPlay() { try { const r = window.ABRPG && window.ABRPG.miniGameRec && window.ABRPG.miniGameRec(S.sid, S.g.id); return !(r && r.plays); } catch (e) { return true; } }
+function playSfx(n) { if (sfx) sfx.play(n); }
+
+// Block Map / Classic / Market / Character / Parent while a session is open (stuck-session bug).
+function chromeEvent(e) {
+  if (!S) return;
+  const t = e.target && e.target.closest && e.target.closest('#topbar, #w-mode, #btn-home, #btn-inv, #btn-market, #btn-report, #w-back');
+  if (!t) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (S.phase === 'play') pause();
+  else if (S.phase === 'intro' || S.phase === 'won' || S.phase === 'lost' || S.phase === 'pause') { /* already on a card */ }
+}
+function guardChrome(on) {
+  if (on && !chromeOn) { chromeOn = true; document.addEventListener('click', chromeEvent, true); document.addEventListener('pointerdown', chromeEvent, true); }
+}
+
 function card(html, btns) {
   const c = $('mg-card'); c.hidden = false;
   c.innerHTML = '<div class="in" role="dialog">' + html + '<div class="btns">' + btns.map((b, i) => '<button type="button" class="btn ' + (b.cls || '') + '" data-i="' + i + '">' + b.t + '</button>').join('') + '</div></div>';
@@ -159,17 +193,18 @@ function onKey(e) {
     else if (/^(Key[WASDZ]|Arrow)/.test(e.code)) { e.stopImmediatePropagation(); }
     return;
   }
-  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); quit(); return; }
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); if (S.phase === 'play') pause(); else quit(); return; }
   if (e.code === 'KeyH') { e.preventDefault(); e.stopImmediatePropagation(); hint(); return; }
   if (go) { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) press(); }
 }
 
 // ---- session ----
-async function open(sid, g) {
+async function open(sid, g, opts) {
   const L = A.L; if (S || L.phase !== 'active') return;
-  S = { sid, g, lvl: L.lvl, phase: 'load', fails: 0, easy: false, camP: L.cam.position.clone(), camL: new THREE.Vector3(), camT: null };
+  if (opts && opts.fromClassic) returnClassic = sid;
+  S = { sid, g, lvl: L.lvl, phase: 'load', fails: 0, easy: false, graced: false, camP: L.cam.position.clone(), camL: new THREE.Vector3(), camT: null };
   const fwd = new THREE.Vector3(); L.cam.getWorldDirection(fwd); S.camL.copy(L.cam.position).addScaledVector(fwd, 10);
-  document.body.classList.add('mg-on'); $('mg-ui').hidden = false; $('mg-top').hidden = true; A.clearHeld();
+  document.body.classList.add('mg-on'); $('mg-ui').hidden = false; $('mg-top').hidden = true; A.clearHeld(); if (sfx) { sfx.unlock(); syncMute(); }
   try { S.mod = games[g.file] || (games[g.file] = (await import('./' + g.file + '.js')).default); }
   catch (e) { console.error('[mg] load', e); exit(); A.toast('Sorry, that mini-game would not load. Try again later.'); return; }
   if (!S) return;
@@ -191,7 +226,11 @@ function build() {
     cam(px, py, pz, lx, ly, lz, snap) { const p = root.localToWorld(new THREE.Vector3(px, py, pz)), l = root.localToWorld(new THREE.Vector3(lx, ly, lz)); S.camT = { p, l }; if (snap) S.camSnap = true; },
     // open-sea / night games: hide the level's own scenery (lights, sky and the hero stay) until the game closes
     isolate(keep = [], drop = []) { if (S.hidden) return; S.hidden = []; for (const o of L.lvl.scene.children) { if (o === root || o.isLight || o.isCamera || (/^(sky|sea|sea-floor)$/.test(o.name) && !drop.includes(o.name)) || keep.includes(o.name) || o.type === 'Object3D' || (L.hero && o === L.hero.root)) continue; o._mgIso = o.visible; o._mgLay = o.layers.mask; o.visible = false; o.layers.mask = 0; S.hidden.push(o); } },
-    status, meter, msg, actLabel,
+    status, meter, msg, actLabel, prompt, flash,
+    sfx: (n) => playSfx(n),
+    portrait: () => window.innerWidth <= 500 || window.innerHeight > window.innerWidth * 1.05,
+    tutorial: () => !!(S && S.tut && S.t < (S.tutT || 0)),
+    grace(why) { if (!S || S.graced) return false; S.graced = true; msg(why || 'Almost! That one does not count — try again.', 'info', 1.8); playSfx('warn'); flash('bad'); return true; },
     win: (summary) => win(summary), lose: (why) => fail(why),
   };
   ctx.kit = S.kit = makeKit(ctx);
@@ -213,22 +252,37 @@ function intro() {
     [{ t: '▶ Play <kbd>E</kbd>', f: play }, { t: 'Not now <kbd>Esc</kbd>', cls: 'alt', back: true, f: () => exit() }]);
 }
 function play() {
-  hideCard(); if (S.phase !== 'intro') build(); S.phase = 'play'; S.t = 0; S.presses = 0; S.ctx.easy = S.easy;
+  hideCard(); if (S.phase === 'again' || (S.phase !== 'intro' && S.phase !== 'pause')) build(); S.phase = 'play'; S.t = 0; S.presses = 0; S.ctx.easy = S.easy; S.graced = false;
   $('mg-top').hidden = false; $('mg-act').hidden = false; actLabel(S.mod.act || 'Go'); status(''); A.clearHeld();
-  if (S.game.start) S.game.start(); if (S.easy) msg('🐢 Easy mode', 'info', 1.6);
+  S.tut = !quiet() && firstPlay() && !S.easy; S.tutT = S.tut ? 4.8 : 0;
+  if (S.game.start) S.game.start();
+  if (S.tut && S.mod.tryit) prompt('👋 Try it: ' + S.mod.tryit, 4.8);
+  else if (S.tut) prompt('👋 Try it: ' + (S.mod.how || 'Follow the hint on the screen.'), 4.8);
+  if (S.easy) msg('🐢 Easy mode', 'info', 1.6);
+  if (sfx) sfx.unlock();
+}
+function pause() {
+  if (!S || S.phase !== 'play') return;
+  S.phase = 'pause'; prompt(null); meter(null);
+  card('<h3>⏸ Paused</h3><p>Your game is waiting. Press <kbd>E</kbd> to resume, or leave with <kbd>Esc</kbd>.</p>',
+    [{ t: '▶ Resume <kbd>E</kbd>', f: unpause }, { t: 'Quit <kbd>Esc</kbd>', cls: 'alt', back: true, f: () => exit() }]);
+}
+function unpause() {
+  if (!S || S.phase !== 'pause') return;
+  hideCard(); S.phase = 'play'; $('mg-top').hidden = false; $('mg-act').hidden = false; actLabel(S.mod.act || 'Go'); A.clearHeld();
 }
 function win(summary) {
   if (!S || S.phase !== 'play') return; S.phase = 'won'; meter(null); $('mg-act').hidden = true;
   let res = null; try { res = window.ABRPG.miniGame(S.sid, S.g.id, S.mod.title); } catch (e) { console.error(e); }
   const pay = !res ? '' : res.first ? '<p class="big">+' + res.stars + ' ⭐ for your first win!</p>' : res.stars ? '<p class="big">+' + res.stars + ' ⭐ practice stars</p>' : '<p class="pay">No more practice stars today, but you can always play for fun.</p>';
-  S.lastWin = res; msg('🎉 You did it!', 'good', 1.4);
+  S.lastWin = res; msg('🎉 You did it!', 'good', 1.4); flash('good'); playSfx('win'); prompt(null);
   setTimeout(() => { if (!S || S.phase !== 'won') return;
     card('<h3>🎉 ' + S.mod.title + ': you did it!</h3>' + (summary ? '<p>' + summary + '</p>' : '') + pay + '<p>📜 ' + S.mod.fact + '</p>',
       [{ t: '▶ Keep exploring <kbd>E</kbd>', back: true, f: () => exit() }, { t: '🔁 Play again', cls: 'alt', f: again }]); }, 1100);
 }
 function fail(why) {
   if (!S || S.phase !== 'play') return; S.phase = 'lost'; S.fails++; meter(null); $('mg-act').hidden = true;
-  msg('😅 So close!', 'bad', 1.2);
+  msg('😅 So close!', 'bad', 1.2); flash('bad'); playSfx('lose'); prompt(null);
   setTimeout(() => { if (!S || S.phase !== 'lost') return;
     const btns = [{ t: '🔁 Try again <kbd>E</kbd>', f: again }];
     if (S.fails >= 2 && !S.easy) btns.push({ t: '🐢 Try easy mode', cls: 'alt', f: () => { S.easy = true; again(); } });
@@ -236,21 +290,24 @@ function fail(why) {
     card('<h3>😅 So close!</h3><p>' + (why || 'Give it another go.') + '</p>' + (S.fails >= 2 ? '<p class="how">💡 ' + S.mod.hint + '</p>' : '') + (S.fails >= 2 && !S.easy ? '<p class="pay">Easy mode still pays the same stars.</p>' : ''), btns); }, 900);
 }
 function again() { hideCard(); S.phase = 'again'; build(); play(); }
-function quit() { if (!S) return; if (S.phase === 'play' || S.phase === 'intro') exit(); }
+function quit() { if (!S) return; if (S.phase === 'play' || S.phase === 'intro' || S.phase === 'pause') exit(); }
 function exit(silent) {
-  if (!S) return; const L = A.L;
-  teardown(); hideCard(); meter(null); $('mg-msg').hidden = true; $('mg-ui').hidden = true; $('mg-top').hidden = true; $('mg-act').hidden = true;
+  if (!S) return; const L = A.L; const back = returnClassic; returnClassic = null;
+  teardown(); hideCard(); meter(null); prompt(null); $('mg-msg').hidden = true; $('mg-flash').hidden = true; $('mg-ui').hidden = true; $('mg-top').hidden = true; $('mg-act').hidden = true;
   document.body.classList.remove('mg-on');
   if (L.hero) { L.hero.root.visible = true; L.hero.root.position.copy(L.pos); L.hero.root.rotation.y = L.yaw; }
   S = null; A.clearHeld();
   if (!silent) try { A.snapCam(); } catch (e) { }
+  if (back && A.returnClassic) { try { A.returnClassic(back); } catch (e) { console.warn(e); } }
 }
 
 // ---- test hook (tests/minigames-test.js) ----
 const hook = {
   get active() { return !!S; }, get phase() { return S ? S.phase : null; }, get id() { return S ? S.g.id : null; },
   get easy() { return S ? S.easy : null; }, get fails() { return S ? S.fails : null; },
-  reg: REG, L: () => A && A.L, ctx: () => S && S.ctx, game: () => S && S.game, live: LIVE, open: (sid, id) => { const g = (LIVE.includes(sid) && REG[sid] || []).find(q => q.id === id); return g && open(sid, g); },
-  play: () => S && S.phase === 'intro' && play(), press, quit, exit: () => exit(), cheatWin: () => S && S.phase === 'play' && win('(test)'), cheatLose: () => S && S.phase === 'play' && fail('(test)'),
+  reg: REG, L: () => A && A.L, ctx: () => S && S.ctx, game: () => S && S.game, live: LIVE,
+  open: (sid, id, opts) => { const g = (LIVE.includes(sid) && REG[sid] || []).find(q => q.id === id); return g && open(sid, g, opts); },
+  play: () => S && S.phase === 'intro' && play(), press, quit, exit: () => exit(), pause, unpause,
+  cheatWin: () => S && S.phase === 'play' && win('(test)'), cheatLose: () => S && S.phase === 'play' && fail('(test)'),
   card: () => { const c = $('mg-card'); return c.hidden ? null : c.innerText; }, primary: () => S && S.cardPrimary && S.cardPrimary(), back: () => S && S.cardBack && S.cardBack(),
 };

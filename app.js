@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v3.2.1";
+  var GAME_VERSION = "v3.2.2";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -418,11 +418,24 @@
       s.activities.forEach(function (a) { h += actCard(a); });
       h += "</div></div>";
     }
+    if (window.ABWorld && window.ABWorld.miniGames) {
+      var mgs = window.ABWorld.miniGames(sid);
+      if (mgs && mgs.length) {
+        h += '<div class="panel mg-classic"><h2>🎮 3D Mini-games</h2><p>Hands-on activities you can also find as glowing rings in the walkable world. Same star rules: <b>10 ⭐</b> the first win, then <b>2 ⭐</b> practice (up to 3 a day). Progress is the same in Classic and Walk.</p><div class="acts">';
+        mgs.forEach(function (g) {
+          var rec = window.ABRPG && window.ABRPG.miniGameRec ? window.ABRPG.miniGameRec(sid, g.id) : null;
+          var tag = rec && rec.won ? "✅ Won · replay for 2 ⭐" : "Win once for 10 ⭐";
+          h += '<button class="act-card mg-launch" type="button" data-mg="' + g.id + '"><span class="ic">' + g.icon + "</span><b>" + esc(g.title) + "</b><small>3D mini-game · " + tag + "</small></button>";
+        });
+        h += "</div></div>";
+      }
+    }
     show(h);
     on("b-l", function () { lesson(sid, 0, false); });
     on("b-t", function () { startTrial(sid); });
     on("b-c", function () { delete S.players[sid]; save(); charSelect(sid); });
     $all(".act-card", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act")); }; });
+    $all(".mg-launch", $screen).forEach(function (b) { b.onclick = function () { window.ABWorld.playMiniGame(sid, b.getAttribute("data-mg")); }; });
     renderHero();
   }
   /* v2 video player component. Every lesson video is an entry in
@@ -510,6 +523,10 @@
     var h = '<div class="panel"><div class="qmeta"><span>' + s.icon + " " + esc(s.title) + "</span><span>Scroll " + (i + 1) + " of " + s.lessons.length + "</span></div><h2>📜 " + esc(l.title) + "</h2>" + scrollBody(l);
     if (l.source && !resumeAfter) { var sq = srcQs(s, l.topic), sr = S.srcQ[l.topic]; if (sq.length) h += '<div class="try-act src-q">📜 <button class="btn small gold" id="b-srcq">Answer the source questions (' + sq.length + ")</button> <small>" + (sr && sr.plays ? "Best: " + sr.best + "/" + sq.length : "Counts toward stars and gear unlocks!") + "</small></div>"; }
     if (acts.length && !resumeAfter) h += '<div class="try-act">🎮 Try it: ' + acts.map(function (a) { return '<button class="btn alt small" data-act="' + a.id + '">' + a.icon + " " + esc(a.title) + "</button>"; }).join("") + "</div>";
+    if (window.ABWorld && window.ABWorld.miniGames && !resumeAfter) {
+      var mgsL = window.ABWorld.miniGames(sid);
+      if (mgsL && mgsL.length) h += '<div class="try-act">🎮 3D mini-games: ' + mgsL.map(function (g) { return '<button class="btn alt small" data-mg="' + g.id + '">' + g.icon + " " + esc(g.title) + "</button>"; }).join("") + "</div>";
+    }
     h += '<div class="scroll-nav"><span>' + (i > 0 ? '<button class="btn alt" id="b-prev">◀ Back</button>' : "") + "</span><span>" +
       (i < s.lessons.length - 1 ? '<button class="btn" id="b-next">Next scroll ▶</button>' : '<button class="btn gold" id="b-trial">⚔️ ' + (resumeAfter ? "Return to my trial" : "Begin the Trial!") + "</button>") + "</span></div></div>";
     show(h);
@@ -518,6 +535,7 @@
     on("b-srcq", function () { sourceQuiz(sid, i); });
     on("b-trial", function () { if (resumeAfter) { S.run.phase === "review" ? nextReview() : nextQuestion(); } else startTrial(sid); });
     $all(".try-act button[data-act]", $screen).forEach(function (b) { b.onclick = function () { runActivity(sid, b.getAttribute("data-act"), function () { lesson(sid, i, false); }); }; });
+    $all(".try-act button[data-mg]", $screen).forEach(function (b) { b.onclick = function () { window.ABWorld.playMiniGame(sid, b.getAttribute("data-mg")); }; });
     renderHero();
   }
 

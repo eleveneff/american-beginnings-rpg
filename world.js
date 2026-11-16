@@ -9,6 +9,7 @@
 // world position / mode / scrolls-read live in americanBeginningsRPG_world, graphics in americanBeginningsRPG_gfx.
 import * as THREE from "three";
 import { makeClock, subSteps, wrapA, followAngle, makeDeadzoneYaw, makeTravelHeading, camRelative, Z } from "./world/kit.js";
+import { REG as MG_REG, LIVE as MG_LIVE } from "./world/minigames/index.js";
 
 const canvas = document.getElementById("world");
 const DEFAULT = { sky: "#f6d28a", sky2: "#7ec8f0", ground: "#8fc46a", ground2: "#3f8a4a", accent: "#e0b23a", snow: false, water: true };
@@ -147,6 +148,7 @@ function lessonRing(id, i, x, z, station, sid = "s1") { return { id, x, z, stati
 function actRing(id, actId, icon, title, x, z, station, sid = "s1") { return { id, x, z, station, icon, scored: true, label: () => title, act: () => openPanel(() => window.ABRPG.runActivity(sid, actId, resume)), state: () => { const a = ST().acts && ST().acts[actId]; return a && a.plays ? (a.best >= 3 ? "star" : "done") : "new"; } }; }
 let RINGS = null;
 let MGM = null;   // v2.9: world/minigames/index.js once loaded
+let pendingMg = null;   // v3.2.2: launch a mini-game after a Classic-mode entry finishes loading the level
 function ringDefs(B) {
   return [
     lessonRing("s1-l0", 0, -3.5, 1, "camp"),
@@ -869,7 +871,38 @@ function syncChips() {
 const onMapScreen = () => !!document.querySelector("#screen .map");
 const isLvlScreen = () => window.CURRENT_PALETTE && CUR() && window.CURRENT_PALETTE === CUR().palette;
 
+
+function miniGameList(sid) {
+  return ((MG_LIVE || []).includes(sid) && MG_REG[sid] || []).map(g => ({ id: g.id, title: g.title, icon: g.icon, station: g.station }));
+}
+function playMiniGame(sid, id) {
+  if (failed) { toast("This mini-game needs the 3D world, which isn’t available on this device."); return; }
+  if (!(MG_LIVE || []).includes(sid) || !(MG_REG[sid] || []).some(g => g.id === id)) { toast("That mini-game is not available yet."); return; }
+  const fromClassic = mode() === "classic";
+  pendingMg = { sid, id, fromClassic };
+  if (mode() !== "walk") { W.mode = "walk"; W.seenIntro = true; saveW(); syncChips(); }
+  if (L.phase === "active" && L.sid === sid && L.built) launchPendingMg();
+  else enterLevel(sid);
+}
+function launchPendingMg() {
+  const p = pendingMg; if (!p || !MGM) return; pendingMg = null;
+  closeCard();
+  const rid = "mg-" + p.sid + "-" + p.id;
+  const rings = (L.lvl && L.lvl.rings) || [];
+  const r = rings.find(q => q.def && q.def.id === rid);
+  if (r) window.__world.teleport(r.def.x, r.def.z);
+  setTimeout(() => { if (L.phase === "active" && MGM && MGM.open) MGM.open(p.sid, p.id, { fromClassic: p.fromClassic }); }, 250);
+}
+function backToClassicScreens(sid) {
+  W.mode = "classic"; W.seenIntro = true; saveW();
+  if (L.phase !== "off") exitLevel(false);
+  syncChips();
+  if (window.ABRPG && window.ABRPG.sectionIntro) window.ABRPG.sectionIntro(sid);
+  toast("Back to the classic lesson screens. You can play the 3D mini-game again any time.");
+}
+
 function setMode(m, enterNow) {
+  if (MGM && MGM.active && MGM.active()) { toast("Finish or pause the mini-game first."); return; }
   if (failed && m === "walk") { toast("Walk mode isn’t available on this device, so the classic screens are on."); return; }
   W.mode = m; W.seenIntro = true; saveW();
   if (m === "classic") { if (L.phase !== "off") exitLevel(true); toast("🗂️ Classic screens are on. Tap " + WALKNAME[L.sid] + " at the top any time."); }
@@ -940,7 +973,9 @@ window.ABWorld = {
     } catch (e) { console.warn("[world] claim failed, using classic", e); }
     return false;
   },
-  get mode() { return mode(); }, get phase() { return L.phase; }
+  get mode() { return mode(); }, get phase() { return L.phase; },
+  miniGames: (sid) => miniGameList(sid),
+  playMiniGame: (sid, id) => playMiniGame(sid, id),
 };
 // the topbar 🗺️ Map button is the player choosing the map: let it through (capture phase runs first)
 document.addEventListener("click", e => { if (e.target && e.target.closest && e.target.closest("#btn-home")) { L.userMap = true; setTimeout(() => { L.userMap = false; }, 0); } }, true);
@@ -972,7 +1007,7 @@ async function ensureBuilt(sid = L.sid) {
     const [B, H, G, T, SPK, MA] = await Promise.all([import(sid === "s8" ? "./world/boston74.js" : sid === "s7" ? "./world/frontier.js" : sid === "s6" ? "./world/thirteen.js" : sid === "s5" ? "./world/colonies.js" : sid === "s4" ? "./world/empires.js" : sid === "s3" ? "./world/voyage.js" : sid === "s2" ? "./world/nations.js" : "./world/beringia.js"), import("./world/hero3d.js"), import("./world/gfx.js"), import("./world/toon.js"), import("./world/sparks.js"), import("./world/merge-ao.js")]);
     if (!L.mods) L.mods = { B, H, G };
     const rings = sid === "s8" ? ringDefsS8(B) : sid === "s7" ? ringDefsS7(B) : sid === "s6" ? ringDefsS6(B) : sid === "s5" ? ringDefsS5(B) : sid === "s4" ? ringDefsS4(B) : sid === "s3" ? ringDefsS3(B) : sid === "s2" ? ringDefsS2(B) : ringDefs(B);
-    try { MGM = MGM || await import("./world/minigames/index.js"); MGM.attach({ THREE, L, keys, joy, toast, esc, supportY, clearHeld, snapCam: () => placeCamera(0, true) }); rings.push(...MGM.ringDefs(sid)); } catch (e) { console.warn("mini-games off", e); }   // v2.9 mini-games (world/minigames)
+    try { MGM = MGM || await import("./world/minigames/index.js"); MGM.attach({ THREE, L, keys, joy, toast, esc, supportY, clearHeld, snapCam: () => placeCamera(0, true), returnClassic: backToClassicScreens }); rings.push(...MGM.ringDefs(sid)); } catch (e) { console.warn("mini-games off", e); }   // v2.9 mini-games (world/minigames)
     const aoHolder = new THREE.Group(); aoHolder.name = "contact-ao"; aoHolder.userData.noMerge = true;   // the AO helper adds its mesh here
     const mergeAO = MA.createMergeAO(THREE, aoHolder, { groundH: B.groundH });
     let lvl, cave;
@@ -1063,7 +1098,8 @@ async function enterLevel(sid = L.sid) {
   buildHero(); moveHeroTo(L.pos.x, L.pos.z, L.zone); compassSetup(sid);
   document.getElementById("w-era").textContent = sid === "s8" ? "Section 8 · The Road to Revolution, 1763–1775 · Boston: the Liberty Tree 1765, King Street 1770, the Tea Party 1773; Philadelphia 1774" : sid === "s7" ? "Section 7 · The French and Indian War, 1754–1763 · the Ohio frontier, Fort Necessity 1754, Albany 1754, Quebec 1759" : sid === "s6" ? "Section 6 · The Thirteen Colonies to 1754 · Charles Town, Williamsburg, the Great Awakening, Philadelphia, Boston, Albany 1754" : sid === "s5" ? "Section 5 · Jamestown and Plymouth · Roanoke 1587, James Fort 1607, the General Assembly 1619, the Mayflower Compact 1620" : sid === "s4" ? "Section 4 · Three Empires c. 1610 · St. Augustine 1565, Quebec 1608, Santa Fe about 1610, New Amsterdam 1624–26" : sid === "s3" ? "Section 3 · The Voyage of 1492 · Palos, Spain to the Caribbean, 1492–1493" : sid === "s2" ? "Section 2 · Native Nations of North America · about 1000 to the 1500s" : "Section 1 · Ice Age Beringia · more than 14,000 years ago";
   setPhase("active");
-  if (!W.seen[sid === "s8" ? "help8" : sid === "s7" ? "help7" : sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
+  if (pendingMg) setTimeout(() => { if (L.phase === "active") launchPendingMg(); }, 350);
+  else if (!W.seen[sid === "s8" ? "help8" : sid === "s7" ? "help7" : sid === "s6" ? "help6" : sid === "s5" ? "help5" : sid === "s4" ? "help4" : sid === "s3" ? "help3" : sid === "s2" ? "help2" : "help"]) setTimeout(() => { if (L.phase === "active" && !L.cardOpen) helpCard(); }, 400);
 }
 function resume() { if (!L.built) { enterLevel(); return; } buildHero(); setPhase("active"); }
 function resumeOrEnter() { if (L.phase === "panel") resume(); else window.ABRPG.enterSection(L.sid); }
@@ -1473,7 +1509,7 @@ window.__world = {
   stations: () => (L.mods && L.mods.B.STATIONS) || null, solid: (x, z) => solidAt(x, z), walkable: (x, z) => walkable(x, z),
   readL: sid => (W.read[sid] || []).slice(), stormOpen: () => stormOpen(), boardOpen: () => boardOpen(), sail: (k) => sailTo(k), gateOpenS4: () => gateOpenS4(), canoe: (side) => canoeTo(side), gateOpenS5: () => gateOpenS5(), gateOpenS6: () => gateOpenS6(), gateOpenS7: () => gateOpenS7(), boat7: (side) => boatToS7(side), gateOpenS8: () => gateOpenS8(), ride8: (side) => rideToS8(side), ship5: (side) => shipToS5(side),
   pathDist: (x, z) => (L.mods && L.mods.B.pathDist ? L.mods.B.pathDist(x, z) : null), meetOpen: () => meetOpen(),
-  setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
+  setMode: (m) => setMode(m), fail: (w) => fail(w || "test"), miniGames: (sid) => miniGameList(sid), playMiniGame: (sid, id) => playMiniGame(sid, id), gateOpen: () => !!(L.built && hasCloak()), caveOpen: () => caveOpen(), read: () => W.read.s1.slice(), tracks: () => W.season.tracks.slice(),
   info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), gfx: L.gfx && L.gfx.mode, deg: L.gfx && L.gfx.st.deg, aa: AA, soft: SOFT_GL, bg: bgStats }),
   _dbg: () => ({ L, renderer, THREE }),
   freezeFx: t => freezeFx(t), clearTransients: () => clearTransients(),

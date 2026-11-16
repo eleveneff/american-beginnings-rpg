@@ -5,15 +5,17 @@ import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp, person } from './lib.js';
 import { makeRunner, scrollStrip } from './runner.js';
 
 export default {
-  title: 'Birchbark Canoe', icon: '🛶', era: 'New France · 1608–1615', act: 'Portage',
+  title: 'Paddle the St. Lawrence', icon: '🛶', era: 'New France · 1608–1615', act: 'Portage',
   intro: '<b>Wendat</b>, <b>Algonquin</b> and <b>Innu</b> people built canoes of <b>birchbark</b> sewn over a light cedar frame. A canoe was strong enough for heavy loads and light enough for two people to carry.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) around rocks and logs. When the <b>⚠️ Rapids</b> sign appears, press <kbd>E</kbd> to <b>portage</b>: carry the canoe around them on land.',
+  tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd>. When you see the yellow rapids sign, press <kbd>E</kbd> to portage.',
   hint: 'Stay in the open water between the rocks, and steer early. When the yellow rapids sign comes, press E before you reach the white water.',
   fact: 'French ships could not sail past the <b>Lachine Rapids</b> near today\'s Montreal. <b>Samuel de Champlain</b>, who founded Quebec in <b>1608</b>, traveled farther inland in canoes with Native guides and allies, carrying them around rapids just like you did.',
   build(ctx) {
     const { kit, root, easy } = ctx, LIVES = easy ? 5 : 3, LEN = easy ? 55 : 50, RAP = [LEN * 0.42, LEN * 0.8];
-    ctx.heroVisible(false);
-    const river = scrollStrip(ctx, { w: 9, z0: -12, z1: 34, rep: 5, y: 0.06, opacity: 0.55, draw: (x, w, h) => {
+    ctx.heroVisible(false); ctx.isolate();
+    const basin = new THREE.Mesh(new THREE.CircleGeometry(80, 24), kit.mat({ color: '#3a6a88' })); basin.rotation.x = -Math.PI / 2; basin.position.y = -0.02; root.add(basin);
+    const river = scrollStrip(ctx, { w: 9, z0: -12, z1: 34, rep: 5, y: 0.06, opacity: 0.7, draw: (x, w, h) => {
       x.clearRect(0, 0, w, h); x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 3; for (let i = 0; i < 26; i++) { const a = Math.random() * w, b = Math.random() * h; x.beginPath(); x.moveTo(a, b); x.quadraticCurveTo(a + 8, b + 10, a, b + 22 + Math.random() * 20); x.stroke(); } } });
     // the canoe, with two paddlers
     const canoe = new THREE.Group(); const hull = new THREE.Group(); canoe.add(hull);
@@ -40,7 +42,7 @@ export default {
           R.add(log ? geoLog() : geoRock(), { x, z: 33, y: log ? 0 : 0, r: log ? 1.1 : 0.7, kind: 'bad', what: log ? 'log' : 'rock', bob: log ? 0.04 : 0 }); }
         if (dT <= 0) { dT = 0.55 + ctx.rnd() * 0.5; const side = ctx.rnd() < 0.5 ? 1 : -1; R.add(geoBank(), { x: side * 6.6, z: 35, y: 0.2, kind: 'deco' }); R.add(geoSpruce(0.8 + ctx.rnd() * 0.6), { x: side * (6.8 + ctx.rnd() * 1.5), z: 35, y: 0.3, kind: 'deco' }); }
       },
-      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, 0.3, 0.6), '#ffffff', 12, { spread: 0.9, up: 1.6 }); ctx.msg(it.what === 'log' ? 'Thunk! A log.' : 'Scrape! A rock. Careful of the bark!', 'bad', 1); },
+      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, 0.3, 0.6), '#ffffff', 12, { spread: 0.9, up: 1.6 }); ctx.msg(it.what === 'log' ? 'Thunk! A log.' : 'Scrape! A rock. Careful of the bark!', 'bad', 1); ctx.flash('bad'); ctx.sfx('splash'); },
     });
     for (let z = -8; z < 34; z += 1.4) { const side = (Math.round(z / 1.4) % 2) ? 1 : -1; R.add(geoBank(), { x: side * 6.6, z, y: 0.2, kind: 'deco' }); R.add(geoSpruce(1), { x: side * 7.2, z: z + 0.5, y: 0.3, kind: 'deco' }); }
     const st = () => ctx.status('❤️ ' + Math.max(0, LIVES - bumps) + ' · 🛶 ' + Math.min(100, Math.round(R.t / LEN * 100)) + '%' + (portW ? ' · ⚠️ Rapids!' : ''));
@@ -49,7 +51,7 @@ export default {
     return {
       start() { st(); ctx.msg('Paddle upriver!', 'info', 1.4); },
       bot(lose) { if (!lose && portW && rapIt && rapIt.z < 16) return { press: true }; return R.bot(lose); },
-      action() { if (!portW || ended) return; portW = false; portT = 3.2; rapIdx++; ctx.msg('🎒 Portage! Carry the canoe around the rapids.', 'good', 2); },
+      action() { if (!portW || ended) return; portW = false; portT = 3.2; rapIdx++; ctx.msg('🎒 Portage! Carry the canoe around the rapids.', 'good', 2); ctx.sfx('hit'); },
       update(dt, inp) {
         if (ended) return;
         R.update(dt, portT > 0 ? { x: 0, y: 0 } : inp); river.tick(R.dist); st(); pt += dt;

@@ -4,15 +4,17 @@ import { THREE, P, BOX, CYL, SPH, CONE, clamp, person } from './lib.js';
 import { makeRunner, scrollStrip } from './runner.js';
 
 export default {
-  title: 'Post Rider', icon: '✉️', era: 'The Thirteen Colonies · 1753', act: 'Jump',
+  title: 'Ride the Post Road', icon: '✉️', era: 'The Thirteen Colonies · 1753', act: 'Jump',
   intro: 'In <b>1753</b> <b>Benjamin Franklin</b> became one of the two deputy postmasters general for the colonies. Post riders carried letters and newspapers between towns on horseback.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) to grab <b>✉️ letters</b>. Dodge mud ruts and stumps, or press <kbd>E</kbd> to jump them. Collect enough letters before you reach town!',
+  tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> toward the letters. Press <kbd>E</kbd> to jump a stump or rut.',
   hint: 'Look ahead, not at the horse. Move early toward the letters, and slide around a stump before it gets close, or press E just before it to jump. You can bump 3 times.',
   fact: 'Franklin traveled the colonies to inspect post offices and post roads. He worked to make the mail faster and more regular, so colonists in different colonies could share news, newspapers and business letters.',
   build(ctx) {
     const { kit, root, easy } = ctx, NEED = easy ? 7 : 10, LIVES = easy ? 5 : 3, LEN = easy ? 60 : 55;
-    ctx.heroVisible(false);
-    const road = scrollStrip(ctx, { w: 7.2, z0: -12, z1: 34, rep: 6, follow: true, y: 0.05, draw: (x, w, h) => {
+    ctx.heroVisible(false); ctx.isolate();
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), kit.mat({ color: '#6f8a46' })); ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; root.add(ground);
+    const road = scrollStrip(ctx, { w: 7.2, z0: -12, z1: 34, rep: 6, follow: false, y: 0.05, draw: (x, w, h) => {
       x.fillStyle = '#9b7a52'; x.fillRect(0, 0, w, h); for (let i = 0; i < 400; i++) { x.fillStyle = Math.random() < 0.5 ? 'rgba(80,58,34,.35)' : 'rgba(190,160,116,.35)'; x.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 6, 2 + Math.random() * 4); }
       x.fillStyle = 'rgba(70,50,28,.45)'; x.fillRect(w * 0.3, 0, 10, h); x.fillRect(w * 0.66, 0, 10, h); x.fillStyle = '#6f8a3c'; x.fillRect(0, 0, 14, h); x.fillRect(w - 14, 0, 14, h); } });
     // horse + rider
@@ -35,29 +37,32 @@ export default {
     town.add(kit.mesh([P(BOX(4, 3, 3), '#9a4a32', -4.5, 1.5, 0), P(CONE(3.0, 1.6, 4), '#4a3a32', -4.5, 3.8, 0, 0, Math.PI / 4), P(BOX(3.6, 2.6, 3), '#d8cbb0', 4.5, 1.3, 0), P(CONE(2.7, 1.4, 4), '#5a4a3a', 4.5, 3.3, 0, 0, Math.PI / 4), P(BOX(0.1, 3.2, 0.1), '#5a3a1e', -2.2, 1.6, -1.6), P(BOX(1.4, 0.7, 0.06), '#e8d9a8', -2.2, 2.8, -1.6)]));
     kit.ink(town);
     let got = 0, bumps = 0, spawnT = 0.8, decoT = 0, ended = false, n = 0;
-    const R = makeRunner(ctx, { W: 2.5, speed: easy ? 9 : 10.5, lat: 5.2, player: horse, py: (x, z) => ctx.gy(x, z), pr: 0.4,
+    const R = makeRunner(ctx, { W: 2.5, speed: easy ? 9 : 10.5, lat: 5.2, player: horse, py: () => 0, pr: 0.4,
       spawn(dt, sp, R) {
         if (R.t > LEN - 4) { if (!town.visible) { town.visible = true; town.position.set(0, ctx.gy(0, 34), 34); } town.position.z -= sp * dt; return; }
         spawnT -= dt; decoT -= dt;
         if (spawnT <= 0) { n++; spawnT = (easy ? 1.15 : 0.95) + ctx.rnd() * 0.5;
           const x = (ctx.rnd() - 0.5) * 5, bad = ctx.rnd() < (easy ? 0.42 : 0.5) && R.t > 2.5;
-          if (bad) { const st = ctx.rnd() < 0.5; R.add(st ? geoStump() : geoRut(), { x, z: 33, y: ctx.gy(x, 33), r: st ? 0.4 : 0.55, kind: 'bad', what: st ? 'stump' : 'rut' }); }
-          else R.add(geoLetter(), { x, z: 33, y: ctx.gy(x, 33) + 1.0, r: 0.45, kind: 'good', bob: 0.12, spin: 2.2 }); }
+          if (bad) { const st = ctx.rnd() < 0.5; R.add(st ? geoStump() : geoRut(), { x, z: 33, y: 0, r: st ? 0.4 : 0.55, kind: 'bad', what: st ? 'stump' : 'rut' }); }
+          else R.add(geoLetter(), { x, z: 33, y: 1.0, r: 0.45, kind: 'good', bob: 0.12, spin: 2.2 }); }
         if (decoT <= 0) { decoT = 0.7 + ctx.rnd() * 0.8; const side = ctx.rnd() < 0.5 ? 1 : -1, x = side * (5.2 + ctx.rnd() * 3);
-          R.add(ctx.rnd() < 0.3 ? geoFence() : geoTree(0.8 + ctx.rnd() * 0.5), { x, z: 34, y: ctx.gy(x, 34), kind: 'deco' }); }
+          R.add(ctx.rnd() < 0.3 ? geoFence() : geoTree(0.8 + ctx.rnd() * 0.5), { x, z: 34, y: 0, kind: 'deco' }); }
       },
-      onGood(it) { got++; kit.puff(new THREE.Vector3(it.x, it.obj.position.y, 0.3), '#fff6d8', 8, { up: 1.4 }); ctx.msg('✉️ ' + got + '/' + NEED, 'good', 0.7); },
-      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, ctx.gy(it.x, 0) + 0.3, 0.4), it.what === 'rut' ? '#5a4028' : '#9a7a4a', 10, { spread: 0.8, up: 1.2 }); ctx.msg(it.what === 'rut' ? 'Splash! A muddy rut.' : 'Bump! A stump.', 'bad', 0.9); },
+      onGood(it) { got++; kit.puff(new THREE.Vector3(it.x, it.obj.position.y, 0.3), '#fff6d8', 8, { up: 1.4 }); ctx.msg('✉️ ' + got + '/' + NEED, 'good', 0.7); ctx.sfx('hit'); },
+      onBad(it) { bumps++; kit.puff(new THREE.Vector3(it.x, 0.3, 0.4), it.what === 'rut' ? '#5a4028' : '#9a7a4a', 10, { spread: 0.8, up: 1.2 }); ctx.msg(it.what === 'rut' ? 'Splash! A muddy rut.' : 'Bump! A stump.', 'bad', 0.9); ctx.flash('bad'); ctx.sfx('miss'); },
     });
     // fill the roadside at the start so it is not empty
-    for (let z = -6; z < 34; z += 2.2) { const side = (z * 7 | 0) % 2 ? 1 : -1, x = side * (5.2 + ((z * 13) % 3 + 3) % 3); R.add(geoTree(0.9), { x, z, y: ctx.gy(x, z), kind: 'deco' }); }
+    for (let z = -6; z < 34; z += 2.2) { const side = (z * 7 | 0) % 2 ? 1 : -1, x = side * (5.2 + ((z * 13) % 3 + 3) % 3); R.add(geoTree(0.9), { x, z, y: 0, kind: 'deco' }); }
+    const mile = kit.mesh([P(BOX(0.18, 1.6, 0.12), '#8a6a44', 0, 0.8, 0), P(BOX(0.85, 0.45, 0.08), '#d8c9a0', 0, 1.45, 0.04)]);
+    const mileLab = kit.label('Phila. →', { size: 1.2, bg: 'rgba(40,30,15,.8)', color: '#f2ead6', font: 'bold 36px Trebuchet MS, sans-serif' }); mile.add(mileLab); mileLab.position.set(0, 2.15, 0);
+    R.add(mile, { x: 4.2, z: 22, y: 0, kind: 'deco' });
     const st = () => ctx.status('✉️ ' + got + '/' + NEED + ' · ❤️ ' + Math.max(0, LIVES - bumps) + ' · 🏁 ' + Math.min(100, Math.round(R.t / LEN * 100)) + '%');
-    ctx.cam(0, ctx.gy(0, -6) + 3.6, -6.6, 0, 1.2, 9, true);
+    ctx.cam(0, 3.6, -6.6, 0, 1.2, 9, true);
     let gal = 0;
     return {
       start() { st(); ctx.msg('Ride for Philadelphia!', 'info', 1.4); },
       bot: lose => R.bot(lose),
-      action() { if (!ended && R.jump()) kit.puff(new THREE.Vector3(R.px, ctx.gy(R.px, 0) + 0.1, -0.6), '#b89a70', 6, { up: 0.8 }); },
+      action() { if (!ended && R.jump()) { kit.puff(new THREE.Vector3(R.px, 0.1, -0.6), '#b89a70', 6, { up: 0.8 }); ctx.sfx('jump'); } },
       update(dt, inp) {
         if (ended) return; R.update(dt, inp); road.tick(R.dist); st();
         gal += dt * 11; legs.forEach((l, i) => l.rotation.x = Math.sin(gal + (i < 2 ? 0 : Math.PI) + (i % 2) * 0.6) * 0.6); body.rotation.x = Math.sin(gal * 2) * 0.03;

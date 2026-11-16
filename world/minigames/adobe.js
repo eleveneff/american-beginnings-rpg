@@ -7,10 +7,11 @@ export default {
   title: 'Make Adobe Bricks', icon: '🧱', era: 'Spanish New Mexico · Santa Fe, about 1610', act: 'Mix',
   intro: '<b>Adobe</b> is mud made of <b>clay, sand, water and straw</b>, dried hard in the sun. Pueblo peoples had built with mud for centuries. Spanish settlers brought <b>wooden molds</b> that shaped it into bricks, and they built <b>Santa Fe</b> from them.',
   how: 'For each brick: press <kbd>E</kbd> when the needle is in the <b>green</b> to get the mix right, tap <kbd>E</kbd> fast to <b>pack</b> the mold, then press <kbd>E</kbd> in the green to <b>lift</b> the mold. Make <b>3 bricks</b>.',
+  tryit: 'Watch the needle. Press <kbd>E</kbd> when it is in the green — not too dry, not too wet.',
   hint: 'The needle swings the same way every time: wait for it to come back toward the green and press just before it gets there. Packing: tap, tap, tap! Lifting: wait until the mud has settled into the green.',
   fact: 'The <b>Palace of the Governors</b> in Santa Fe was built of adobe starting around 1610. It is one of the oldest public buildings in the United States still in use. Thick adobe walls stay cool in summer and hold warmth in winter.',
   build(ctx) {
-    const { kit, root, easy } = ctx, N = 3, BAD = easy ? 5 : 3, ZW = easy ? 0.26 : 0.18, PACK = 5, TIME = easy ? 150 : 120;
+    const { kit, root, easy } = ctx, N = 3, BAD = easy ? 5 : 3, ZW0 = easy ? 0.3 : 0.24, ZW = easy ? 0.26 : 0.2, PACK = 5, TIME = easy ? 150 : 120;
     ctx.isolate();
     const g = [];
     g.push(P(BOX(80, 0.4, 70), '#c8a674', 0, -0.2, 8, 0, 0, 0, 1, 1, 1, 0.04));
@@ -40,7 +41,8 @@ export default {
     const made = [];
     let brick = 0, bad = 0, step = 'mix', t = 0, nd = 0, nv = 1, packs = 0, packT = 0, fill = 0, lift = 0, ended = false, pend = null, zone = [0, 0], spot = 0;
     const SPOTS = [1.1, 0, -1.1];
-    const newZone = () => { const c = 0.3 + ctx.rnd() * 0.4; zone = [c - ZW / 2, c + ZW / 2]; };
+    const zW = () => (brick === 0 && step !== 'lift' ? ZW0 : ZW);
+    const newZone = () => { const c = 0.3 + ctx.rnd() * 0.4, w = zW(); zone = [c - w / 2, c + w / 2]; };
     const setStep = s => { step = s; nd = 0; nv = 1; packs = 0; packT = 0; lift = 0;
       if (s === 'mix') { newZone(); fill = 0; } ctx.actLabel({ mix: 'Mix', pack: 'Pack', lift: 'Lift' }[s]); };
     const st = () => ctx.status('🧱 ' + brick + '/' + N + ' bricks · ' + { mix: '🥣 Mix', pack: '👐 Pack', lift: '⬆️ Lift' }[step] + ' · ❌ ' + bad + '/' + BAD + ' · ⏱ ' + Math.max(0, Math.ceil(TIME - t)));
@@ -49,7 +51,9 @@ export default {
     const hero = () => ctx.placeHero(mx() - 0.95, 0, MZ + 0.15, Math.PI / 2 - 0.2); hero();
     const camSet = snap => ctx.cam(mx() + 0.35, 2.3, MZ - 2.0, mx() - 0.15, 0.1, MZ + 0.7, snap);
     camSet(true); setStep('mix'); place();
-    const badMix = why => { bad++; ctx.msg(why, 'bad', 1.2); kit.puff(new THREE.Vector3(-4.2, 0.4, 3.6), '#8a6038', 8, { spread: 0.6, up: 0.8 }); st();
+    const badMix = why => {
+      if (ctx.grace(why + ' This first miss does not count — watch the green and try again.')) { st(); return; }
+      bad++; ctx.msg(why, 'bad', 1.2); ctx.flash('bad'); ctx.sfx('miss'); kit.puff(new THREE.Vector3(-4.2, 0.4, 3.6), '#8a6038', 8, { spread: 0.6, up: 0.8 }); st();
       if (bad >= BAD) { ended = true; pend = { t: 0.9, f: () => ctx.lose('Too many batches went wrong. You made ' + brick + ' of ' + N + ' bricks.') }; } };
     return {
       start() { st(); ctx.msg('Brick 1: mix the mud', 'info', 1.4); },
@@ -58,7 +62,7 @@ export default {
         const c = (zone[0] + zone[1]) / 2; if (lose) return { press: Math.abs(nd - c) > 0.35 && nd > 0.05 && nd < 0.95 };
         return { press: Math.abs(nd - c) < ZW * 0.2 }; },
       action() { if (ended || pend) return;
-        if (step === 'mix') { if (nd >= zone[0] && nd <= zone[1]) { ctx.msg('👌 Just right!', 'good'); fill = 0.25; setStep('pack'); kit.puff(new THREE.Vector3(mx(), 0.3, MZ), '#9a6a40', 6, { spread: 0.3, up: 0.6 }); }
+        if (step === 'mix') { if (nd >= zone[0] && nd <= zone[1]) { ctx.msg('👌 Just right!', 'good'); ctx.flash('good'); ctx.sfx('hit'); fill = 0.25; setStep('pack'); kit.puff(new THREE.Vector3(mx(), 0.3, MZ), '#9a6a40', 6, { spread: 0.3, up: 0.6 }); }
           else badMix(nd < zone[0] ? 'Too dry! It will crumble. Mix again.' : 'Too wet! It will slump. Mix again.'); st(); return; }
         if (step === 'pack') { if (packT < 0.08) return; packT = 0; packs++; fill = Math.min(1, 0.25 + packs / PACK * 0.75); tamp.position.y = 0.25;
           kit.puff(new THREE.Vector3(mx(), 0.2, MZ), '#8a6038', 4, { spread: 0.3, up: 0.5 });
@@ -76,7 +80,7 @@ export default {
         tamp.position.y = lerp(tamp.position.y, 0.6, Math.min(1, dt * 10));
         if (pend) { pend.t -= dt; if (pend.t <= 0) { const f = pend.f; pend = null; f(); } place(); tamp.position.y = 0.6; return; }
         if (ended) return;
-        if (step === 'mix' || step === 'lift') { const sp = step === 'mix' ? (easy ? 0.55 : 0.75) : (easy ? 0.45 : 0.6); nd += nv * sp * dt; if (nd > 1) { nd = 1; nv = -1; } if (nd < 0) { nd = 0; nv = 1; }
+        if (step === 'mix' || step === 'lift') { const sp = step === 'mix' ? ((easy ? 0.5 : 0.62) * (brick === 0 ? 0.85 : 1)) : (easy ? 0.45 : 0.58); nd += nv * sp * dt; if (nd > 1) { nd = 1; nv = -1; } if (nd < 0) { nd = 0; nv = 1; }
           ctx.meter(nd, { zone, label: step === 'mix' ? 'too dry ← mix → too wet' : 'too soon ← lift → too late' }); }
         else ctx.meter(packs / PACK, { fill: true, label: 'Tap to pack! ' + packs + '/' + PACK });
         if (step === 'lift') mold.position.y = 0;

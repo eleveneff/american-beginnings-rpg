@@ -16,11 +16,12 @@ const LITTLE = [[-2.4, 26.3], [-4.6, 24.8], [-6.2, 21.2], [-9.4, 22.6], [-8.6, 1
 export default {
   title: 'Sight the North Star', icon: '⭐', era: 'Columbus\'s first voyage · 1492', act: 'Sight',
   intro: 'Out on the dark ocean there are no landmarks. Sailors in <b>1492</b> could look for <b>Polaris</b>, the North Star. How high it sits above the horizon tells you roughly how far north you are (your <b>latitude</b>). Columbus carried a <b>quadrant</b> to measure it.',
-  how: 'Move the sight with <kbd>W</kbd> <kbd>A</kbd> <kbd>Z</kbd> <kbd>S</kbd> (or arrows). Follow the Big Dipper\'s two <b>pointer stars</b> to Polaris and press <kbd>E</kbd>. Then keep Polaris inside the ring while the ship rolls, for <b>2 readings</b>.',
+  how: 'Move the quadrant sight with <kbd>W</kbd> <kbd>A</kbd> <kbd>Z</kbd> <kbd>S</kbd> (or arrows). Follow the Big Dipper\'s two <b>pointer stars</b> to Polaris and press <kbd>E</kbd>. Then keep Polaris inside the ring while the ship rolls, for <b>2 readings</b>.',
+  tryit: 'Move with <kbd>W</kbd> <kbd>A</kbd> <kbd>Z</kbd> <kbd>S</kbd>. Follow the two stars at the end of the Dipper\'s cup up to Polaris, then press <kbd>E</kbd>.',
   hint: 'Find the Big Dipper (the bright cup with a handle, lower left). The two stars on the outer edge of the cup point straight up to Polaris. While holding a reading, move gently against the roll of the ship.',
   fact: 'Columbus brought a quadrant on his 1492 voyage, but it was very hard to use on a rolling deck, and some of his readings were far off. Mostly he found his way by <b>dead reckoning</b>: keeping track of his compass direction, his speed and how much time had passed.',
   build(ctx) {
-    const { kit, root, easy, L } = ctx, TIME = easy ? 120 : 90, FINDR = easy ? 3.0 : 2.2, HOLDR = easy ? 3.6 : 2.6, NEED = easy ? 2.0 : 2.5, ROLL = easy ? 0.6 : 1.0;
+    const { kit, root, easy, L } = ctx, TIME = (easy ? 120 : 90) + (ctx.tries === 0 ? 25 : 0), FINDR = easy ? 3.0 : 2.2, HOLDR = easy ? 3.6 : 2.6, NEED = easy ? 2.0 : 2.5, ROLL = easy ? 0.6 : 1.0;
     ctx.isolate([], ['sky', 'sea', 'sea-floor']); ctx.heroVisible(true);
     const sc = L.lvl.scene, oldFog = sc.fog, lights = []; sc.fog = null;
     sc.traverse(o => { if (o.isLight && !root.getObjectById(o.id)) { lights.push([o, o.intensity]); o.intensity *= 0.3; } });
@@ -71,10 +72,20 @@ export default {
     const lglow = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: glowT, color: '#ffb84a', transparent: true, depthWrite: false, fog: false }))); lglow.position.set(-1.8, 2.05, 3.2); lglow.scale.setScalar(1.4); ship.add(lglow);
     const lamp = new THREE.PointLight('#ffb050', 1.2, 7, 1.5); lamp.position.set(-1.6, 2.3, 3.0); ship.add(lamp);
     kit.ink(ship);
-    // ---- the sight: a ring + cross that sits in the sky, moved by the player
-    const sightT = kit.canvasTex(128, 128, x => { x.strokeStyle = '#3ee0b0'; x.lineWidth = 6; x.beginPath(); x.arc(64, 64, 56, 0, Math.PI * 2); x.stroke(); x.lineWidth = 3; x.beginPath(); x.moveTo(64, 0); x.lineTo(64, 40); x.moveTo(64, 88); x.lineTo(64, 128); x.moveTo(0, 64); x.lineTo(40, 64); x.moveTo(88, 64); x.lineTo(128, 64); x.stroke(); });
+    // ---- the sight: a simple aperture ring (not a modern reticle), plus a period quadrant in the lower-right of the view
+    const sightT = kit.canvasTex(128, 128, x => { x.strokeStyle = '#3ee0b0'; x.lineWidth = 7; x.beginPath(); x.arc(64, 64, 54, 0, Math.PI * 2); x.stroke(); x.strokeStyle = 'rgba(62,224,176,.45)'; x.lineWidth = 3; x.beginPath(); x.arc(64, 64, 20, 0, Math.PI * 2); x.stroke(); });
     const sight = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: sightT, transparent: true, depthWrite: false, depthTest: false, fog: false }))); sight.renderOrder = 9; root.add(sight);
-    let saz = -6, sel = 12, phase = 'find', t = 0, wrong = 0, hold = 0, readings = 0, ended = false, pend = null;
+    const quad = new THREE.Group();
+    const qFrame = [];
+    // wooden quarter-circle frame, degree ticks, a sight vane and a hanging plumb bob — the instrument Columbus carried
+    for (let i = 0; i <= 12; i++) { const a = (i / 12) * Math.PI / 2, r = 0.85; qFrame.push(P(CYL(0.012, 0.012, 0.06, 5), '#e8d9a8', Math.cos(a) * r, Math.sin(a) * r, 0, 0, 0, a + Math.PI / 2)); }
+    for (let i = 0; i < 16; i++) { const a0 = (i / 16) * Math.PI / 2, a1 = ((i + 1) / 16) * Math.PI / 2, am = (a0 + a1) / 2; qFrame.push(P(BOX(0.12, 0.05, 0.05), '#6b4a2a', Math.cos(am) * 0.88, Math.sin(am) * 0.88, 0, 0, 0, am + Math.PI / 2)); }
+    qFrame.push(P(BOX(0.9, 0.05, 0.05), '#5a3a1e', 0.45, 0, 0), P(BOX(0.05, 0.9, 0.05), '#5a3a1e', 0, 0.45, 0));
+    qFrame.push(P(BOX(0.08, 0.16, 0.04), '#3a2414', 0.9, 0.02, 0.02)); // sight vane
+    const qMesh = kit.mesh(qFrame); quad.add(qMesh);
+    const bob = kit.mesh([P(CYL(0.01, 0.01, 0.55, 5), '#c8b060', 0, -0.28, 0), P(SPH(0.05, 6, 4), '#c8b060', 0, -0.58, 0)]); quad.add(bob);
+    quad.position.set(1.05, 1.55, 0.15); quad.scale.setScalar(0.85); ship.add(quad); kit.ink(quad);
+    let saz = -6, sel = 12, phase = 'find', t = 0, wrong = 0, hold = 0, readings = 0, ended = false, pend = null, hinted = false;
     const polW = new THREE.Vector3(), tmp = new THREE.Vector3(), q = new THREE.Quaternion();
     const polAzEl = () => { tmp.copy(dir(POL[0], POL[1])).applyQuaternion(skyG.quaternion); return [Math.atan2(tmp.x, tmp.z) / D2R, Math.asin(tmp.y / tmp.length()) / D2R]; };
     const starAzEl = (a, e) => { tmp.copy(dir(a, e)).applyQuaternion(skyG.quaternion); return [Math.atan2(tmp.x, tmp.z) / D2R, Math.asin(tmp.y / tmp.length()) / D2R]; };
@@ -91,14 +102,17 @@ export default {
         const [pa, pe] = polAzEl(); const dA = pa - saz, dE = pe - sel; const x = Math.abs(dA) < 0.35 ? 0 : (dA > 0 ? -1 : 1), y = Math.abs(dE) < 0.35 ? 0 : (dE > 0 ? 1 : -1);
         return { x, y, press: phase === 'find' && off() < FINDR * 0.5 }; },
       action() { if (ended || pend || phase !== 'find') return;
-        if (off() <= FINDR) { phase = 'hold'; hold = 0; polLab.visible = true; guideK = Math.max(guideK, 1); ctx.msg('⭐ That\'s Polaris!', 'good', 1.3); kit.puff(dir(...POL, 40).add(CAM), '#fff3b0', 10, { spread: 0.8, up: 0.4, grav: 0 }); st(); return; }
+        if (off() <= FINDR) { phase = 'hold'; hold = 0; polLab.visible = true; guideK = Math.max(guideK, 1); ctx.msg('⭐ That\'s Polaris!', 'good', 1.3); ctx.flash('good'); ctx.sfx('hit'); kit.puff(dir(...POL, 40).add(CAM), '#fff3b0', 10, { spread: 0.8, up: 0.4, grav: 0 }); st(); return; }
         // a gentle "not that one": name the bright star if it is one
         let near = null, best = 9; for (const [n, [a, e]] of Object.entries(NAMED)) { const [sa, se] = starAzEl(a, e); const d = Math.hypot(sa - saz, se - sel); if (d < best) { best = d; near = n; } }
         wrong++; guideK = Math.max(guideK, Math.min(1, wrong * 0.35));
-        ctx.msg(best < 3 ? 'That\'s ' + near + '. Follow the pointer stars up!' : 'No bright star there. Find the Big Dipper first.', 'bad', 1.6);
+        ctx.msg(best < 3 ? 'That\'s ' + near + '. Follow the pointer stars up!' : 'No bright star there. Find the Big Dipper first.', 'bad', 1.6); ctx.sfx('miss');
       },
       update(dt, inp) {
         t += dt; roll(dt);
+        if (bob) bob.rotation.z = -skyG.rotation.z; // plumb hangs true while the ship rolls
+        if (phase === 'find' && !easy && t > 14 && guideK < 0.75) guideK = Math.max(guideK, Math.min(0.75, (t - 14) / 18));
+        if (phase === 'find' && t > 14 && !hinted) { hinted = true; ctx.msg('Follow the two stars at the end of the Dipper\'s cup, straight up to Polaris.', 'info', 3.2); }
         guide.geometry.setDrawRange(0, Math.round(guideK * 21));
         if (pend) { pend.t -= dt; if (pend.t <= 0) { const f = pend.f; pend = null; f(); } return; }
         if (ended) return;

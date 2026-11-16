@@ -13,8 +13,9 @@ export default {
   title: 'Sail the Trade Winds', icon: '⛵', era: 'Columbus · 1492', act: 'Steer',
   intro: 'In 1492 <b>Columbus</b> sailed west with three ships: the <b>Santa María</b>, the <b>Pinta</b> and the <b>Niña</b>. Steady winds from the east, the <b>trade winds</b>, pushed them across the Atlantic.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) into the <b>💨 wind gusts</b> to keep your sails full. Go around the glassy <b>calm patches</b>. If the wind runs out, the crew wants to turn back!',
+  tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> into the pale wind gusts. Go around the dark calm patches.',
   hint: 'Keep the wind bar from running out: steer early toward each gust, and slide around the smooth, dark calm patches.',
-  fact: 'On <b>October 10</b> the tired crew grumbled and wanted to turn back. Two days later, at about <b>2 a.m. on October 12, 1492</b>, the lookout <b>Rodrigo de Triana</b> on the Pinta saw land: an island in the Bahamas.',
+  fact: 'At about <b>2 a.m. on October 12, 1492</b>, sailor <b>Rodrigo de Triana</b> on the <b>Pinta</b> sighted land: an island the Taíno called <b>Guanahani</b>, which Columbus named <b>San Salvador</b>. Columbus said he had seen a light earlier that night, and he claimed the <b>10,000-maravedí</b> reward the crown had offered to the first person to see land.',
   build(ctx) {
     const { kit, root, easy } = ctx, LEN = easy ? 62 : 58, DECAY = easy ? 0.045 : 0.06;
     ctx.heroVisible(true); ctx.isolate();
@@ -31,9 +32,19 @@ export default {
     root.add(ship); kit.ink(ship);
     const wakeM = kit.basic({ color: '#ffffff', transparent: true, opacity: 0.4, depthWrite: false });
     for (const sx of [1, -1]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 6), wakeM); m.rotation.x = -Math.PI / 2; m.rotation.z = sx * 0.25; m.position.set(sx * 1.2, 0.08, -6); ship.add(m); }
-    // the other two ships sailing alongside, far off
-    const mini = () => { const g = new THREE.Group(); g.add(kit.mesh([P(SPH(1, 10, 6), '#6a4526', 0, 0.3, 0, 0, 0, 0, 1.1, 0.8, 3.2), P(BOX(2, 0.8, 1.3), '#6a4526', 0, 1.2, -2.2), P(CYL(0.08, 0.1, 5.5, 6), '#4a2e18', 0, 3.4, 0.2)])); const s = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.6), kit.mat({ color: '#efe6d0', side: THREE.DoubleSide })); s.position.set(0, 4, 0.3); g.add(s); kit.ink(g); return g; };
-    const pinta = mini(); pinta.position.set(-11, 0, 14); root.add(pinta); const nina = mini(); nina.position.set(12, 0, 6); nina.scale.setScalar(0.85); root.add(nina);
+    // Castile-and-León style flag (quartered red and gold) and two distinct caravels alongside the nao
+    const flag = () => { const t = kit.canvasTex(64, 48, (x, w, h) => { x.fillStyle = '#c8202a'; x.fillRect(0, 0, w, h); x.fillStyle = '#e8c040'; x.fillRect(0, 0, w/2, h/2); x.fillRect(w/2, h/2, w/2, h/2); }); const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.5), kit.mat({ map: t, side: THREE.DoubleSide })); return m; };
+    const caravel = (lateenMain, scale) => {
+      const g = new THREE.Group();
+      g.add(kit.mesh([P(SPH(1, 10, 6), '#6a4526', 0, 0.28, 0, 0, 0, 0, 0.95, 0.7, 2.7), P(BOX(1.7, 0.55, 1.0), '#6a4526', 0, 1.05, -1.9), P(CYL(0.07, 0.09, 4.6, 6), '#4a2e18', 0, 3.0, 0.15), P(CYL(0.055, 0.07, 3.4, 6), '#4a2e18', 0, 2.5, -1.7)]));
+      if (lateenMain) { const s = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 2.4), kit.mat({ color: '#efe6d0', side: THREE.DoubleSide })); s.position.set(0, 2.9, 0.25); s.rotation.y = 0.45; g.add(s); }
+      else { const s = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.1), kit.mat({ color: '#efe6d0', side: THREE.DoubleSide })); s.position.set(0, 3.2, 0.25); g.add(s); }
+      const miz = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.6), kit.mat({ color: '#efe6d0', side: THREE.DoubleSide })); miz.position.set(0, 2.4, -1.55); miz.rotation.y = 0.55; g.add(miz);
+      const fl = flag(); fl.position.set(0.15, 5.1, 0.15); g.add(fl); kit.ink(g); g.scale.setScalar(scale || 1); return g;
+    };
+    const pinta = caravel(false, 1.05); pinta.position.set(-11, 0, 14); root.add(pinta);
+    const nina = caravel(true, 0.85); nina.position.set(12, 0, 8); root.add(nina);
+    const smFlag = flag(); smFlag.position.set(0.2, 8.2, 0.3); ship.add(smFlag);
     const gustTex = kit.canvasTex(128, 64, (x, w, h) => { x.strokeStyle = '#fff'; x.lineCap = 'round'; for (const [y, l] of [[16, 90], [32, 110], [48, 80]]) { x.lineWidth = 7; x.beginPath(); x.moveTo(10, y); x.lineTo(10 + l * 0.7, y); x.arc(10 + l * 0.7, y - 8, 8, Math.PI / 2, -Math.PI, true); x.stroke(); } });
     const geoGust = () => { const s = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: gustTex, color: '#bff4ff', transparent: true, depthWrite: false }))); s.scale.set(2.4, 1.2, 1); const g = new THREE.Group(); g.add(s); s.position.y = 2.2; return g; };
     const calmMat = kit.basic({ color: '#1d4e6a', transparent: true, opacity: 0.55, depthWrite: false });
@@ -55,18 +66,19 @@ export default {
         sT -= dt; if (sT <= 0) { sT = (easy ? 0.95 : 1.05) + ctx.rnd() * 0.5; const x = (ctx.rnd() - 0.5) * 7.2;
           if (ctx.rnd() < 0.62 || R.t < 3) R.add(geoGust(), { x, z: 33, r: 0.9, kind: 'good', bob: 0.25 }); else R.add(geoCalm(), { x, z: 33, r: 1.2, rz: 1.6, kind: 'bad', jumpable: false }); }
       },
-      onGood(it) { wind = Math.min(1, wind + (easy ? 0.3 : 0.25)); kit.puff(new THREE.Vector3(it.x, 2.5, 0.5), '#dff8ff', 8, { up: 0.6, grav: 0 }); ctx.msg('💨 Full sails!', 'good', 0.6); },
+      onGood(it) { wind = Math.min(1, wind + (easy ? 0.3 : 0.25)); kit.puff(new THREE.Vector3(it.x, 2.5, 0.5), '#dff8ff', 8, { up: 0.6, grav: 0 }); ctx.msg('💨 Full sails!', 'good', 0.6); ctx.sfx('wind'); },
       onBad() { wind = Math.max(0, wind - 0.22); ctx.msg('😶 Calm water: the sails go slack.', 'bad', 1); },
     });
     R.bumpT = 0;
     const date = () => { const d = new Date(START + (END - START) * clamp(R.t / LEN, 0, 1)); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); };
     const st = () => { const d = date(); ctx.status('📅 ' + d + ', 1492'); if (!ended) ctx.meter(wind, { fill: true, zone: [0, 0.2], label: '💨 Wind in the sails' }); };
     ctx.placeHero(0, 1.3, -1.2, 0); ctx.cam(0, 6.5, -12.5, 0, 2.6, 10, true);
+    ctx.actLabel('Steer with A / S', 'A/S');
     let pt = 0, grumbled = false;
     return {
-      start() { st(); ctx.msg('Sept 9, 1492: land drops out of sight. Sail west!', 'info', 2.4); },
+      start() { st(); ctx.actLabel('Steer with A / S', 'A/S'); ctx.msg('Land drops out of sight. Sail west with the trade winds!', 'info', 2.4); },
       bot: lose => R.bot(lose),
-      action() { ctx.msg('Use ◀ ▶ (A / S) to steer into the gusts.', 'info', 1.4); },
+      action() { ctx.msg('Use A / S (or ◀ ▶) to steer into the gusts. You do not need E on this crossing.', 'info', 1.6); },
       idle(dt) { pt += dt; ship.position.y = Math.sin(pt * 1.4) * 0.08; },
       update(dt, inp) {
         if (ended) return; pt += dt;
@@ -78,8 +90,8 @@ export default {
         for (const s of [pinta, nina]) s.position.y = Math.sin(pt * 1.2 + s.position.x) * 0.1;
         ctx.placeHero(R.px, 1.3 + ship.position.y, -1.2, 0);
         if (wind < 0.2 && !grumbled) { grumbled = true; ctx.msg('😟 The crew grumbles... catch some wind!', 'bad', 1.8); } if (wind > 0.35) grumbled = false;
-        if (wind <= 0) { ended = true; return ctx.lose('The wind died, and the tired crew wanted to turn back. On the real voyage, Columbus kept sailing west.'); }
-        if (R.t >= LEN) { ended = true; ctx.msg('🏝️ ¡Tierra! Land!', 'good', 2); return ctx.win('Oct 12, 1492, 2 a.m.: ¡Tierra! Land, 33 days after the last land dropped out of sight!'); }
+        if (wind <= 0) { ended = true; ctx.sfx('miss'); return ctx.lose('The wind died, and the tired crew wanted to turn back. On the real voyage, Columbus kept sailing west.'); }
+        if (R.t >= LEN) { ended = true; ctx.msg('🏝️ ¡Tierra! Land!', 'good', 2); ctx.flash('good'); return ctx.win('Oct 12, 1492, about 2 a.m.: Rodrigo de Triana on the Pinta sighted land — Guanahani, which Columbus named San Salvador.'); }
       },
     };
   }

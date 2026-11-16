@@ -7,6 +7,7 @@ export default {
   title: 'Salmon Dip-Net', icon: '🐟', era: 'Pacific Northwest · long before 1492', act: 'Scoop',
   intro: 'Every year, huge runs of <b>salmon</b> swam up the rivers of the Pacific Northwest. At waterfalls like <b>Celilo Falls</b> on the Columbia River, fishers stood on <b>wooden platforms</b> and caught leaping salmon with long-handled <b>dip nets</b>.',
   how: 'Slide the net with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶). When a salmon <b>leaps</b> into your net\'s glowing ring, press <kbd>E</kbd> to scoop!',
+  tryit: 'Move the net with <kbd>A</kbd> / <kbd>S</kbd>. Press <kbd>E</kbd> when a salmon leaps through the glowing ring.',
   hint: 'Watch for the splash: a fish jumps from that spot a moment later. Move the net over the splash, then press E while the fish is up in the air.',
   fact: 'People fished at Celilo Falls for more than 10,000 years. They dried and smoked salmon to eat all winter and traded it far and wide. Many peoples held a <b>First Salmon Ceremony</b> to give thanks, and they let plenty of fish swim on upriver so the salmon would return the next year.',
   build(ctx) {
@@ -20,7 +21,7 @@ export default {
       gr.push(P(CYL(0.15, 0.22, 1.2, 5), '#4a3220', x, GL + 0.6 + (z > 10.5 ? 0.3 : 0), z), P(CONE(0.9 + h * 0.12, h, 7), i % 3 ? '#1f4a2e' : '#2a5a36', x, GL + 1.2 + h / 2 + (z > 10.5 ? 0.3 : 0), z)); }
     root.add(kit.mesh(gr, { recv: true }));
     const water = new THREE.Mesh(new THREE.PlaneGeometry(15.4, 10.6), kit.mat({ color: '#3a7aa0' })); water.rotation.x = -Math.PI / 2; water.position.set(0, bed, 5); root.add(water);
-    const fallsTex = kit.canvasTex(64, 256, (x, w, h) => { x.fillStyle = '#9fd0e8'; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 3; for (let i = 0; i < 40; i++) { const a = Math.random() * w; x.beginPath(); x.moveTo(a, Math.random() * h); x.lineTo(a, Math.random() * h); x.stroke(); } });
+    const fallsTex = kit.canvasTex(128, 256, (x, w, h) => { const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#d8f0fa'); gr.addColorStop(0.4, '#9fd0e8'); gr.addColorStop(1, '#eef8ff'); x.fillStyle = gr; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(255,255,255,.9)'; for (let i = 0; i < 70; i++) { x.lineWidth = 1.5 + Math.random() * 3; const a = Math.random() * w; x.beginPath(); x.moveTo(a, 0); x.quadraticCurveTo(a + (Math.random()-0.5)*14, h*0.5, a + (Math.random()-0.5)*8, h); x.stroke(); } });
     fallsTex.wrapT = THREE.RepeatWrapping; fallsTex.repeat.set(4, 1);
     const falls = new THREE.Mesh(new THREE.PlaneGeometry(15.2, 2.95), kit.track(new THREE.MeshBasicMaterial({ map: fallsTex }))); falls.position.set(0, bed + 1.47, 10.25); falls.rotation.y = Math.PI; root.add(falls);
     const top = new THREE.Mesh(new THREE.PlaneGeometry(15.2, 20), kit.mat({ color: '#4a8ab0' })); top.rotation.x = -Math.PI / 2; top.position.set(0, GL + 0.33, 20.6); root.add(top);
@@ -51,9 +52,9 @@ export default {
         return { x: Math.abs(dx) < 0.15 ? 0 : (dx > 0 ? -1 : 1), press: up && Math.abs(dx) < NR * 0.6 && f.k > 0.25 && f.k < 0.75 && scoop <= 0 }; },
       action() { if (ended || scoop > 0) return; scoop = 0.45;
         let got = null; for (const f of fish) if (!f.done && f.k > 0.12 && f.k < 0.9 && Math.abs(f.x - nx) < NR) { got = f; break; }
-        if (got) { got.done = true; got.caught = true; caught++; kit.puff(new THREE.Vector3(nx, NY, NETZ), '#bfe6ff', 12, { spread: 0.6, up: 1.6 }); ctx.msg(['Got one!', 'Nice scoop!', 'Salmon!', 'Great catch!'][caught % 4], 'good'); st();
+        if (got) { got.done = true; got.caught = true; caught++; kit.puff(new THREE.Vector3(nx, NY, NETZ), '#bfe6ff', 12, { spread: 0.6, up: 1.6 }); ctx.msg(['Got one!', 'Nice scoop!', 'Salmon!', 'Great catch!'][caught % 4], 'good'); ctx.flash('good'); ctx.sfx('scoop'); st();
           if (caught >= NEED) { ended = true; pend = { t: 0.8, f: () => ctx.win('You scooped ' + caught + ' salmon, and ' + missed + ' swam on upriver.') }; } }
-        else ctx.msg('Missed! Wait for a leap.', 'bad', 0.9);
+        else { ctx.msg('Missed! Wait for a leap.', 'bad', 0.9); ctx.sfx('miss'); }
       },
       update(dt, inp) {
         t += dt; if (pend) { pend.t -= dt; if (pend.t <= 0) { const f = pend.f; pend = null; f(); } return; }

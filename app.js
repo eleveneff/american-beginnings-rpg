@@ -5,7 +5,7 @@
   var C = window.GAME_CONTENT;
   var SAVE_KEY = "americanBeginningsRPG_v1";
   var DEFAULT_TUNIC = "#a68a64"; /* undyed homespun until the first badge */
-  var GAME_VERSION = "v3.3.1";
+  var GAME_VERSION = "v3.4-l9";
   var $screen = document.getElementById("screen");
 
   /* ---------------- utilities ---------------- */
@@ -1189,7 +1189,7 @@
   /* ---------------- marketplace ---------------- */
   function marketOpen(m) { var i = C.sections.indexOf(sectionById(m.unlock)); return i >= 0 && isUnlocked(i); }
   function marketScene(m) {
-    var o = [], sc = m.scene, sky = { steppe: ["#e8eef4", "#9bb8d6"], cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"], frontier: ["#ffd9a8", "#9cc4e4"] }[sc] || ["#ffe6b0", "#9fd3f5"];
+    var o = [], sc = m.scene, sky = { steppe: ["#e8eef4", "#9bb8d6"], cahokia: ["#ffd9a0", "#9fd3f5"], seville: ["#ffe6b0", "#7cc7f0"], amsterdam: ["#dfe8f0", "#9ab8d8"], jamestown: ["#f6e2b0", "#a8d4ef"], boston: ["#f3dcc0", "#a5c8e8"], frontier: ["#ffd9a8", "#9cc4e4"], philadelphia: ["#f0e0c8", "#9ec4e8"] }[sc] || ["#ffe6b0", "#9fd3f5"];
     o.push('<defs><linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[0] + '"/></linearGradient></defs><rect width="600" height="220" fill="url(#msky)"/>');
     if (sc === "steppe") {
       /* v2.9: Ice Age camp: snowy hills, hide tents, a distant mammoth herd, a hearth */
@@ -1403,7 +1403,7 @@
   }
   /* ---------------- email report to Dad (v2.4): a mailto built only from the existing save; nothing new is stored ---------------- */
   var REPORT_TO = "history-tutor+reports@mail.grokbot.com", MAIL_MAX = 1800;
-  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown & Plymouth", s6: "13 Colonies", s7: "French & Indian War", s8: "Road to Revolution" };
+  var MAIL_SHORT = { s1: "First Peoples", s2: "Native Nations", s3: "Exploration", s4: "Three Empires", s5: "Jamestown", s6: "13 Colonies", s7: "F&I War", s8: "Road to Rev.", s9: "Independence" };
   function secAcc(st) { var r = 0, t = 0; Object.keys((st && st.topics) || {}).forEach(function (k) { r += st.topics[k].right; t += st.topics[k].right + st.topics[k].wrong; }); return [r, t, pct(r, t)]; }
   function mailParts(sid) {
     var label = sid === "final" ? "Grand Trial" : (sid && sectionById(sid) ? sectionById(sid).title : "Progress");
@@ -1419,16 +1419,16 @@
     var F = S.final, done = sec.filter(function (x) { return x.st === "mastered"; }).length;
     function build(mt, wk, lv) {
       var L = [];
-      L.push((currentPlayer().name || "Your hero") + ", " + day + ". Sections mastered: " + done + "/" + sec.length);
+      L.push((currentPlayer().name || "Your hero") + ", " + day + ". Mastered " + done + "/" + sec.length);
       L.push("Overall: " + pct(S.totalCorrect, S.totalAnswered) + "% (" + S.totalCorrect + "/" + S.totalAnswered + "), goal " + C.passPercent + "%");
-      sec.forEach(function (x) { if (lv > 2) { L.push(x.n + ". " + x.id.toUpperCase() + ": " + x.st + (x.att || x.acc[1] ? " " + x.acc[2] + "%, best " + x.best + "%, x" + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", rev " + x.rq : "")); return; }   // v3.1: most compact lines once 8+ sections overflow
+      sec.forEach(function (x) { if (lv > 2) { L.push(x.n + "." + x.id.toUpperCase() + ":" + x.st + (x.att || x.acc[1] ? " " + x.acc[2] + "% b" + x.best + "% x" + x.att + " g" + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? " r" + x.rq : "")); return; }   // v3.4-l9: tighter compact lines for 9 sections
         var t = lv > 1 ? x.id.toUpperCase() : lv ? (MAIL_SHORT[x.id] || x.t) : x.t;   // shorter names if the link is long
         L.push(x.n + ". " + t + ": " + x.st + (x.att || x.acc[1] ? ", " + x.acc[2] + "%, best trial " + x.best + "%, tries " + x.att + ", gear " + x.gear[0] + "/" + x.gear[1] : "") + (x.rq ? ", review left " + x.rq : "")); });
       L.push("Grand Trial: " + (F.passed ? "PASSED" : (allDone() ? "unlocked" : "locked")) + ", tries " + F.attempts + ", best " + F.bestPct + "%");
       L.push("Stars " + S.stars.balance + " (earned " + S.stars.earned + "), items " + S.owned.length + ", badges " + S.badges.length);
-      L.push("Mastered topics: " + (mt.length ? mt.join("; ") : (mastered.length ? "" : "none yet")) + (mt.length < mastered.length ? (mt.length ? " " : "") + "(+" + (mastered.length - mt.length) + " more)" : ""));
+      L.push("Topics: " + (mt.length ? mt.join("; ") : (mastered.length ? "" : "none yet")) + (mt.length < mastered.length ? (mt.length ? " " : "") + "(+" + (mastered.length - mt.length) + " more)" : ""));
       L.push("Weak areas: " + (wk.length ? wk.join("; ") : (weak.length ? "" : "none")) + (wk.length < weak.length ? (wk.length ? " " : "") + "(+" + (weak.length - wk.length) + " more)" : ""));
-      L.push("Review queue: " + rq + "; missed 2+ times: " + rep + ". Time played: not tracked.");
+      L.push("Review queue: " + rq + "; missed 2+ times: " + rep + ".");
       var J = { v: (window.ABRPG && window.ABRPG.version) || "", ov: [S.totalCorrect, S.totalAnswered], goal: C.passPercent,
         sec: sec.map(function (x) { return [x.n, x.st.charAt(0).toUpperCase(), x.acc[2], x.best, x.att, x.gear[0], x.rq]; }), gt: [F.passed ? 1 : 0, F.attempts, F.bestPct], st: [S.stars.balance, S.stars.earned], gear: S.owned.length, mt: mastered.length, weak: weak.length, rq: rq };
       var text = L.join("\n") + "\n\nREPORT-JSON-START\n" + JSON.stringify(J) + "\nREPORT-JSON-END\n";

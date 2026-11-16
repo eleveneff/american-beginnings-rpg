@@ -43,9 +43,13 @@ export const REG = {
     { id: 'teaparty', file: 'teaparty', title: 'The Boston Tea Party', icon: '🫖', station: 'griffins', ring: [-28, 22], arena: [-36, 22, Math.PI / 2] },
     { id: 'homespun', file: 'homespun', title: 'Spin Homespun', icon: '🧶', station: 'longwharf', ring: [-28, -34], arena: [-22, -34, -Math.PI / 2] },
   ],
+  s9: [
+    { id: 'midnight', file: 'midnight', title: 'The Midnight Ride', icon: '🐎', station: 'lexington', ring: [-4, -63.5], arena: [-4, -70, 0] },
+    { id: 'bunker', file: 'bunker', title: 'Hold the Hill', icon: '⛰️', station: 'bunkerhill', ring: [12, 2], arena: [20, 2, Math.PI / 2] },
+  ],
 };
 // levels whose games are switched on (shipped in batches; the other files are present but unused until listed here)
-export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
+export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9'];
 const PAY = { first: 10, practice: 2, perDay: 3 };   // mirrored from app.js (for the intro card text only)
 
 let A = null, S = null, cssOn = false, lastLvl = null, sfx = null, returnClassic = null, chromeOn = false;

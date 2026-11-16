@@ -1,0 +1,326 @@
+// world/independence.js — Section 9 walkable level: "Independence Declared" (1775–1776).
+// Abigail walks, south to north, in story order (distances shrunk; directions true: north = +z, WEST = +x):
+// Lexington Green, April 19, 1775 → Concord and the North Bridge → Breed's Hill, June 17 (the Battle of
+// Bunker Hill) → Cambridge Common, where Washington took command on July 3, 1775 → a story jump down
+// the post road to Philadelphia, 1776 → the Pennsylvania State House (Independence Hall) and the Trial.
+// Accuracy: the battle called Bunker Hill was fought on Breed's Hill. Revere was captured; Prescott
+// reached Concord. The Second Congress met in the State House, not Carpenters' Hall. British flags are
+// the Union flag of 1707 (no St Patrick saltire). No Stars and Stripes (that flag is 1777). In 1776 a
+// Grand Union flag (the 1707 Union in the canton, thirteen red and white stripes) may fly at the State
+// House. Nothing here touches the save.
+import * as THREE from 'three';
+import { vc, P, M, rng, CYL, BOX, roofGeo, houseGeo, makeRing, barrelGeo, crateGeo, labelSprite, setRingState, RING_COL } from './voyage.js';
+export { labelSprite, setRingState, RING_COL };
+
+export const WATER_Y = -0.4, CAVE_X = 4000;
+const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+export const STATIONS = {
+  lexington: { x: -6, z: -58, r: 9, label: 'Lexington Green, April 19, 1775', n: 1, dir: 'start' },
+  concord: { x: -26, z: -26, r: 9, label: 'Concord, the North Bridge', n: 2, dir: 'north-west, up the Bay Road' },
+  bunkerhill: { x: 16, z: 6, r: 10, label: "Breed's Hill, June 17, 1775", n: 3, dir: 'north-east, to Charlestown' },
+  cambridge: { x: -12, z: 34, r: 9, label: 'Cambridge Common, July 3, 1775', n: 4, dir: 'north-west, to Cambridge' },
+  gate: { x: 8, z: 74, r: 10, label: 'Independence Hall, Philadelphia, 1776', n: 5, dir: 'the post road to Philadelphia (Trial)' }
+};
+export const ROADS = [
+  [[-6, -66], [-6, -58], [-14, -44], [-26, -26]],
+  [[-26, -26], [-8, -10], [16, 6]],
+  [[16, 6], [2, 20], [-12, 34], [6, 41]],
+  [[8, 60], [8, 74]]
+];
+export function distSeg(px, pz, ax, az, bx, bz) { const dx = bx - ax, dz = bz - az, l = dx * dx + dz * dz; let t = l ? ((px - ax) * dx + (pz - az) * dz) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(px - ax - t * dx, pz - az - t * dz); }
+export function pathDist(x, z) { let d = 1e9; for (const R of ROADS) for (let i = 1; i < R.length; i++) d = Math.min(d, distSeg(x, z, R[i - 1][0], R[i - 1][1], R[i][0], R[i][1])); return d; }
+export const PATH = ROADS[0];
+export const BOUNDS = { x0: -70, x1: 70, z0: -72, z1: 92 };
+export const RIVER_S = 47, RIVER_N = 56;
+export const riverZ = () => -9999;
+export const SHORE_X = () => -999;   // no harbor in this countryside / Philadelphia level
+function rawH(x, z) {
+  let h = 0.55 + 0.28 * Math.sin(x * 0.07) * Math.cos(z * 0.06);
+  // Breed's Hill: a real rise around station bunkerhill, flattened on top for the redoubt
+  const dh = Math.hypot(x - STATIONS.bunkerhill.x, z - STATIONS.bunkerhill.z);
+  h += 4.4 * smooth(18, 7, dh);
+  // a low field ridge west of Lexington
+  h += 0.8 * smooth(20, 40, x) * smooth(-70, -50, z) * smooth(-40, -62, z);
+  // the story-jump river band between Cambridge and Philadelphia
+  const w = smooth(RIVER_S - 0.6, RIVER_S + 1.4, z) * smooth(RIVER_N + 0.6, RIVER_N - 1.4, z);
+  return h * (1 - w) + -3.0 * w;
+}
+const FLAT = {}; for (const k in STATIONS) { const s = STATIONS[k]; FLAT[k] = rawH(s.x, s.z); }
+// flatten Lexington, Concord, Cambridge, and the State House yard; keep Breed's Hill high but level on top
+FLAT.bunkerhill = rawH(STATIONS.bunkerhill.x, STATIONS.bunkerhill.z);
+export function groundH(x, z) {
+  let h = rawH(x, z);
+  for (const k in STATIONS) { const s = STATIONS[k], d = Math.hypot(x - s.x, z - s.z); if (d < s.r + 4) h += (FLAT[k] - h) * smooth(s.r + 4, s.r - 1, d) * (h > -0.5 ? 1 : 0); }
+  const pd = pathDist(x, z); if (pd < 3 && h > 0) h -= 0.05 * smooth(3, 1, pd);
+  return h;
+}
+export const shoreZ = () => 9999;
+export const STONES = [], FORD_ROWS = 0, FORD_RESPAWN = { x: -6, z: -64, yaw: 0 };
+export function onStone() { return null; }
+export function walkY(x, z) { return groundH(x, z); }
+export function solid(x, z) { return groundH(x, z) < WATER_Y + 0.25; }
+export const HARBORS = {
+  south: { x: 6, z: 43.5, yaw: Math.PI, label: 'Cambridge, the post road south' },
+  north: { x: 8, z: 59.5, yaw: 0, label: 'Philadelphia, Chestnut Street' }
+};
+export const MATS = [];
+export const MAT_HALF = 1.2;
+export const RING_AT = {
+  l0: [-1.5, -55], buckman: [-10.5, -54], riders: [-1.5, -61], l7: [-10.5, -61],
+  l1: [-22, -23], bridge: [-31, -22], sequence: [-22, -31], adams: [-31, -31],
+  l3: [10, 14], hill: [22, 10],
+  l2: [-12, 37], washington: [-5, 34], 'ride-south': [6, 41],
+  'ride-north': [8, 62], l4: [3, 77], hall: [13, 77], l5: [3, 70], l6: [13, 70],
+  market: [-2, 74], l8: [3, 82.5], geomap: [13, 82.5], timeline: [8, 85], trial: [8, 79]
+};
+
+// ---------------- props ----------------
+function unionFlagGeo(h = 7) {   // the British Union flag of 1707 (crosses of St. George and St. Andrew)
+  const g = [P(CYL(0.07, 0.09, h, 6), '#6b4f36', 0, h / 2, 0)], fy = h - 0.6, fx = 1.0;
+  g.push(P(BOX(1.9, 1.2, 0.04), '#1f3a7a', fx, fy, 0), P(BOX(2.2, 0.16, 0.05), '#f4f1e6', fx, fy, 0, 0, 0, 0.56), P(BOX(2.2, 0.16, 0.05), '#f4f1e6', fx, fy, 0, 0, 0, -0.56));
+  g.push(P(BOX(1.9, 0.32, 0.06), '#f4f1e6', fx, fy, 0), P(BOX(0.36, 1.2, 0.06), '#f4f1e6', fx, fy, 0), P(BOX(1.9, 0.18, 0.07), '#c0302a', fx, fy, 0), P(BOX(0.2, 1.2, 0.07), '#c0302a', fx, fy, 0));
+  return M(g);
+}
+function grandUnionGeo(h = 8) {   // the Grand Union flag of late 1775: 13 red/white stripes, 1707 Union in the canton (no stars)
+  const g = [P(CYL(0.07, 0.09, h, 6), '#6b4f36', 0, h / 2, 0)], fy = h - 0.7, fx = 1.15, W = 2.4, H = 1.5;
+  g.push(P(BOX(W, H, 0.04), '#f4f1e6', fx, fy, 0));
+  for (let i = 0; i < 7; i++) g.push(P(BOX(W, H / 13, 0.05), '#b22222', fx, fy + H / 2 - H / 26 - i * (2 * H / 13), 0.01));
+  const cw = W * 0.42, ch = H * 0.54, cx = fx - W / 2 + cw / 2, cy = fy + H / 2 - ch / 2;
+  g.push(P(BOX(cw, ch, 0.06), '#1f3a7a', cx, cy, 0.02));
+  g.push(P(BOX(cw + 0.08, 0.08, 0.07), '#f4f1e6', cx, cy, 0.03, 0, 0, 0.55), P(BOX(cw + 0.08, 0.08, 0.07), '#f4f1e6', cx, cy, 0.03, 0, 0, -0.55));
+  g.push(P(BOX(cw, 0.14, 0.07), '#f4f1e6', cx, cy, 0.03), P(BOX(0.14, ch, 0.07), '#f4f1e6', cx, cy, 0.03));
+  g.push(P(BOX(cw, 0.08, 0.08), '#c0302a', cx, cy, 0.04), P(BOX(0.08, ch, 0.08), '#c0302a', cx, cy, 0.04));
+  return M(g);
+}
+function personGeo(coat, hat = '#2a2622', skirt) {
+  if (skirt) return M([P(CYL(0.2, 0.34, 0.7, 7), skirt, 0, 0.35, 0), P(CYL(0.15, 0.2, 0.36, 6), coat, 0, 0.86, 0), P(new THREE.SphereGeometry(0.14, 6, 5), '#e0b890', 0, 1.15, 0), P(new THREE.SphereGeometry(0.15, 6, 4, 0, 6.3, 0, 1.6), '#f2eee2', 0, 1.2, 0)]);
+  return M([P(CYL(0.18, 0.24, 0.9, 6), coat, 0, 0.45, 0), P(new THREE.SphereGeometry(0.15, 6, 5), '#e0b890', 0, 1.05, 0), P(CYL(0.24, 0.24, 0.06, 3), hat, 0, 1.18, 0)]);
+}
+function soldierGeo(coat, cuff, legs = '#e8e2d2') {
+  return M([P(CYL(0.08, 0.08, 0.5, 5), legs, -0.09, 0.25, 0), P(CYL(0.08, 0.08, 0.5, 5), legs, 0.09, 0.25, 0), P(CYL(0.17, 0.26, 0.62, 6), coat, 0, 0.72, 0),
+    P(BOX(0.1, 0.42, 0.12), coat, -0.25, 0.8, 0), P(BOX(0.1, 0.42, 0.12), coat, 0.25, 0.8, 0), P(BOX(0.12, 0.1, 0.14), cuff, -0.25, 0.6, 0), P(BOX(0.12, 0.1, 0.14), cuff, 0.25, 0.6, 0),
+    P(BOX(0.36, 0.05, 0.05), '#f2eee2', 0, 0.8, 0.2, 0, 0, 0.7), P(new THREE.SphereGeometry(0.14, 6, 5), '#e0b890', 0, 1.15, 0), P(CYL(0.012, 0.016, 1.2, 4), '#4a3a2a', 0.27, 1.0, -0.05, 0.12, 0, 0),
+    P(CYL(0.24, 0.24, 0.07, 3), '#1e1c1a', 0, 1.27, 0)]);
+}
+function militiaGeo(coat = '#c8b888') {   // a colonial militiaman in a hunting shirt, no formal uniform
+  return M([P(CYL(0.08, 0.08, 0.5, 5), '#3a2a1a', -0.09, 0.25, 0), P(CYL(0.08, 0.08, 0.5, 5), '#3a2a1a', 0.09, 0.25, 0), P(CYL(0.2, 0.26, 0.7, 6), coat, 0, 0.75, 0),
+    P(new THREE.SphereGeometry(0.14, 6, 5), '#e0b890', 0, 1.18, 0), P(CYL(0.2, 0.2, 0.08, 3), '#3a2a1a', 0, 1.3, 0), P(CYL(0.012, 0.016, 1.15, 4), '#4a3a2a', 0.26, 1.0, -0.05, 0.12, 0, 0)]);
+}
+function brickHouseGeo(w, d, h, rnd, wall = '#9a4a32', roof = '#3a3e48') {
+  const g = [P(BOX(w, h, d), wall, 0, h / 2, 0, 0, 0, 0, 1, 1, 1, 0.05, rnd)];
+  for (const p of roofGeo(w, d, 1.4, roof)) { p.translate(0, h, 0); g.push(p); }
+  g.push(P(BOX(0.6, 1.4, 0.6), '#7a3a2a', -w / 2 + 0.5, h + 0.9, 0), P(BOX(0.6, 1.4, 0.6), '#7a3a2a', w / 2 - 0.5, h + 0.9, 0));
+  g.push(P(BOX(0.9, 1.7, 0.08), '#2a3a2a', 0, 0.85, d / 2 + 0.02));
+  for (const sx of [-1, 1]) for (const fy of [0.45, 0.78]) g.push(P(BOX(0.55, 0.75, 0.06), '#e8e4da', sx * w * 0.3, h * fy, d / 2 + 0.03), P(BOX(0.42, 0.62, 0.07), '#2a3440', sx * w * 0.3, h * fy, d / 2 + 0.04));
+  return M(g);
+}
+function meetinghouseGeo(rnd) {   // a New England meetinghouse: wooden, a square tower and a modest steeple
+  const g = [P(BOX(5.2, 3.6, 3.6), '#d8cbb0', 0, 1.8, 0, 0, 0, 0, 1, 1, 1, 0.04, rnd)];
+  for (const p of roofGeo(5.2, 3.6, 1.6, '#4a3a32')) { p.translate(0, 3.6, 0); g.push(p); }
+  g.push(P(BOX(1.7, 3.2, 1.7), '#efe8d6', 0, 3.6 + 1.6, -0.4), P(new THREE.ConeGeometry(0.7, 2.4, 8), '#efe8d6', 0, 3.6 + 1.6 + 1.6 + 1.2, -0.4));
+  g.push(P(BOX(1.0, 2.0, 0.08), '#2a3a2a', 0, 1.0, 1.82));
+  for (const sx of [-1.5, 1.5]) g.push(P(BOX(0.55, 0.9, 0.06), '#e8e4da', sx, 2.2, 1.83), P(BOX(0.42, 0.76, 0.07), '#2a3440', sx, 2.2, 1.84));
+  return M(g);
+}
+function tavernGeo(rnd) {   // Buckman Tavern: a long clapboard inn
+  const g = [P(BOX(6.4, 3.4, 3.2), '#c8b490', 0, 1.7, 0, 0, 0, 0, 1, 1, 1, 0.05, rnd)];
+  for (const p of roofGeo(6.4, 3.2, 1.5, '#4a3e38')) { p.translate(0, 3.4, 0); g.push(p); }
+  g.push(P(BOX(0.55, 1.3, 0.55), '#7a3a2a', -2.4, 4.7, 0), P(BOX(0.9, 1.8, 0.08), '#2a3a2a', 0, 0.9, 1.62));
+  for (const sx of [-2.0, 2.0]) g.push(P(BOX(0.5, 0.7, 0.06), '#e8e4da', sx, 2.1, 1.63), P(BOX(0.38, 0.58, 0.07), '#2a3440', sx, 2.1, 1.64));
+  return M(g);
+}
+function independenceHallGeo(rnd) {   // the Pennsylvania State House, 1732–53: a long brick hall, a central clock tower and wooden steeple (still standing in 1776)
+  const w = 14, d = 4.2, h = 4.6;
+  const g = [P(BOX(w, h, d), '#a5523a', 0, h / 2, 0, 0, 0, 0, 1, 1, 1, 0.04, rnd)];
+  for (const p of roofGeo(w, d, 1.8, '#3a3e48')) { p.translate(0, h, 0); g.push(p); }
+  g.push(P(BOX(w + 0.1, 0.18, d + 0.1), '#efe8d6', 0, h, 0));
+  for (let i = -4; i <= 4; i++) if (i) g.push(P(BOX(0.55, 1.0, 0.06), '#e8e4da', i * 1.35, h * 0.62, d / 2 + 0.03), P(BOX(0.42, 0.86, 0.07), '#2a3440', i * 1.35, h * 0.62, d / 2 + 0.04));
+  g.push(P(BOX(1.4, 2.4, 0.08), '#f2eee2', 0, 1.2, d / 2 + 0.02), P(BOX(1.2, 2.2, 0.09), '#2a3a2a', 0, 1.1, d / 2 + 0.03));
+  const tz = 0, ty = h + 1.8;
+  g.push(P(BOX(2.4, 3.2, 2.4), '#a5523a', 0, h + 1.6, tz), P(BOX(2.0, 2.6, 2.0), '#efe8d6', 0, ty + 1.6, tz));
+  g.push(P(CYL(0.7, 0.8, 1.4, 8), '#efe8d6', 0, ty + 3.6, tz), P(new THREE.ConeGeometry(0.85, 3.2, 8), '#efe8d6', 0, ty + 3.6 + 0.7 + 1.6, tz));
+  g.push(P(CYL(0.03, 0.03, 1.0, 4), '#c9a227', 0, ty + 7.2, tz));
+  return M(g);
+}
+function elmGeo(rnd) {
+  const g = [P(CYL(0.6, 0.85, 4.2, 8), '#5a4634', 0, 2.1, 0, 0, 0, 0, 1, 1, 1, 0.08, rnd)];
+  for (const [a, l] of [[0, 3.4], [2.1, 3.0], [4.2, 3.2]]) g.push(P(CYL(0.22, 0.34, l, 6), '#5a4634', Math.cos(a) * 0.9, 4.9, Math.sin(a) * 0.9, Math.sin(a) * 0.45, 0, -Math.cos(a) * 0.45));
+  for (const [x, y, z, s] of [[0, 7.6, 0, 3.4], [2.0, 6.6, 1.2, 2.4], [-2.0, 6.8, -0.6, 2.5], [0.6, 6.4, -2.0, 2.3], [-0.8, 6.2, 2.0, 2.2]]) g.push(P(new THREE.IcosahedronGeometry(s, 1), '#5f8a3a', x, y, z, 0, 0, 0, 1, 0.75, 1, 0.25, rnd));
+  return M(g);
+}
+function bridgeGeo() {   // a short wooden trestle over the Concord River (visual; the ground stays dry)
+  const g = [P(BOX(2.2, 0.18, 7.2), '#7a6448', 0, 0.5, 0), P(BOX(0.12, 0.7, 7.2), '#6a5438', -1.05, 0.85, 0), P(BOX(0.12, 0.7, 7.2), '#6a5438', 1.05, 0.85, 0)];
+  for (const z of [-2.8, 0, 2.8]) { g.push(P(CYL(0.12, 0.12, 1.4, 5), '#5a4632', -1.0, -0.2, z), P(CYL(0.12, 0.12, 1.4, 5), '#5a4632', 1.0, -0.2, z)); }
+  return M(g);
+}
+function redoubtGeo() {   // a low earth wall on Breed's Hill
+  const g = [];
+  for (const [x, z, w, d] of [[0, -3.2, 8, 1.2], [-4.2, 0, 1.2, 6], [4.2, 0, 1.2, 6]]) g.push(P(BOX(w, 1.1, d), '#6a5a3a', x, 0.45, z));
+  return M(g);
+}
+function stoneWallGeo(len = 4) {
+  return M([P(BOX(len, 0.7, 0.4), '#8a8278', 0, 0.35, 0), P(BOX(len * 0.9, 0.25, 0.35), '#9a9288', 0, 0.72, 0)]);
+}
+function broadsideTex(title, lines) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 320; const x = c.getContext('2d');
+  x.fillStyle = '#efe4c8'; x.fillRect(0, 0, 256, 320); x.fillStyle = '#2a2018'; x.textAlign = 'center';
+  x.font = 'bold 30px Georgia, serif'; x.fillText(title, 128, 52); x.fillRect(30, 68, 196, 3);
+  x.font = '20px Georgia, serif'; lines.forEach((l, i) => x.fillText(l, 128, 112 + i * 34));
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.5), new THREE.MeshLambertMaterial({ map: tex })); m.userData.noMerge = true; return m;
+}
+
+// ---------------- build ----------------
+export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) {
+  const rnd = rng(17751776);
+  const scene = new THREE.Scene(); scene.name = 'independence76';
+  const SKY_TOP = new THREE.Color('#6a9ccc'), SKY_H = new THREE.Color('#e8e6e0');
+  scene.fog = new THREE.Fog(SKY_H, 90, 300);
+  { const geo = new THREE.SphereGeometry(500, 24, 12); const n = geo.attributes.position.count, col = new Float32Array(n * 3), c = new THREE.Color(), LOW = new THREE.Color('#9aa0a0');
+    for (let i = 0; i < n; i++) { const y = geo.attributes.position.getY(i) / 500; if (y < 0) c.copy(SKY_H).lerp(LOW, Math.min(1, -y * 6)); else c.copy(SKY_H).lerp(SKY_TOP, Math.pow(y, 0.6)); col.set([c.r, c.g, c.b], i * 3); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const sky = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.name = 'sky'; sky.userData.noMerge = true; sky.renderOrder = -10; scene.add(sky); scene.userData.sky = sky; }
+  const hemi = new THREE.HemisphereLight('#e8eef8', '#6a7a4a', 0.72); scene.add(hemi);
+  const sun = new THREE.DirectionalLight('#fff4dc', 0.95); sun.position.set(-40, 70, 30); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = sun.shadow.camera.bottom = -90; sun.shadow.camera.right = sun.shadow.camera.top = 90; sun.shadow.camera.near = 1; sun.shadow.camera.far = 200; scene.add(sun);
+
+  const lam = new THREE.MeshLambertMaterial({ vertexColors: true });
+  const GRASS = new THREE.Color('#6a8a46'), PATH = new THREE.Color('#9b7a52'), DIRT = new THREE.Color('#7a6a4a'), HILL = new THREE.Color('#7a8a50'), WATERISH = new THREE.Color('#4a6a58');
+  function terrColor(x, z, c) {
+    const h = groundH(x, z), pd = pathDist(x, z);
+    c.copy(GRASS);
+    if (pd < 2.4) c.lerp(PATH, smooth(2.4, 0.6, pd));
+    const dh = Math.hypot(x - STATIONS.bunkerhill.x, z - STATIONS.bunkerhill.z);
+    if (dh < 16) c.lerp(HILL, smooth(16, 6, dh) * 0.6);
+    if (h < 0.2) c.lerp(WATERISH, smooth(0.2, -0.5, h));
+    const f = (Math.sin(x * 1.7) * Math.cos(z * 1.3) + 1) * 0.5;
+    c.offsetHSL(0, 0, (f - 0.5) * 0.06);
+    return c;
+  }
+  function terrNormals(geo) { geo.computeVertexNormals(); }
+  const terrain = new THREE.Group(); terrain.name = 'terrain'; scene.add(terrain);
+  for (let tx = 0; tx < 4; tx++) for (let tz = 0; tz < 4; tz++) {
+    const W = 46, D = 46, geo = new THREE.PlaneGeometry(W, D, 40, 40); geo.rotateX(-Math.PI / 2); geo.translate(-92 + W * (tx + 0.5), 0, -92 + D * (tz + 0.5));
+    const p = geo.attributes.position, n = p.count, col = new Float32Array(n * 3), c = new THREE.Color();
+    for (let i = 0; i < n; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundH(x, z)); terrColor(x, z, c); col.set([c.r, c.g, c.b], i * 3); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); terrNormals(geo); geo.computeBoundingSphere();
+    const t = new THREE.Mesh(geo, lam); t.receiveShadow = true; t.name = 'terrain-tile'; t.userData.noMerge = true; terrain.add(t); }
+  { const g = new THREE.PlaneGeometry(1000, 1000); g.rotateX(-Math.PI / 2); const f = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: '#1f4458' })); f.position.y = -3.05; f.userData.noMerge = true; f.name = 'river-bed'; scene.add(f); }
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 1, 1), new THREE.MeshLambertMaterial({ color: '#3a7088', transparent: true, opacity: 0.82, depthWrite: false }));
+  water.geometry.rotateX(-Math.PI / 2); water.position.y = WATER_Y; water.userData.noMerge = true; water.renderOrder = 2; water.name = 'water'; scene.add(water);
+
+  const statics = new THREE.Group(); statics.name = 'statics'; scene.add(statics);
+  const add = (geo, x, z, ry = 0, s = 1, cast = true, y = null) => { const m = new THREE.Mesh(geo, lam); m.position.set(x, y == null ? groundH(x, z) : y, z); m.rotation.y = ry; m.scale.setScalar(s); m.castShadow = cast; m.receiveShadow = true; statics.add(m); return m; };
+  const colliders = { out: [], cave: [] };
+  const circ = (x, z, r) => { const c = { type: 'c', x, z, r }; colliders.out.push(c); return c; };
+  const box = (x0, x1, z0, z1, tag) => { const b = { type: 'b', x: (x0 + x1) / 2, z: (z0 + z1) / 2, hx: (x1 - x0) / 2, hz: (z1 - z0) / 2, tag }; colliders.out.push(b); return b; };
+  const camOcc = [];
+  const occBox = (x0, x1, z0, z1, y1) => camOcc.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, hx: (x1 - x0) / 2, hz: (z1 - z0) / 2, y0: -5, y1 });
+  const occC = (x, z, r, y1, y0 = -5) => camOcc.push({ x, z, r, y0, y1 });
+  const labels = [], gy = (x, z) => groundH(x, z);
+  const building = (geo, x, z, ry, w, d, h) => { add(geo, x, z, ry); const c = Math.abs(Math.cos(ry)), s = Math.abs(Math.sin(ry)), hx = (w * c + d * s) / 2, hz = (w * s + d * c) / 2; box(x - hx, x + hx, z - hz, z + hz); occBox(x - hx, x + hx, z - hz, z + hz, gy(x, z) + h + 1); };
+  const figure = (geo, x, z, face, s = 1) => { add(geo, x, z, Math.atan2(face[0] - x, face[1] - z), s); circ(x, z, 0.3); };
+  const line = (geoFn, x0, z0, x1, z1, n, face) => { for (let i = 0; i < n; i++) { const t = n > 1 ? i / (n - 1) : 0, x = x0 + (x1 - x0) * t, z = z0 + (z1 - z0) * t; figure(geoFn(i), x, z, face); } };
+  const poster = (title, lines, x, z, ry, y = 1.7) => { const m = broadsideTex(title, lines); m.position.set(x, gy(x, z) + y, z); m.rotation.y = ry; m.name = 'broadside'; scene.add(m); return m; };
+
+  // 1 · Lexington Green
+  { const { x: cx, z: cz } = STATIONS.lexington;
+    add(elmGeo(rnd), cx - 8, cz + 3, 0, 0.85);
+    building(meetinghouseGeo(rnd), cx + 8, cz + 6, Math.PI, 5.2, 3.6, 7.2);
+    building(tavernGeo(rnd), cx - 11, cz - 2, Math.PI / 2, 6.4, 3.2, 5.2);
+    add(stoneWallGeo(8), cx + 2, cz + 8, 0.2); box(cx - 2, cx + 6, cz + 7.7, cz + 8.3);
+    line(i => militiaGeo(['#c8b888', '#8a6a44', '#4a3a2a'][i % 3]), cx - 13, cz + 1, cx - 13, cz + 6, 5, [cx, cz]);   // west of the Green, keep the road at x=-6 clear
+    line(i => soldierGeo('#b22222', '#e8d27a'), cx - 4, cz - 10, cx + 4, cz - 10, 6, [cx, cz]);
+    add(unionFlagGeo(6.5), cx + 6, cz - 9, 0, 1, true);
+    circ(cx + 6, cz - 9, 0.3);
+    poster('ALARM', ['The Regulars', 'are out!', 'April 19, 1775'], cx - 9.6, cz + 1, Math.PI / 2);
+    labels.push([STATIONS.lexington, '1 · Lexington Green, April 19, 1775', 'Parker’s men · the first shot']);
+  }
+
+  // 2 · Concord North Bridge
+  { const { x: cx, z: cz } = STATIONS.concord;
+    add(bridgeGeo(), cx - 6, cz + 2, Math.PI / 2, 1, true, gy(cx - 6, cz + 2));
+    building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), cx + 8, cz + 4, -0.4, 4.0, 3.2, 5.0);
+    building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), cx + 6, cz - 8, 0.6, 3.6, 3.0, 4.6);
+    add(stoneWallGeo(6), cx - 2, cz + 8, 1.1); box(cx - 5, cx + 1, cz + 7.7, cz + 8.3);
+    line(i => militiaGeo('#8a6a44'), cx - 10, cz + 6, cx - 4, cz + 8, 4, [cx - 6, cz + 2]);
+    line(i => soldierGeo('#b22222', '#e8d27a'), cx - 8, cz - 4, cx - 4, cz - 4, 4, [cx - 6, cz + 2]);
+    labels.push([STATIONS.concord, '2 · Concord, the North Bridge', 'the shot heard round the world']);
+  }
+
+  // 3 · Breed's Hill
+  { const { x: cx, z: cz } = STATIONS.bunkerhill;
+    add(redoubtGeo(), cx, cz + 2, 0, 1, true, gy(cx, cz + 2));
+    box(cx - 4.4, cx + 4.4, cz - 1.6, cz + 0.0);
+    box(cx - 5.0, cx - 3.4, cz - 1, cz + 5);
+    box(cx + 3.4, cx + 5.0, cz - 1, cz + 5);
+    line(i => militiaGeo(['#c8b888', '#6a5a3a'][i % 2]), cx - 3, cz + 1, cx + 3, cz + 1, 5, [cx, cz - 8]);
+    line(i => soldierGeo('#b22222', '#e8d27a'), cx - 6, cz - 9, cx + 6, cz - 9, 7, [cx, cz]);
+    add(unionFlagGeo(7), cx + 9, cz - 8, 0, 1, true);
+    circ(cx + 9, cz - 8, 0.3);
+    labels.push([STATIONS.bunkerhill, "3 · Breed's Hill, June 17, 1775", 'the Battle of Bunker Hill']);
+  }
+
+  // 4 · Cambridge Common
+  { const { x: cx, z: cz } = STATIONS.cambridge;
+    add(elmGeo(rnd), cx + 4, cz + 3, 0.4, 1.05);
+    circ(cx + 4, cz + 3, 1.4); occC(cx + 4, cz + 3, 2.2, gy(cx + 4, cz + 3) + 9);
+    building(houseGeo(4.4, 3.4, 3.2, '#d0c4a8', '#4a3e38', rnd), cx - 10, cz + 6, 0.3, 4.4, 3.4, 5.2);
+    building(houseGeo(3.8, 3.2, 3.0, '#c4b898', '#3a3a40', rnd), cx + 11, cz + 2, -0.5, 3.8, 3.2, 5.0);
+    figure(militiaGeo('#2a4a7a'), cx, cz + 1, [cx, cz + 8]);   // Washington in a deep-blue coat, standing under the elm
+    line(i => militiaGeo(['#c8b888', '#4a3a2a', '#2a4a7a'][i % 3]), cx - 4, cz - 3, cx + 4, cz - 3, 6, [cx, cz + 3]);
+    labels.push([STATIONS.cambridge, '4 · Cambridge Common, July 3, 1775', 'Washington takes command']);
+  }
+
+  // 5 · Independence Hall (after the story jump)
+  { const { x: cx, z: cz } = STATIONS.gate;
+    building(independenceHallGeo(rnd), cx, cz + 14, Math.PI, 14, 4.2, 12);
+    for (const [hx, hz, ry] of [[cx + 14, cz + 4, -Math.PI / 2], [cx - 14, cz + 4, Math.PI / 2], [cx + 14, cz + 14, -Math.PI / 2], [cx - 14, cz + 14, Math.PI / 2]]) building(brickHouseGeo(4.6, 3.8, 4.0, rnd, '#a5523a'), hx, hz, ry, 4.6, 3.8, 6.2);
+    add(grandUnionGeo(8), cx - 8, cz + 6, 0, 1, true);
+    circ(cx - 8, cz + 6, 0.3);
+    line(i => personGeo(['#2a2a3a', '#4a3a2a', '#5a2a2a', '#3a4a5a'][i % 4]), cx - 4, cz + 6, cx + 4, cz + 6, 5, [cx, cz + 14]);
+    poster('IN CONGRESS', ['July 4, 1776', 'A Declaration'], cx + 7, cz + 5, -0.3);
+    labels.push([STATIONS.gate, '5 · Independence Hall, 1776', 'the Declaration · the Trial']);
+  }
+
+  const near = (x, z, pad) => { for (const k in STATIONS) { const s = STATIONS[k]; if (Math.hypot(x - s.x, z - s.z) < s.r + pad) return true; } return false; };
+  const blocked = (x, z, pad) => { for (const c of colliders.out) { if (c.type === 'c' && Math.hypot(x - c.x, z - c.z) < c.r + pad) return true; if (c.type === 'b' && Math.abs(x - c.x) < c.hx + pad && Math.abs(z - c.z) < c.hz + pad) return true; } return false; };
+  const spots = (count, ok, minPath = 3, pad = 1.5) => { const out = []; let guard = 0; while (out.length < count && guard++ < count * 80) {
+      const x = -92 + rnd() * 184, z = -92 + rnd() * 184, h = groundH(x, z);
+      if (h < 0.15 || pathDist(x, z) < minPath || near(x, z, 2) || blocked(x, z, pad) || !ok(x, z, h)) continue; out.push([x, z]); } return out; };
+  const inst = (geo, list, cast, name) => { const m = new THREE.InstancedMesh(geo, lam, list.length || 1), o = new THREE.Object3D(); list.forEach(([x, z, s], i) => { o.position.set(x, groundH(x, z) - 0.05, z); o.rotation.set(0, rnd() * 6.28, 0); o.scale.setScalar(s); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); m.castShadow = cast; m.receiveShadow = true; m.userData.noMerge = true; m.name = name; scene.add(m); return m; };
+  const housesS = spots(18, (x, z) => z < RIVER_S - 3 && z > -70, 5.0, 2.8);
+  const housesN = spots(22, (x, z) => z > RIVER_N + 2, 4.5, 2.6);
+  const hA = brickHouseGeo(3.6, 3.2, 3.2, rnd, '#9a4a32'), hB = houseGeo(3.4, 3.0, 2.8, '#b8a888', '#4a4a50', rnd);
+  inst(hB, housesS.map(([x, z]) => [x, z, 1]), true, 'houses-wood');
+  inst(hA, housesN.map(([x, z]) => [x, z, 1]), true, 'houses-brick');
+  for (const [x, z] of housesS.concat(housesN)) { circ(x, z, 2.3); occC(x, z, 2.4, groundH(x, z) + 5.2); }
+  const sc = () => 0.8 + rnd() * 0.45;
+  const elms = spots(50, (x, z) => z < RIVER_S - 2, 3.2, 1.6).map(([x, z]) => [x, z, sc()]);
+  const maples = spots(24, (x, z) => z > RIVER_N, 3.2, 1.6).map(([x, z]) => [x, z, sc()]);
+  const elmS = M([P(CYL(0.2, 0.28, 2.4, 6), '#5a4634', 0, 1.2, 0), P(new THREE.IcosahedronGeometry(1.8, 1), '#6a8a3a', 0, 3.4, 0, 0, 0, 0, 1.2, 0.8, 1.2, 0.25, rnd)]);
+  const mapleGeo = M([P(CYL(0.18, 0.26, 2.0, 6), '#5a4634', 0, 1.0, 0), P(new THREE.IcosahedronGeometry(1.6, 1), '#8a9a3a', 0, 3.0, 0, 0, 0, 0, 1.1, 0.9, 1.1, 0.3, rnd)]);
+  inst(elmS, elms, true, 'elms'); inst(mapleGeo, maples, true, 'maples');
+  for (const L of [elms, maples]) for (const [x, z, s] of L) { circ(x, z, 0.28 * s + 0.12); occC(x, z, 1.6 * s, groundH(x, z) + 4.5 * s, groundH(x, z) + 1.8 * s); }
+  const tuftGeo = vc(new THREE.ConeGeometry(0.12, 0.5, 4), '#8a9a50', 0.2, rnd), rockGeo = vc(new THREE.DodecahedronGeometry(0.6, 0), '#8a8076', 0.2, rnd);
+  inst(tuftGeo, spots(260, (x, z, h) => h < 8, 1.8, 0.3).map(([x, z]) => [x, z, 0.8 + rnd() * 0.6]), false, 'tufts');
+  inst(rockGeo, spots(24, () => true, 2.2, 0.6).map(([x, z]) => [x, z, 0.4 + rnd() * 0.6]), true, 'rocks');
+  { const g = []; for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, R = 190 + rnd() * 40, x = Math.cos(a) * R, z = Math.sin(a) * R; const h = 8 + rnd() * 10;
+      const cone = vc(new THREE.ConeGeometry(h * 3, h, 7, 2), '#7a8a7a', 0.1, rnd); cone.translate(x, h / 2 - 3, z); g.push(cone); }
+    const far = new THREE.Mesh(M(g), new THREE.MeshLambertMaterial({ vertexColors: true, fog: true })); far.userData.noMerge = true; far.name = 'far'; scene.add(far); }
+  for (const [t, x, z] of [['The post road south (story jump)', 24, 51.5], ['Philadelphia, 1776', 24, 68]]) { const sp = labelSprite(t, 6); sp.position.set(x, 3.2, z); sp.name = 'river-label'; scene.add(sp); }
+  const regionLabels = labels.map(([s, t, sub]) => { const sp = labelSprite(t, 9, sub); sp.position.set(s.x, Math.max(0, groundH(s.x, s.z)) + 9.5, s.z); sp.name = 'region-label'; scene.add(sp); return { s, sp }; });
+
+  const rings = ringDefs.map(d => makeRing(scene, d, walkY(d.x, d.z)));
+  mergeAO.buildAO();
+  mergeAO.mergeStatic(statics, { cell: 40 });
+
+  let t = 0;
+  function update(dt, hero) {
+    t += dt;
+    for (const r of rings) { r.beam.material.opacity = (r.state === 'locked' ? 0.22 : r.state === 'new' ? 0.5 : 0.35) + 0.12 * Math.sin(t * 2.4 + r.def.x); r.icon.position.y = 2.9 + 0.12 * Math.sin(t * 1.8 + r.def.z); }
+    water.position.y = WATER_Y + Math.sin(t * 1.1) * 0.03;
+    if (hero) for (const L of regionLabels) { const d = Math.hypot(hero.x - L.s.x, hero.z - L.s.z); L.sp.visible = d > L.s.r + 6; }
+  }
+  return { scene, sun, hemi, rings, colliders, camOcc, update, setGateOpen() {}, tracks: [], herds: {}, flames: [], water, fogColor: SKY_H, sky: scene.userData.sky, mats: [], dropBundle() {}, clearBundles() {}, regionLabels };
+}

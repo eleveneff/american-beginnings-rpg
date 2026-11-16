@@ -10,7 +10,7 @@ const SIGNS = [   // [fraction of the trip, message]
   [0.95, '🌿 Oct 11: a green branch with berries floats by. Land must be near!'],
 ];
 export default {
-  title: 'Sail the Trade Winds', icon: '⛵', era: 'Columbus · 1492', act: 'Steer',
+  title: 'Sail the Trade Winds', icon: '⛵', era: 'Columbus · 1492', act: 'Steer west',
   intro: 'In 1492 <b>Columbus</b> sailed west with three ships: the <b>Santa María</b>, the <b>Pinta</b> and the <b>Niña</b>. Steady winds from the east, the <b>trade winds</b>, pushed them across the Atlantic.',
   how: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶) into the <b>💨 wind gusts</b> to keep your sails full. Go around the glassy <b>calm patches</b>. If the wind runs out, the crew wants to turn back!',
   tryit: 'Steer with <kbd>A</kbd> / <kbd>S</kbd> into the pale wind gusts. Go around the dark calm patches.',
@@ -76,7 +76,7 @@ export default {
     ctx.actLabel('Steer with A / S', 'A/S');
     let pt = 0, grumbled = false;
     return {
-      start() { st(); ctx.actLabel('Steer with A / S', 'A/S'); ctx.msg('Land drops out of sight. Sail west with the trade winds!', 'info', 2.4); },
+      start() { st(); ctx.actLabel('Steer into the gusts', 'A/S'); ctx.prompt('Steer with A/S into the pale wind gusts. Go around the dark calm patches to reach Guanahani.', 3.4); ctx.msg('Land drops out of sight. Sail west with the trade winds!', 'info', 2.4); },
       bot: lose => R.bot(lose),
       action() { ctx.msg('Use A / S (or ◀ ▶) to steer into the gusts. You do not need E on this crossing.', 'info', 1.6); },
       idle(dt) { pt += dt; ship.position.y = Math.sin(pt * 1.4) * 0.08; },

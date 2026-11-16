@@ -14,7 +14,7 @@ const NAMED = {
 const LITTLE = [[-2.4, 26.3], [-4.6, 24.8], [-6.2, 21.2], [-9.4, 22.6], [-8.6, 19.8]];
 
 export default {
-  title: 'Sight the North Star', icon: '⭐', era: 'Columbus\'s first voyage · 1492', act: 'Sight',
+  title: 'Sight the North Star', icon: '⭐', era: 'Columbus\'s first voyage · 1492', act: 'Sight Polaris',
   intro: 'Out on the dark ocean there are no landmarks. Sailors in <b>1492</b> could look for <b>Polaris</b>, the North Star. How high it sits above the horizon tells you roughly how far north you are (your <b>latitude</b>). Columbus carried a <b>quadrant</b> to measure it.',
   how: 'Move the quadrant sight with <kbd>W</kbd> <kbd>A</kbd> <kbd>Z</kbd> <kbd>S</kbd> (or arrows). Follow the Big Dipper\'s two <b>pointer stars</b> to Polaris and press <kbd>E</kbd>. Then keep Polaris inside the ring while the ship rolls, for <b>2 readings</b>.',
   tryit: 'Move with <kbd>W</kbd> <kbd>A</kbd> <kbd>Z</kbd> <kbd>S</kbd>. Follow the two stars at the end of the Dipper\'s cup up to Polaris, then press <kbd>E</kbd>.',
@@ -97,12 +97,12 @@ export default {
     let rollT = 0; const roll = (dt) => { rollT += dt; const amp = phase === 'hold' ? ROLL : 0.25; skyG.rotation.set(Math.sin(rollT * 0.9) * 1.6 * amp * D2R, 0, Math.sin(rollT * 0.62 + 1) * 3.2 * amp * D2R); ship.rotation.set(0, 0, 0); };
     placeSight();
     return {
-      start() { st(); ctx.msg('Find Polaris, the North Star', 'info', 1.8); },
+      start() { st(); ctx.actLabel('Sight Polaris'); ctx.prompt('Follow the Big Dipper\'s two pointer stars up to Polaris, then press E to sight it.', 3.4); ctx.msg('Find Polaris, the North Star', 'info', 1.8); },
       bot(lose) { if (pend || ended) return {}; if (lose) return { x: 0, y: 0, press: false };
         const [pa, pe] = polAzEl(); const dA = pa - saz, dE = pe - sel; const x = Math.abs(dA) < 0.35 ? 0 : (dA > 0 ? -1 : 1), y = Math.abs(dE) < 0.35 ? 0 : (dE > 0 ? 1 : -1);
         return { x, y, press: phase === 'find' && off() < FINDR * 0.5 }; },
       action() { if (ended || pend || phase !== 'find') return;
-        if (off() <= FINDR) { phase = 'hold'; hold = 0; polLab.visible = true; guideK = Math.max(guideK, 1); ctx.msg('⭐ That\'s Polaris!', 'good', 1.3); ctx.flash('good'); ctx.sfx('hit'); kit.puff(dir(...POL, 40).add(CAM), '#fff3b0', 10, { spread: 0.8, up: 0.4, grav: 0 }); st(); return; }
+        if (off() <= FINDR) { phase = 'hold'; hold = 0; polLab.visible = true; guideK = Math.max(guideK, 1); ctx.msg('⭐ That\'s Polaris!', 'good', 1.3); ctx.flash('good'); ctx.sfx('hit'); kit.puff(dir(...POL, 40).add(CAM), '#fff3b0', 10, { spread: 0.8, up: 0.4, grav: 0 }); st(); ctx.actLabel('Hold the reading'); ctx.prompt('Hold steady in the green to take two readings of Polaris.', 3.0); return; }
         // a gentle "not that one": name the bright star if it is one
         let near = null, best = 9; for (const [n, [a, e]] of Object.entries(NAMED)) { const [sa, se] = starAzEl(a, e); const d = Math.hypot(sa - saz, se - sel); if (d < best) { best = d; near = n; } }
         wrong++; guideK = Math.max(guideK, Math.min(1, wrong * 0.35));
@@ -126,7 +126,7 @@ export default {
             if (readings >= 2) { ended = true; ctx.msg('📐 Reading: ' + r + '°', 'good', 1.4); pend = { t: 1.0, f: () => ctx.win('Polaris stood about ' + POL[1] + '° above the horizon, so the ship was roughly ' + POL[1] + '° north of the equator, near the latitude of the Canary Islands where Columbus started across.') }; return; }
             ctx.msg('📐 Reading 1: ' + r + '°. One more!', 'good', 1.4); }
         } else ctx.meter(null);
-        st(); ctx.actLabel(phase === 'find' ? 'Sight' : 'Hold');
+        st(); ctx.actLabel(phase === 'find' ? 'Sight Polaris' : 'Hold the reading');
         if (t >= TIME) { ended = true; return ctx.lose(phase === 'find' ? 'The clouds rolled in before you found Polaris. Look for the Big Dipper\'s pointer stars.' : 'Clouds covered Polaris before you got 2 steady readings. Move gently against the roll.'); }
       },
       dispose() { sc.fog = oldFog; for (const [o, i] of lights) o.intensity = i; },

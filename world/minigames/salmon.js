@@ -4,7 +4,7 @@
 import { THREE, P, BOX, CYL, SPH, CONE, clamp, lerp } from './lib.js';
 
 export default {
-  title: 'Salmon Dip-Net', icon: '🐟', era: 'Pacific Northwest · long before 1492', act: 'Scoop',
+  title: 'Salmon Dip-Net', icon: '🐟', era: 'Pacific Northwest · long before 1492', act: 'Scoop the salmon',
   intro: 'Every year, huge runs of <b>salmon</b> swam up the rivers of the Pacific Northwest. At waterfalls like <b>Celilo Falls</b> on the Columbia River, fishers stood on <b>wooden platforms</b> and caught leaping salmon with long-handled <b>dip nets</b>.',
   how: 'Slide the net with <kbd>A</kbd> / <kbd>S</kbd> (or ◀ ▶). When a salmon <b>leaps</b> into your net\'s glowing ring, press <kbd>E</kbd> to scoop!',
   tryit: 'Move the net with <kbd>A</kbd> / <kbd>S</kbd>. Press <kbd>E</kbd> when a salmon leaps through the glowing ring.',
@@ -47,7 +47,7 @@ export default {
     ctx.placeHero(0.4, bed + 2.07, 1.0, 0);
     ctx.cam(-0.8, bed + 6.0, -2.6, 0, bed + 0.4, 7.2, true);
     return {
-      start() { st(); ctx.msg('Watch for leaping salmon!', 'info', 1.5); },
+      start() { st(); ctx.actLabel('Scoop the salmon'); ctx.prompt('Steer with A/S under the splash, then press E to scoop the leaping salmon.', 3.2); ctx.msg('Watch for leaping salmon!', 'info', 1.5); },
       bot(lose) { if (lose) return {}; const f = fish.filter(f => !f.done).sort((a, b) => a.t0 - b.t0)[0]; if (!f) return {}; const dx = f.x - nx; const up = f.k > 0 && f.k < 1;
         return { x: Math.abs(dx) < 0.15 ? 0 : (dx > 0 ? -1 : 1), press: up && Math.abs(dx) < NR * 0.6 && f.k > 0.25 && f.k < 0.75 && scoop <= 0 }; },
       action() { if (ended || scoop > 0) return; scoop = 0.45;

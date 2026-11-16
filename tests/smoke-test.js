@@ -58,7 +58,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   await click('.node[data-sid="s1"]');
   await click('#pg button[data-g="boy"]'); await click('#pn button'); await p.screenshot({ path: SHOTS + '2-char.png' });
   await click('#b-go'); await p.screenshot({ path: SHOTS + '3-intro.png', fullPage: true });
-  const actIds = await p.$$eval('.act-card', els => els.map(e => e.getAttribute('data-act')));
+  const actIds = await p.$$eval('.act-card[data-act]', els => els.map(e => e.getAttribute('data-act')));
   assert(actIds.length === 5, 's1 shows 5 activities (3 classic + map + timeline)');
   assert((await p.evaluate(ids => ids.map(id => GAME_CONTENT.sections[0].activities.find(a => a.id === id).type).slice(3).join(), actIds)) === 'geomap,timeline', 's1 has a map challenge and a timeline challenge');
 
@@ -308,7 +308,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
     await click('#a-quit');
   }
 
-  const s2acts = await p.$$eval('.act-card', els => els.map(e => e.getAttribute('data-act')));
+  const s2acts = await p.$$eval('.act-card[data-act]', els => els.map(e => e.getAttribute('data-act')));
   for (const id of s2acts) { await click('#act-' + id); await solve(0); await click('#a-back'); }
   console.log('  s2 activities solved:', s2acts.join(','));
   await p.setViewport({ width: 1280, height: 860 });

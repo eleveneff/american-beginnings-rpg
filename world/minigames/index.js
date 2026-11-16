@@ -35,9 +35,17 @@ export const REG = {
     { id: 'bucket', file: 'bucket', title: "Franklin's Bucket Brigade", icon: '🪣', station: 'philadelphia', ring: [-11.0, 19.5], arena: [-10.7, 25.3, 0.4] },
     { id: 'postrider', file: 'postrider', title: 'Ride the Post Road', icon: '✉️', station: 'williamsburg', ring: [18.3, -15.9], arena: [28.5, -15.6, 1.31] },
   ],
+  s7: [
+    { id: 'letter', file: 'letter', title: "Washington's Winter Mission", icon: '✉️', station: 'farm', ring: [-14, -58], arena: [-14, -64, 0] },
+    { id: 'heights', file: 'heights', title: 'Scale the Heights of Abraham', icon: '⛰️', station: 'gate', ring: [14, 66], arena: [20, 66, 1.2] },
+  ],
+  s8: [
+    { id: 'teaparty', file: 'teaparty', title: 'The Boston Tea Party', icon: '🫖', station: 'griffins', ring: [-28, 22], arena: [-36, 22, Math.PI / 2] },
+    { id: 'homespun', file: 'homespun', title: 'Spin Homespun', icon: '🧶', station: 'longwharf', ring: [-28, -34], arena: [-22, -34, -Math.PI / 2] },
+  ],
 };
 // levels whose games are switched on (shipped in batches; the other files are present but unused until listed here)
-export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6'];
+export const LIVE = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
 const PAY = { first: 10, practice: 2, perDay: 3 };   // mirrored from app.js (for the intro card text only)
 
 let A = null, S = null, cssOn = false, lastLvl = null, sfx = null, returnClassic = null, chromeOn = false;

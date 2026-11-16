@@ -55,6 +55,10 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   { const S = await p.evaluate(() => __world.stations());
     assert(S.lexington.z < S.concord.z && S.concord.z < S.bunkerhill.z && S.cambridge.z > S.bunkerhill.z && S.gate.z > S.cambridge.z + 30, 'the places sit in story order south to north (Lexington, Concord, Breed’s Hill, Cambridge, then Philadelphia beyond the river)'); }
   { const river = await p.evaluate(() => [__world.walkable(8, 51), __world.solid(8, 51)]); assert(!river[0] && river[1], 'the story-jump river between Cambridge and Philadelphia is water'); }
+  { const deck = await p.evaluate(() => [__world.walkable(-32, -24), __world.solid(-32, -24), __world.pathDist(-32, -24)]);
+    assert(deck[0] && !deck[1] && deck[2] <= 1.6, 'the North Bridge deck is walkable and the path runs over it (walkable ' + deck[0] + ', solid ' + deck[1] + ', pathDist ' + deck[2] + ')'); }
+  { const water = await p.evaluate(() => [__world.walkable(-32, -18), __world.solid(-32, -18), __world.walkable(-32, -30), __world.solid(-32, -30)]);
+    assert(!water[0] && water[1] && !water[2] && water[3], 'the Concord River is water under and beyond the North Bridge (north and south of the deck)'); }
   { const rs = await p.evaluate(() => __world.rings().map(r => ({ id: r.id, w: __world.walkable(r.x, r.z), s: __world.solid(r.x, r.z) })));
     const off = rs.filter(r => !r.w || r.s); assert(rs.length === 25 && !off.length, 'all 25 rings are on dry, open land (' + rs.length + ' rings; ' + JSON.stringify(off) + ')'); }
   { const rs = await p.evaluate(() => __world.rings()), close = [];
@@ -81,7 +85,7 @@ function assert(c, m) { if (!c) throw new Error('ASSERT: ' + m); console.log('  
   for (const [id, re] of [['buckman', /April 19, 1775|Buckman/], ['bridge9', /shot heard/], ['hill9', /Breed/], ['washington9', /July 3, 1775/], ['hall9', /State House|July 4|Dunlap/]]) {
     const cd = await useCard(id); assert(re.test(cd) && (await p.evaluate(id => __world.seen()[id], id)), id + ' card tells its fact (' + re + ')'); await closeCards(); }
   { const cd = await useCard('hill9'); assert(/powder ran out/.test(cd) && /Breed/.test(cd), 'the Breed’s Hill card is honest that the British took the hill when the powder ran out, and that the fight was on Breed’s Hill'); await closeCards(); }
-  { const cd = await useCard('hall9'); assert(/1777/.test(cd) && /Grand Union/.test(cd), 'the State House card is honest that the Stars and Stripes is 1777, and names the Grand Union flag'); await closeCards(); }
+  { const cd = await useCard('hall9'); assert(/1777/.test(cd) && /Stars and Stripes/.test(cd) && /1781/.test(cd) && !/Grand Union/.test(cd), 'the State House card is honest about the 1776 steeple (taken down in 1781) and that the Stars and Stripes is 1777, with no invented flag'); await closeCards(); }
   { await tpRing('market'); await p.evaluate(() => __world.use()); await sleep(500);
     assert((await W()).phase === 'panel' && /State House|Biddle|Philadelphia/.test(await p.$eval('#screen', e => e.textContent)), 'the market ring opens Mistress Biddle’s Shop near the State House');
     await p.evaluate(() => ABRPG.home()); await waitPhase('active'); }

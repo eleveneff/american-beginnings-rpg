@@ -5,9 +5,10 @@
 // the post road to Philadelphia, 1776 → the Pennsylvania State House (Independence Hall) and the Trial.
 // Accuracy: the battle called Bunker Hill was fought on Breed's Hill. Revere was captured; Prescott
 // reached Concord. The Second Congress met in the State House, not Carpenters' Hall. British flags are
-// the Union flag of 1707 (no St Patrick saltire). No Stars and Stripes (that flag is 1777). In 1776 a
-// Grand Union flag (the 1707 Union in the canton, thirteen red and white stripes) may fly at the State
-// House. Nothing here touches the save.
+// the Union flag of 1707 (no St Patrick saltire). No Stars and Stripes (that flag is 1777). In July 1776
+// the State House yard has no national flag (we do not invent one). The 1776 wooden steeple — already
+// decaying, taken down in 1781 and rebuilt in 1828 — is shown as it stood that summer: a full brick
+// clock tower with a white wooden belfry, cupola and spire. Nothing here touches the save.
 import * as THREE from 'three';
 import { vc, P, M, rng, CYL, BOX, roofGeo, houseGeo, makeRing, barrelGeo, crateGeo, labelSprite, setRingState, RING_COL } from './voyage.js';
 export { labelSprite, setRingState, RING_COL };
@@ -22,18 +23,27 @@ export const STATIONS = {
   gate: { x: 8, z: 74, r: 10, label: 'Independence Hall, Philadelphia, 1776', n: 5, dir: 'the post road to Philadelphia (Trial)' }
 };
 export const ROADS = [
-  [[-6, -66], [-6, -58], [-14, -44], [-26, -26]],
-  [[-26, -26], [-8, -10], [16, 6]],
+  // Lexington Green → east bank of the Concord River → over the North Bridge to the west (far) bank → Breed's Hill
+  [[-6, -66], [-6, -58], [-14, -44], [-38, -36], [-38, -24], [-26, -24], [-26, -26]],
+  [[-26, -26], [-26, -16], [-8, -10], [16, 6]],
   [[16, 6], [2, 20], [-12, 34], [6, 41]],
-  [[8, 60], [8, 74]]
+  [[8, 60], [8, 74], [8, 90]]
 ];
 export function distSeg(px, pz, ax, az, bx, bz) { const dx = bx - ax, dz = bz - az, l = dx * dx + dz * dz; let t = l ? ((px - ax) * dx + (pz - az) * dz) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(px - ax - t * dx, pz - az - t * dz); }
 export function pathDist(x, z) { let d = 1e9; for (const R of ROADS) for (let i = 1; i < R.length; i++) d = Math.min(d, distSeg(x, z, R[i - 1][0], R[i - 1][1], R[i][0], R[i][1])); return d; }
 export const PATH = ROADS[0];
-export const BOUNDS = { x0: -70, x1: 70, z0: -72, z1: 92 };
+export const BOUNDS = { x0: -70, x1: 70, z0: -72, z1: 112 };
 export const RIVER_S = 47, RIVER_N = 56;
 export const riverZ = () => -9999;
 export const SHORE_X = () => -999;   // no harbor in this countryside / Philadelphia level
+// Concord River: a slow north–south stream. West is +x (militia, the far bank); east is −x (regulars).
+export const CONCORD_RX = -32, CONCORD_HW = 4.2, CONCORD_Z0 = -42, CONCORD_Z1 = -12, CONCORD_BZ = -24;
+export function concordRiverW(x, z) {
+  const along = smooth(CONCORD_Z0 - 2.5, CONCORD_Z0 + 2, z) * smooth(CONCORD_Z1 + 2.5, CONCORD_Z1 - 2, z);
+  const across = smooth(CONCORD_HW + 1.8, CONCORD_HW - 0.5, Math.abs(x - CONCORD_RX));
+  return along * across;
+}
+export const BRIDGE = { x0: CONCORD_RX - 6.2, x1: CONCORD_RX + 6.2, z0: CONCORD_BZ - 1.25, z1: CONCORD_BZ + 1.25, top: 1.18 };
 function rawH(x, z) {
   let h = 0.55 + 0.28 * Math.sin(x * 0.07) * Math.cos(z * 0.06);
   // Breed's Hill: a real rise around station bunkerhill, flattened on top for the redoubt
@@ -43,7 +53,11 @@ function rawH(x, z) {
   h += 0.8 * smooth(20, 40, x) * smooth(-70, -50, z) * smooth(-40, -62, z);
   // the story-jump river band between Cambridge and Philadelphia
   const w = smooth(RIVER_S - 0.6, RIVER_S + 1.4, z) * smooth(RIVER_N + 0.6, RIVER_N - 1.4, z);
-  return h * (1 - w) + -3.0 * w;
+  h = h * (1 - w) + -3.0 * w;
+  // the Concord River under the North Bridge (and beyond it, both ways)
+  const cr = concordRiverW(x, z);
+  h = h * (1 - cr) + -3.0 * cr;
+  return h;
 }
 const FLAT = {}; for (const k in STATIONS) { const s = STATIONS[k]; FLAT[k] = rawH(s.x, s.z); }
 // flatten Lexington, Concord, Cambridge, and the State House yard; keep Breed's Hill high but level on top
@@ -56,9 +70,9 @@ export function groundH(x, z) {
 }
 export const shoreZ = () => 9999;
 export const STONES = [], FORD_ROWS = 0, FORD_RESPAWN = { x: -6, z: -64, yaw: 0 };
-export function onStone() { return null; }
-export function walkY(x, z) { return groundH(x, z); }
-export function solid(x, z) { return groundH(x, z) < WATER_Y + 0.25; }
+export function onStone(x, z, pad = 0) { const p = BRIDGE; if (x > p.x0 - pad && x < p.x1 + pad && z > p.z0 - pad && z < p.z1 + pad) return p; return null; }
+export function walkY(x, z) { const s = onStone(x, z); return s ? s.top : groundH(x, z); }
+export function solid(x, z) { if (onStone(x, z)) return false; return groundH(x, z) < WATER_Y + 0.25; }
 export const HARBORS = {
   south: { x: 6, z: 43.5, yaw: Math.PI, label: 'Cambridge, the post road south' },
   north: { x: 8, z: 59.5, yaw: 0, label: 'Philadelphia, Chestnut Street' }
@@ -67,7 +81,7 @@ export const MATS = [];
 export const MAT_HALF = 1.2;
 export const RING_AT = {
   l0: [-1.5, -55], buckman: [-10.5, -54], riders: [-1.5, -61], l7: [-10.5, -61],
-  l1: [-22, -23], bridge: [-31, -22], sequence: [-22, -31], adams: [-31, -31],
+  l1: [-22, -20], bridge: [-25, -24], sequence: [-22, -31], adams: [-20, -34],
   l3: [10, 14], hill: [22, 10],
   l2: [-12, 37], washington: [-5, 34], 'ride-south': [6, 41],
   'ride-north': [8, 62], l4: [3, 77], hall: [13, 77], l5: [3, 70], l6: [13, 70],
@@ -79,17 +93,6 @@ function unionFlagGeo(h = 7) {   // the British Union flag of 1707 (crosses of S
   const g = [P(CYL(0.07, 0.09, h, 6), '#6b4f36', 0, h / 2, 0)], fy = h - 0.6, fx = 1.0;
   g.push(P(BOX(1.9, 1.2, 0.04), '#1f3a7a', fx, fy, 0), P(BOX(2.2, 0.16, 0.05), '#f4f1e6', fx, fy, 0, 0, 0, 0.56), P(BOX(2.2, 0.16, 0.05), '#f4f1e6', fx, fy, 0, 0, 0, -0.56));
   g.push(P(BOX(1.9, 0.32, 0.06), '#f4f1e6', fx, fy, 0), P(BOX(0.36, 1.2, 0.06), '#f4f1e6', fx, fy, 0), P(BOX(1.9, 0.18, 0.07), '#c0302a', fx, fy, 0), P(BOX(0.2, 1.2, 0.07), '#c0302a', fx, fy, 0));
-  return M(g);
-}
-function grandUnionGeo(h = 8) {   // the Grand Union flag of late 1775: 13 red/white stripes, 1707 Union in the canton (no stars)
-  const g = [P(CYL(0.07, 0.09, h, 6), '#6b4f36', 0, h / 2, 0)], fy = h - 0.7, fx = 1.15, W = 2.4, H = 1.5;
-  g.push(P(BOX(W, H, 0.04), '#f4f1e6', fx, fy, 0));
-  for (let i = 0; i < 7; i++) g.push(P(BOX(W, H / 13, 0.05), '#b22222', fx, fy + H / 2 - H / 26 - i * (2 * H / 13), 0.01));
-  const cw = W * 0.42, ch = H * 0.54, cx = fx - W / 2 + cw / 2, cy = fy + H / 2 - ch / 2;
-  g.push(P(BOX(cw, ch, 0.06), '#1f3a7a', cx, cy, 0.02));
-  g.push(P(BOX(cw + 0.08, 0.08, 0.07), '#f4f1e6', cx, cy, 0.03, 0, 0, 0.55), P(BOX(cw + 0.08, 0.08, 0.07), '#f4f1e6', cx, cy, 0.03, 0, 0, -0.55));
-  g.push(P(BOX(cw, 0.14, 0.07), '#f4f1e6', cx, cy, 0.03), P(BOX(0.14, ch, 0.07), '#f4f1e6', cx, cy, 0.03));
-  g.push(P(BOX(cw, 0.08, 0.08), '#c0302a', cx, cy, 0.04), P(BOX(0.08, ch, 0.08), '#c0302a', cx, cy, 0.04));
   return M(g);
 }
 function personGeo(coat, hat = '#2a2622', skirt) {
@@ -129,17 +132,41 @@ function tavernGeo(rnd) {   // Buckman Tavern: a long clapboard inn
   for (const sx of [-2.0, 2.0]) g.push(P(BOX(0.5, 0.7, 0.06), '#e8e4da', sx, 2.1, 1.63), P(BOX(0.38, 0.58, 0.07), '#2a3440', sx, 2.1, 1.64));
   return M(g);
 }
-function independenceHallGeo(rnd) {   // the Pennsylvania State House, 1732–53: a long brick hall, a central clock tower and wooden steeple (still standing in 1776)
-  const w = 14, d = 4.2, h = 4.6;
-  const g = [P(BOX(w, h, d), '#a5523a', 0, h / 2, 0, 0, 0, 0, 1, 1, 1, 0.04, rnd)];
+function independenceHallGeo(rnd) {   // Pennsylvania State House as it stood in 1776: long brick hall, a full brick clock tower, and the original wooden steeple (already decaying; taken down in 1781, rebuilt 1828 — we show the 1776 one, not Strickland's)
+  const w = 16, d = 5.0, h = 5.0, brick = '#a5523a', wood = '#efe6d0', woodDark = '#e6d9b8';
+  const g = [P(BOX(w, h, d), brick, 0, h / 2, 0, 0, 0, 0, 1, 1, 1, 0.04, rnd)];
   for (const p of roofGeo(w, d, 1.8, '#3a3e48')) { p.translate(0, h, 0); g.push(p); }
-  g.push(P(BOX(w + 0.1, 0.18, d + 0.1), '#efe8d6', 0, h, 0));
-  for (let i = -4; i <= 4; i++) if (i) g.push(P(BOX(0.55, 1.0, 0.06), '#e8e4da', i * 1.35, h * 0.62, d / 2 + 0.03), P(BOX(0.42, 0.86, 0.07), '#2a3440', i * 1.35, h * 0.62, d / 2 + 0.04));
-  g.push(P(BOX(1.4, 2.4, 0.08), '#f2eee2', 0, 1.2, d / 2 + 0.02), P(BOX(1.2, 2.2, 0.09), '#2a3a2a', 0, 1.1, d / 2 + 0.03));
-  const tz = 0, ty = h + 1.8;
-  g.push(P(BOX(2.4, 3.2, 2.4), '#a5523a', 0, h + 1.6, tz), P(BOX(2.0, 2.6, 2.0), '#efe8d6', 0, ty + 1.6, tz));
-  g.push(P(CYL(0.7, 0.8, 1.4, 8), '#efe8d6', 0, ty + 3.6, tz), P(new THREE.ConeGeometry(0.85, 3.2, 8), '#efe8d6', 0, ty + 3.6 + 0.7 + 1.6, tz));
-  g.push(P(CYL(0.03, 0.03, 1.0, 4), '#c9a227', 0, ty + 7.2, tz));
+  g.push(P(BOX(w + 0.12, 0.2, d + 0.12), '#efe8d6', 0, h, 0));
+  for (let i = -5; i <= 5; i++) if (i && Math.abs(i) > 1) g.push(P(BOX(0.55, 1.0, 0.06), '#e8e4da', i * 1.28, h * 0.62, d / 2 + 0.03), P(BOX(0.42, 0.86, 0.07), '#2a3440', i * 1.28, h * 0.62, d / 2 + 0.04));
+  g.push(P(BOX(1.5, 2.5, 0.08), '#f2eee2', 0, 1.25, d / 2 + 0.02), P(BOX(1.25, 2.3, 0.09), '#2a3a2a', 0, 1.15, d / 2 + 0.03));
+  // full brick clock tower, from the ground, slightly proud of the south facade, rising well above the roof
+  const tw = 3.5, td = 3.6, th = 11.2, tz = d / 2 - td / 2 + 0.15;
+  g.push(P(BOX(tw, th, td), brick, 0, th / 2, tz, 0, 0, 0, 1, 1, 1, 0.04, rnd));
+  g.push(P(BOX(tw + 0.15, 0.22, td + 0.15), '#efe8d6', 0, th, tz));
+  // clock faces (south facade and north)
+  for (const fz of [tz + td / 2 + 0.04, tz - td / 2 - 0.04]) {
+    g.push(P(CYL(0.7, 0.7, 0.08, 12), '#efe8d6', 0, 9.0, fz));
+    g.push(P(BOX(0.06, 0.45, 0.04), '#2a2018', 0, 9.15, fz + (fz > 0 ? 0.02 : -0.02)));
+    g.push(P(BOX(0.32, 0.06, 0.04), '#2a2018', 0.12, 9.0, fz + (fz > 0 ? 0.02 : -0.02)));
+  }
+  // white wooden belfry (arched openings) — the 1776 wooden steeple, slightly weathered
+  const by = th + 1.5;
+  g.push(P(BOX(2.7, 3.0, 2.7), wood, 0, by, tz, 0, 0, 0, 1, 1, 1, 0.03, rnd));
+  for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+    const ox = Math.sin(a) * 1.38, oz = tz + Math.cos(a) * 1.38;
+    g.push(P(BOX(a % Math.PI === 0 ? 1.0 : 0.1, 1.7, a % Math.PI === 0 ? 0.1 : 1.0), '#3a2a22', ox, by - 0.15, oz));
+  }
+  // smaller lantern / cupola
+  const ly = th + 3.0 + 1.15;
+  g.push(P(BOX(1.7, 1.8, 1.7), woodDark, 0, ly, tz));
+  for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+    const ox = Math.sin(a) * 0.88, oz = tz + Math.cos(a) * 0.88;
+    g.push(P(BOX(a % Math.PI === 0 ? 0.7 : 0.08, 1.1, a % Math.PI === 0 ? 0.08 : 0.7), '#3a2a22', ox, ly, oz));
+  }
+  // slender wooden spire and gold finial
+  const sy = th + 3.0 + 1.8 + 2.3;
+  g.push(P(new THREE.ConeGeometry(1.05, 4.6, 8), wood, 0, sy, tz));
+  g.push(P(CYL(0.04, 0.04, 1.1, 4), '#c9a227', 0, sy + 2.3 + 0.5, tz));
   return M(g);
 }
 function elmGeo(rnd) {
@@ -148,9 +175,10 @@ function elmGeo(rnd) {
   for (const [x, y, z, s] of [[0, 7.6, 0, 3.4], [2.0, 6.6, 1.2, 2.4], [-2.0, 6.8, -0.6, 2.5], [0.6, 6.4, -2.0, 2.3], [-0.8, 6.2, 2.0, 2.2]]) g.push(P(new THREE.IcosahedronGeometry(s, 1), '#5f8a3a', x, y, z, 0, 0, 0, 1, 0.75, 1, 0.25, rnd));
   return M(g);
 }
-function bridgeGeo() {   // a short wooden trestle over the Concord River (visual; the ground stays dry)
-  const g = [P(BOX(2.2, 0.18, 7.2), '#7a6448', 0, 0.5, 0), P(BOX(0.12, 0.7, 7.2), '#6a5438', -1.05, 0.85, 0), P(BOX(0.12, 0.7, 7.2), '#6a5438', 1.05, 0.85, 0)];
-  for (const z of [-2.8, 0, 2.8]) { g.push(P(CYL(0.12, 0.12, 1.4, 5), '#5a4632', -1.0, -0.2, z), P(CYL(0.12, 0.12, 1.4, 5), '#5a4632', 1.0, -0.2, z)); }
+function bridgeGeo() {   // wooden trestle on piers spanning the Concord River, east–west (along +x = west)
+  const span = 12.4, width = 2.4, deckY = 1.08, thick = 0.22;
+  const g = [P(BOX(span, thick, width), '#7a6448', 0, deckY, 0), P(BOX(span, 0.55, 0.12), '#6a5438', 0, deckY + 0.42, width / 2 - 0.08), P(BOX(span, 0.55, 0.12), '#6a5438', 0, deckY + 0.42, -width / 2 + 0.08)];
+  for (const x of [-3.6, 0, 3.6]) for (const z of [-0.8, 0.8]) g.push(P(CYL(0.16, 0.16, 4.4, 6), '#5a4632', x, deckY - 2.15, z));
   return M(g);
 }
 function redoubtGeo() {   // a low earth wall on Breed's Hill
@@ -237,14 +265,22 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     labels.push([STATIONS.lexington, '1 · Lexington Green, April 19, 1775', 'Parker’s men · the first shot']);
   }
 
-  // 2 · Concord North Bridge
+  // 2 · Concord North Bridge — river, piers, militia on the west/far bank, regulars on the east
   { const { x: cx, z: cz } = STATIONS.concord;
-    add(bridgeGeo(), cx - 6, cz + 2, Math.PI / 2, 1, true, gy(cx - 6, cz + 2));
-    building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), cx + 8, cz + 4, -0.4, 4.0, 3.2, 5.0);
-    building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), cx + 6, cz - 8, 0.6, 3.6, 3.0, 4.6);
-    add(stoneWallGeo(6), cx - 2, cz + 8, 1.1); box(cx - 5, cx + 1, cz + 7.7, cz + 8.3);
-    line(i => militiaGeo('#8a6a44'), cx - 10, cz + 6, cx - 4, cz + 8, 4, [cx - 6, cz + 2]);
-    line(i => soldierGeo('#b22222', '#e8d27a'), cx - 8, cz - 4, cx - 4, cz - 4, 4, [cx - 6, cz + 2]);
+    const zc = (CONCORD_Z0 + CONCORD_Z1) / 2, len = CONCORD_Z1 - CONCORD_Z0;
+    // thin dark bank lips; bright water slightly above them (Princess Prep water lesson)
+    add(M([P(BOX(0.5, 0.4, len), '#5a4a3a', 0, 0.2, 0)]), CONCORD_RX + CONCORD_HW, zc, 0, 1, false, 0);
+    add(M([P(BOX(0.5, 0.4, len), '#5a4a3a', 0, 0.2, 0)]), CONCORD_RX - CONCORD_HW, zc, 0, 1, false, 0);
+    const cWater = new THREE.Mesh(new THREE.BoxGeometry(CONCORD_HW * 2 - 0.15, 0.08, len - 0.8), new THREE.MeshLambertMaterial({ color: '#3aa0c8', transparent: true, opacity: 0.88, depthWrite: false }));
+    cWater.position.set(CONCORD_RX, WATER_Y + 0.12, zc); cWater.userData.noMerge = true; cWater.name = 'concord-water'; cWater.renderOrder = 3; scene.add(cWater);
+    scene.userData.concordWater = cWater;
+    add(bridgeGeo(), CONCORD_RX, CONCORD_BZ, 0, 1, true, 0);
+    // town houses on the east bank (Concord itself); west bank is the militia's far field
+    building(houseGeo(4.0, 3.2, 3.0, '#c8b490', '#4a3e38', rnd), CONCORD_RX - 11, cz + 2, 0.3, 4.0, 3.2, 5.0);
+    building(houseGeo(3.6, 3.0, 2.8, '#b8a888', '#3a3a40', rnd), CONCORD_RX - 10, cz - 8, -0.5, 3.6, 3.0, 4.6);
+    add(stoneWallGeo(6), cx + 2, cz + 6, 1.1); box(cx - 1, cx + 5, cz + 5.7, cz + 6.3);
+    line(i => militiaGeo('#8a6a44'), cx + 2, cz + 4, cx + 6, cz + 1, 4, [CONCORD_RX, CONCORD_BZ]);   // west / far bank
+    line(i => soldierGeo('#b22222', '#e8d27a'), CONCORD_RX - 9, CONCORD_BZ + 1, CONCORD_RX - 9, CONCORD_BZ - 3, 4, [CONCORD_RX, CONCORD_BZ]);   // east bank
     labels.push([STATIONS.concord, '2 · Concord, the North Bridge', 'the shot heard round the world']);
   }
 
@@ -272,14 +308,14 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     labels.push([STATIONS.cambridge, '4 · Cambridge Common, July 3, 1775', 'Washington takes command']);
   }
 
-  // 5 · Independence Hall (after the story jump)
+  // 5 · Independence Hall (after the story jump). Set well back from the yard so the 1776 steeple clears the HUD.
   { const { x: cx, z: cz } = STATIONS.gate;
-    building(independenceHallGeo(rnd), cx, cz + 14, Math.PI, 14, 4.2, 12);
-    for (const [hx, hz, ry] of [[cx + 14, cz + 4, -Math.PI / 2], [cx - 14, cz + 4, Math.PI / 2], [cx + 14, cz + 14, -Math.PI / 2], [cx - 14, cz + 14, Math.PI / 2]]) building(brickHouseGeo(4.6, 3.8, 4.0, rnd, '#a5523a'), hx, hz, ry, 4.6, 3.8, 6.2);
-    add(grandUnionGeo(8), cx - 8, cz + 6, 0, 1, true);
-    circ(cx - 8, cz + 6, 0.3);
-    line(i => personGeo(['#2a2a3a', '#4a3a2a', '#5a2a2a', '#3a4a5a'][i % 4]), cx - 4, cz + 6, cx + 4, cz + 6, 5, [cx, cz + 14]);
-    poster('IN CONGRESS', ['July 4, 1776', 'A Declaration'], cx + 7, cz + 5, -0.3);
+    const hx0 = cx, hz0 = cz + 24;   // hall center ~ (8, 98); south facade faces the yard
+    building(independenceHallGeo(rnd), hx0, hz0, Math.PI, 16, 5.0, 22);
+    for (const [hx, hz, ry] of [[cx + 18, cz + 8, -Math.PI / 2], [cx - 18, cz + 8, Math.PI / 2], [cx + 18, cz + 22, -Math.PI / 2], [cx - 18, cz + 22, Math.PI / 2]]) building(brickHouseGeo(4.6, 3.8, 4.0, rnd, '#a5523a'), hx, hz, ry, 4.6, 3.8, 6.2);
+    // no flag in the State House yard in July 1776: the Stars and Stripes is 1777; we do not invent one
+    line(i => personGeo(['#2a2a3a', '#4a3a2a', '#5a2a2a', '#3a4a5a'][i % 4]), cx - 4, cz + 8, cx + 4, cz + 8, 5, [hx0, hz0]);
+    poster('IN CONGRESS', ['July 4, 1776', 'A Declaration'], cx + 8, cz + 10, Math.PI);
     labels.push([STATIONS.gate, '5 · Independence Hall, 1776', 'the Declaration · the Trial']);
   }
 
@@ -320,6 +356,7 @@ export function buildIndependence({ mergeAO, rings: ringDefs, matLabels = {} }) 
     t += dt;
     for (const r of rings) { r.beam.material.opacity = (r.state === 'locked' ? 0.22 : r.state === 'new' ? 0.5 : 0.35) + 0.12 * Math.sin(t * 2.4 + r.def.x); r.icon.position.y = 2.9 + 0.12 * Math.sin(t * 1.8 + r.def.z); }
     water.position.y = WATER_Y + Math.sin(t * 1.1) * 0.03;
+    const cw = scene.userData.concordWater; if (cw) cw.position.y = WATER_Y + 0.12 + Math.sin(t * 1.1) * 0.03;
     if (hero) for (const L of regionLabels) { const d = Math.hypot(hero.x - L.s.x, hero.z - L.s.z); L.sp.visible = d > L.s.r + 6; }
   }
   return { scene, sun, hemi, rings, colliders, camOcc, update, setGateOpen() {}, tracks: [], herds: {}, flames: [], water, fogColor: SKY_H, sky: scene.userData.sky, mats: [], dropBundle() {}, clearBundles() {}, regionLabels };
